@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: ./SFBMS/
+      dockerfile: Dockerfile
+    ports:
+      - 8000:80
+      - 8001:443
+    depends_on:
+      - db
+    environment:
+      SFBMSDB_CNS: "server=db,1433;database=SfbmsDb;uid=sa;pwd=QWEasd123;"
+      FIREBASE_SECRET: ${FIREBASE_SECRET}
+      GOOGLE_APPLICATION_CREDENTIALS: "./cake-curious-firebase-adminsdk-if0lw-7fa994f0ac.json"
+  db:
+    image: "mcr.microsoft.com/mssql/server:2019-CU15-ubuntu-20.04"
+    user: root
+    ports:
+      - 1434:1433
+    environment:
+      SA_PASSWORD: "QWEasd123"
+      ACCEPT_EULA: "Y"
+    restart: always
+    volumes:
+      - ./SQL/:/var/opt/mssql/data
