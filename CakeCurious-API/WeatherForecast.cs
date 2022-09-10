@@ -1,4 +1,4 @@
-namespace cake_curious_server
+namespace CakeCurious_API
 {
     public class WeatherForecast
     {

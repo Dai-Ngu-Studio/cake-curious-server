@@ -4,17 +4,17 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:38899",
+      "applicationUrl": "http://localhost:27952",
       "sslPort": 0
     }
   },
   "profiles": {
-    "cake_curious_server": {
+    "CakeCurious_API": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5176",
+      "applicationUrl": "http://localhost:5125",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

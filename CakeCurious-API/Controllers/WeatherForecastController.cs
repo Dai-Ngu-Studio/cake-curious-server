@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace cake_curious_server.Controllers
+namespace CakeCurious_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]

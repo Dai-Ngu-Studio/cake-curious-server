@@ -2,7 +2,7 @@ version: "3.9"
 services:
   app:
     build:
-      context: ./cake-curious-server/
+      context: .
       dockerfile: Dockerfile
     ports:
       - 8000:80
@@ -10,7 +10,7 @@ services:
     depends_on:
       - db
     environment:
-      SFBMSDB_CNS: "server=db,1433;database=CakeCuriousDb;uid=sa;pwd=QWEasd123;"
+      CCDB_CNS: "server=db,1433;database=CakeCuriousDb;uid=sa;pwd=QWEasd123;"
       FIREBASE_SECRET: ${FIREBASE_SECRET}
       GOOGLE_APPLICATION_CREDENTIALS: "./cake-curious-firebase-adminsdk-if0lw-7fa994f0ac.json"
   db:
