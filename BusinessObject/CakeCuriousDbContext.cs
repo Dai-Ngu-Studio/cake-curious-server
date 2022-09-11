@@ -9,6 +9,16 @@ namespace BusinessObject
         {
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            var connectionString = configuration.GetConnectionString("CakeCuriousDb");
+            optionsBuilder.UseSqlServer(connectionString);
+        }
+
         public DbSet<Comment> Comments { get; set; } = null!;
         public DbSet<CommentImage> CommentImages { get; set; } = null!;
         public DbSet<Coupon> Coupons { get; set; } = null!;

@@ -27,16 +27,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
 
-var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json")
-    .Build();
-
-builder.Services.AddPooledDbContextFactory<CakeCuriousDbContext>(
-    opt => opt
-    .EnableDetailedErrors()
-    .UseSqlServer(configuration.GetConnectionString("CakeCuriousDb"), sqlServerOptions => sqlServerOptions.CommandTimeout(60))
-    );
+builder.Services.AddDbContext<CakeCuriousDbContext>();
 
 FirebaseApp.Create(new AppOptions()
 {
@@ -59,11 +50,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
-{
-    var factory = scope.ServiceProvider.GetService<IDbContextFactory<CakeCuriousDbContext>>();
-    var context = await factory!.CreateDbContextAsync();
-    context.Database.Migrate();
-}
+using (var context = scope.ServiceProvider.GetService<CakeCuriousDbContext>())
+    context!.Database.Migrate();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) { }
