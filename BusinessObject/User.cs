@@ -32,7 +32,7 @@ namespace BusinessObject
         public string? PhotoUrl { get; set; }
 
         [Column("role_id")]
-        public string? RoleId { get; set; }
+        public int? RoleId { get; set; }
 
         [ForeignKey("RoleId")]
         public Role? Role { get; set; }

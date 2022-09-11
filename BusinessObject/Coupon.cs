@@ -6,6 +6,11 @@ namespace BusinessObject
     [Table("Coupon")]
     public class Coupon
     {
+        public Coupon()
+        {
+            Orders = new HashSet<Order>();
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
@@ -20,7 +25,7 @@ namespace BusinessObject
         [Column("name", TypeName = "nvarchar(256)")]
         public string? Name { get; set; }
 
-        [Column("name", TypeName = "varchar(24)")]
+        [Column("code", TypeName = "varchar(24)")]
         public string? Code { get; set; }
 
         [Column("max_uses")]
@@ -34,5 +39,8 @@ namespace BusinessObject
 
         [Column("status")]
         public int Status { get; set; }
+
+        [InverseProperty("Coupon")]
+        public ICollection<Order>? Orders { get; set; }
     }
 }

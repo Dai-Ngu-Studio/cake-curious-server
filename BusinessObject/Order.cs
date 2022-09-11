@@ -40,8 +40,14 @@ namespace BusinessObject
         [Column("completed_date", TypeName = "datetime2(7)")]
         public DateTime? CompletedDate { get; set; }
 
-        [Column("coupon", TypeName = "varchar(24)")]
-        public string? Coupon { get; set; }
+        [Column("coupon_id")]
+        public Guid? CouponId { get; set; }
+
+        [ForeignKey("CouponId")]
+        public Coupon? Coupon { get; set; }
+
+        [Column("coupon_code", TypeName = "varchar(24)")]
+        public string? CouponCode { get; set; }
 
         [Column("status")]
         public int Status { get; set; }
