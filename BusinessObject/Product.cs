@@ -14,7 +14,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("store_id")]
         public Guid? StoreId { get; set; }
@@ -35,13 +35,13 @@ namespace BusinessObject
         public string? Description { get; set; }
 
         [Column("quantity")]
-        public int Quantity { get; set; }
+        public int? Quantity { get; set; }
 
         [Column("price", TypeName = "decimal(20,4)")]
         public decimal? Price { get; set; }
 
         [Column("status")]
-        public int Status { get; set; }
+        public int? Status { get; set; }
 
         [InverseProperty("Product")]
         public ICollection<OrderDetail>? OrderDetails { get; set; }

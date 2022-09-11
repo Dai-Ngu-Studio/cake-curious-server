@@ -9,7 +9,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("recipe_id")]
         public Guid? RecipeId { get; set; }
@@ -21,6 +21,6 @@ namespace BusinessObject
         public string? MaterialUrl { get; set; }
 
         [Column("visual_type")]
-        public int VisualType { get; set; }
+        public int? VisualType { get; set; }
     }
 }

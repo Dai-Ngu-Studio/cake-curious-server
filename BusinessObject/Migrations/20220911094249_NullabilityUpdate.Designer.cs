@@ -4,6 +4,7 @@ using BusinessObject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(CakeCuriousDbContext))]
-    partial class CakeCuriousDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220911094249_NullabilityUpdate")]
+    partial class NullabilityUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -456,32 +458,6 @@ namespace BusinessObject.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Role");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 0,
-                            Name = "Administrator",
-                            ShortName = "Admin"
-                        },
-                        new
-                        {
-                            Id = 1,
-                            Name = "Staff",
-                            ShortName = "Staff"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Store Owner",
-                            ShortName = "Store"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Baker",
-                            ShortName = "Baker"
-                        });
                 });
 
             modelBuilder.Entity("BusinessObject.Store", b =>

@@ -9,7 +9,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Column("token", TypeName = "varchar(1024)")]
-        public string Token { get; set; } = null!;
+        public string? Token { get; set; } = null!;
 
         [Column("user_id", TypeName = "varchar(128)")]
         public string? UserId { get; set; }

@@ -10,7 +10,11 @@
   <ItemGroup>
     <PackageReference Include="GraphQL.Server.Ui.Voyager" Version="7.1.1" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="12.13.2" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="12.13.2" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.13.2" />
+    <PackageReference Include="FirebaseAdmin" Version="2.3.0" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -20,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BusinessObject\BusinessObject.csproj" />
-    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+    <ProjectReference Include="..\Repository\Repository.csproj" />
   </ItemGroup>
 
   <ItemGroup>

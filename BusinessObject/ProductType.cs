@@ -14,7 +14,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("name", TypeName = "nvarchar(256)")]
         public string? Name { get; set; }

@@ -9,7 +9,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("order_id")]
         public Guid? OrderId { get; set; }
@@ -27,7 +27,7 @@ namespace BusinessObject
         public string? ProductName { get; set; }
 
         [Column("amount")]
-        public int Amount { get; set; }
+        public int? Amount { get; set; }
 
         [Column("price", TypeName = "decimal(20,4)")]
         public decimal? Price { get; set; }

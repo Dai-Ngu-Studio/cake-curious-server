@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CakeCurious-API", "CakeCuri
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusinessObject", "BusinessObject\BusinessObject.csproj", "{F21DBB61-004B-4FB9-A5BB-448D7016ECF9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{9D38E30E-8ED4-4839-9E0E-36265491A55A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository", "Repository\Repository.csproj", "{3E1996AC-EBE4-4A5C-9F4F-D910E417C9CF}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{F21DBB61-004B-4FB9-A5BB-448D7016ECF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F21DBB61-004B-4FB9-A5BB-448D7016ECF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F21DBB61-004B-4FB9-A5BB-448D7016ECF9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9D38E30E-8ED4-4839-9E0E-36265491A55A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9D38E30E-8ED4-4839-9E0E-36265491A55A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9D38E30E-8ED4-4839-9E0E-36265491A55A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9D38E30E-8ED4-4839-9E0E-36265491A55A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3E1996AC-EBE4-4A5C-9F4F-D910E417C9CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3E1996AC-EBE4-4A5C-9F4F-D910E417C9CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E1996AC-EBE4-4A5C-9F4F-D910E417C9CF}.Release|Any CPU.ActiveCfg = Release|Any CPU

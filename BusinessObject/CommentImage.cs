@@ -9,7 +9,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("comment_id")]
         public Guid? CommentId { get; set; }

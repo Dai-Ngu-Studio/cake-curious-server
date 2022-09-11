@@ -14,7 +14,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("buyer_id", TypeName = "varchar(128)")]
         public string? BuyerId { get; set; }
@@ -50,7 +50,7 @@ namespace BusinessObject
         public string? CouponCode { get; set; }
 
         [Column("status")]
-        public int Status { get; set; }
+        public int? Status { get; set; }
 
         [InverseProperty("Order")]
         public ICollection<OrderDetail>? OrderDetails { get; set; }

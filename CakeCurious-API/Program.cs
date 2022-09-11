@@ -1,7 +1,13 @@
 using BusinessObject;
-using CakeCurious_API.GraphQL.Users;
+using CakeCurious_API.GraphQL;
 using CakeCurious_API.Utilities;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Repository;
+using Repository.Interfaces;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +19,8 @@ builder.Services.AddControllers();
 builder.Services.AddControllers(o =>
 {
     o.InputFormatters.Insert(o.InputFormatters.Count, new TextPlainInputFormatter());
-}).AddJsonOptions(x =>
+}
+).AddJsonOptions(x =>
 {
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
@@ -24,24 +31,48 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
 
-var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json")
-    .Build();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 
-builder.Services.AddPooledDbContextFactory<CakeCuriousDbContext>(
-    opt => opt
-    .EnableDetailedErrors()
-    .UseSqlServer(configuration.GetConnectionString("CakeCuriousDb"), sqlServerOptions => sqlServerOptions.CommandTimeout(60))
-    );
+builder.Services.AddDbContext<CakeCuriousDbContext>();
+
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.GetApplicationDefault(),
+});
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.Authority = "https://securetoken.google.com/cake-curious";
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = "https://securetoken.google.com/cake-curious",
+        ValidateAudience = true,
+        ValidAudience = "cake-curious",
+        ValidateLifetime = true,
+    };
+});
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddGraphQLServer()
-    .AddQueryType<UserQuery>()
+    .AddAuthorization()
+    .AddQueryType<Query>()
+    .SetPagingOptions(new HotChocolate.Types.Pagination.PagingOptions
+    {
+        IncludeTotalCount = true
+    })
     .AddProjections()
     .AddFiltering()
-    .AddSorting();
+    .AddSorting()
+    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true);
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+using (var context = scope.ServiceProvider.GetService<CakeCuriousDbContext>())
+    context!.Database.Migrate();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) { }

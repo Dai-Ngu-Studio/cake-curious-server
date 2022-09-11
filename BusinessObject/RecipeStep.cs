@@ -9,7 +9,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("recipe_id")]
         public Guid? RecipeId { get; set; }
@@ -18,12 +18,12 @@ namespace BusinessObject
         public Recipe? Recipe { get; set; }
 
         [Column("step_number")]
-        public int StepNumber { get; set; }
+        public int? StepNumber { get; set; }
 
         [Column("content", TypeName = "nvarchar(512)")]
         public string? Content { get; set; }
 
         [Column("step_timestamp")]
-        public int StepTimestamp { get; set; }
+        public int? StepTimestamp { get; set; }
     }
 }

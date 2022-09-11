@@ -14,7 +14,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("author_id", TypeName = "varchar(128)")]
         public string? AuthorId { get; set; }
@@ -35,7 +35,7 @@ namespace BusinessObject
         public DateTime? SubmittedDate { get; set; }
 
         [Column("status")]
-        public int Status { get; set; }
+        public int? Status { get; set; }
 
         [InverseProperty("Comment")]
         public ICollection<CommentImage>? Images { get; set; }

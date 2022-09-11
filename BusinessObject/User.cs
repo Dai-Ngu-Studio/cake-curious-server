@@ -20,7 +20,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Column("id", TypeName = "varchar(128)")]
-        public string Id { get; set; } = null!;
+        public string? Id { get; set; } = null!;
 
         [Column("email", TypeName = "nvarchar(256)")]
         public string? Email { get; set; }
@@ -38,7 +38,7 @@ namespace BusinessObject
         public Role? Role { get; set; }
 
         [Column("status")]
-        public int Status { get; set; }
+        public int? Status { get; set; }
 
         [InverseProperty("User")]
         public ICollection<UserDevice>? UserDevices { get; set; }

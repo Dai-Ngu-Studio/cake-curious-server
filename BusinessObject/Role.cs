@@ -14,7 +14,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Column("id")]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [Column("name", TypeName = "varchar(256)")]
         public string? Name { get; set; }

@@ -14,7 +14,7 @@ namespace BusinessObject
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("store_id")]
         public Guid? StoreId { get; set; }
@@ -29,16 +29,16 @@ namespace BusinessObject
         public string? Code { get; set; }
 
         [Column("max_uses")]
-        public int MaxUses { get; set; }
+        public int? MaxUses { get; set; }
 
         [Column("used_count")]
-        public int UsedCount { get; set; }
+        public int? UsedCount { get; set; }
 
         [Column("expiry_date", TypeName = "datetime2(7)")]
         public DateTime? ExpiryDate { get; set; }
 
         [Column("status")]
-        public int Status { get; set; }
+        public int? Status { get; set; }
 
         [InverseProperty("Coupon")]
         public ICollection<Order>? Orders { get; set; }

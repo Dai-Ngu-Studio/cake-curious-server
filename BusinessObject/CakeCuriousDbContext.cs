@@ -5,8 +5,22 @@ namespace BusinessObject
 {
     public class CakeCuriousDbContext : DbContext
     {
-        public CakeCuriousDbContext(DbContextOptions<CakeCuriousDbContext> options = null!) : base(options)
+        public CakeCuriousDbContext(DbContextOptions<CakeCuriousDbContext> options) : base(options)
         {
+        }
+
+        public CakeCuriousDbContext()
+        {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            var connectionString = configuration.GetConnectionString("CakeCuriousDb");
+            optionsBuilder.UseSqlServer(connectionString);
         }
 
         public DbSet<Comment> Comments { get; set; } = null!;
@@ -30,6 +44,13 @@ namespace BusinessObject
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Role>().HasData(
+                new Role { Id = 0, Name = "Administrator", ShortName = "Admin" },
+                new Role { Id = 1, Name = "Staff", ShortName = "Staff" },
+                new Role { Id = 2, Name = "Store Owner", ShortName = "Store" },
+                new Role { Id = 4, Name = "Baker", ShortName = "Baker" }
+                );
+
             modelBuilder.Entity<User>()
                 .HasOne(x => x.Role)
                 .WithMany(x => x.Users)
