@@ -1,6 +1,10 @@
 using BusinessObject;
 using CakeCurious_API.Utilities;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,7 +38,32 @@ builder.Services.AddPooledDbContextFactory<CakeCuriousDbContext>(
     .UseSqlServer(configuration.GetConnectionString("CakeCuriousDb"), sqlServerOptions => sqlServerOptions.CommandTimeout(60))
     );
 
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.GetApplicationDefault(),
+});
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.Authority = "https://securetoken.google.com/cake-curious";
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = "https://securetoken.google.com/cake-curious",
+        ValidateAudience = true,
+        ValidAudience = "cake-curious",
+        ValidateLifetime = true,
+    };
+});
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var factory = scope.ServiceProvider.GetService<IDbContextFactory<CakeCuriousDbContext>>();
+    var context = await factory!.CreateDbContextAsync();
+    context.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) { }
