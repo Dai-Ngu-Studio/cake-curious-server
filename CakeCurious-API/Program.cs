@@ -1,4 +1,5 @@
 using BusinessObject;
+using CakeCurious_API.GraphQL.Users;
 using CakeCurious_API.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -34,6 +35,12 @@ builder.Services.AddPooledDbContextFactory<CakeCuriousDbContext>(
     .UseSqlServer(configuration.GetConnectionString("CakeCuriousDb"), sqlServerOptions => sqlServerOptions.CommandTimeout(60))
     );
 
+builder.Services.AddGraphQLServer()
+    .AddQueryType<UserQuery>()
+    .AddProjections()
+    .AddFiltering()
+    .AddSorting();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -59,5 +66,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGraphQL("/graphql");
+
+app.UseGraphQLVoyager("/graphql/voyager", new GraphQL.Server.Ui.Voyager.VoyagerOptions()
+{
+    GraphQLEndPoint = "/graphql",
+});
 
 app.Run();

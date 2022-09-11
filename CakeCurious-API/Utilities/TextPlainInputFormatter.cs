@@ -2,7 +2,7 @@
 
 namespace CakeCurious_API.Utilities
 {
-    public class TextPlainInputFormatter : InputFormatter
+    public class TextPlainInputFormatter : Microsoft.AspNetCore.Mvc.Formatters.InputFormatter
     {
         private const string ContentType = "text/plain";
 
