@@ -48,12 +48,17 @@ namespace BusinessObject
                 new Role { Id = 0, Name = "Administrator", ShortName = "Admin" },
                 new Role { Id = 1, Name = "Staff", ShortName = "Staff" },
                 new Role { Id = 2, Name = "Store Owner", ShortName = "Store" },
-                new Role { Id = 4, Name = "Baker", ShortName = "Baker" }
+                new Role { Id = 3, Name = "Baker", ShortName = "Baker" }
                 );
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserHasRole>()
                 .HasOne(x => x.Role)
-                .WithMany(x => x.Users)
+                .WithMany(x => x.HasUsers)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<UserHasRole>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.HasRoles)
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Recipe>()

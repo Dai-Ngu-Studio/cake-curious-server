@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace BusinessObject.Migrations
 {
-    public partial class InitDatabaseV1 : Migration
+    public partial class DatabaseV1_2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -52,19 +53,18 @@ namespace BusinessObject.Migrations
                     id = table.Column<string>(type: "varchar(128)", nullable: false),
                     email = table.Column<string>(type: "nvarchar(256)", nullable: true),
                     display_name = table.Column<string>(type: "nvarchar(256)", nullable: true),
+                    password = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     photo_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    role_id = table.Column<int>(type: "int", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    gender = table.Column<string>(type: "nvarchar(16)", nullable: true),
+                    date_of_birth = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    address = table.Column<string>(type: "nvarchar(512)", nullable: true),
+                    citizenship_number = table.Column<string>(type: "varchar(24)", nullable: true),
+                    citizenship_date = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_User", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_User_Role_role_id",
-                        column: x => x.role_id,
-                        principalTable: "Role",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -78,7 +78,7 @@ namespace BusinessObject.Migrations
                     photo_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     time_needed = table.Column<decimal>(type: "decimal(9,4)", nullable: true),
                     published_date = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -103,7 +103,7 @@ namespace BusinessObject.Migrations
                     latitude = table.Column<decimal>(type: "decimal(12,8)", nullable: true),
                     photo_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     rating = table.Column<decimal>(type: "decimal(8,2)", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -128,6 +128,31 @@ namespace BusinessObject.Migrations
                     table.PrimaryKey("PK_UserDevice", x => x.token);
                     table.ForeignKey(
                         name: "FK_UserDevice_User_user_id",
+                        column: x => x.user_id,
+                        principalTable: "User",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserHasRole",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    user_id = table.Column<string>(type: "varchar(128)", nullable: true),
+                    role_id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserHasRole", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_UserHasRole_Role_role_id",
+                        column: x => x.role_id,
+                        principalTable: "Role",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_UserHasRole_User_user_id",
                         column: x => x.user_id,
                         principalTable: "User",
                         principalColumn: "id",
@@ -172,7 +197,7 @@ namespace BusinessObject.Migrations
                     recipe_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     content = table.Column<string>(type: "nvarchar(512)", nullable: true),
                     submitted_date = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -242,9 +267,9 @@ namespace BusinessObject.Migrations
                 {
                     id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     recipe_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    step_number = table.Column<int>(type: "int", nullable: false),
+                    step_number = table.Column<int>(type: "int", nullable: true),
                     content = table.Column<string>(type: "nvarchar(512)", nullable: true),
-                    step_timestamp = table.Column<int>(type: "int", nullable: false)
+                    step_timestamp = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -264,7 +289,7 @@ namespace BusinessObject.Migrations
                     id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     recipe_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     material_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    visual_type = table.Column<int>(type: "int", nullable: false)
+                    visual_type = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -285,10 +310,11 @@ namespace BusinessObject.Migrations
                     store_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     name = table.Column<string>(type: "nvarchar(256)", nullable: true),
                     code = table.Column<string>(type: "varchar(24)", nullable: true),
-                    max_uses = table.Column<int>(type: "int", nullable: false),
-                    used_count = table.Column<int>(type: "int", nullable: false),
+                    discount = table.Column<decimal>(type: "decimal(20,4)", nullable: true),
+                    max_uses = table.Column<int>(type: "int", nullable: true),
+                    used_count = table.Column<int>(type: "int", nullable: true),
                     expiry_date = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -311,9 +337,11 @@ namespace BusinessObject.Migrations
                     TypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     name = table.Column<string>(type: "nvarchar(256)", nullable: true),
                     description = table.Column<string>(type: "nvarchar(512)", nullable: true),
-                    quantity = table.Column<int>(type: "int", nullable: false),
+                    quantity = table.Column<int>(type: "int", nullable: true),
                     price = table.Column<decimal>(type: "decimal(20,4)", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    discount = table.Column<decimal>(type: "decimal(20,4)", nullable: true),
+                    photo_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -364,7 +392,7 @@ namespace BusinessObject.Migrations
                     completed_date = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
                     coupon_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     coupon_code = table.Column<string>(type: "varchar(24)", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -397,7 +425,7 @@ namespace BusinessObject.Migrations
                     order_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     product_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     product_name = table.Column<string>(type: "nvarchar(256)", nullable: true),
-                    amount = table.Column<int>(type: "int", nullable: false),
+                    amount = table.Column<int>(type: "int", nullable: true),
                     price = table.Column<decimal>(type: "decimal(20,4)", nullable: true)
                 },
                 constraints: table =>
@@ -415,6 +443,17 @@ namespace BusinessObject.Migrations
                         principalTable: "Product",
                         principalColumn: "id",
                         onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Role",
+                columns: new[] { "id", "name", "short_name" },
+                values: new object[,]
+                {
+                    { 0, "Administrator", "Admin" },
+                    { 1, "Staff", "Staff" },
+                    { 2, "Store Owner", "Store" },
+                    { 3, "Baker", "Baker" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -508,13 +547,18 @@ namespace BusinessObject.Migrations
                 column: "owner_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_role_id",
-                table: "User",
+                name: "IX_UserDevice_user_id",
+                table: "UserDevice",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserHasRole_role_id",
+                table: "UserHasRole",
                 column: "role_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserDevice_user_id",
-                table: "UserDevice",
+                name: "IX_UserHasRole_user_id",
+                table: "UserHasRole",
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
@@ -552,6 +596,9 @@ namespace BusinessObject.Migrations
                 name: "UserDevice");
 
             migrationBuilder.DropTable(
+                name: "UserHasRole");
+
+            migrationBuilder.DropTable(
                 name: "ViolationReport");
 
             migrationBuilder.DropTable(
@@ -567,6 +614,9 @@ namespace BusinessObject.Migrations
                 name: "RecipeCategory");
 
             migrationBuilder.DropTable(
+                name: "Role");
+
+            migrationBuilder.DropTable(
                 name: "Recipe");
 
             migrationBuilder.DropTable(
@@ -580,9 +630,6 @@ namespace BusinessObject.Migrations
 
             migrationBuilder.DropTable(
                 name: "User");
-
-            migrationBuilder.DropTable(
-                name: "Role");
         }
     }
 }

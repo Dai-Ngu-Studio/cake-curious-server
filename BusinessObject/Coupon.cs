@@ -28,6 +28,9 @@ namespace BusinessObject
         [Column("code", TypeName = "varchar(24)")]
         public string? Code { get; set; }
 
+        [Column("discount", TypeName = "decimal(20,4)")]
+        public decimal? Discount { get; set; }
+
         [Column("max_uses")]
         public int? MaxUses { get; set; }
 

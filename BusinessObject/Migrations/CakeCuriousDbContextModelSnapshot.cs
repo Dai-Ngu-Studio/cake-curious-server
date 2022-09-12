@@ -91,6 +91,10 @@ namespace BusinessObject.Migrations
                         .HasColumnType("varchar(24)")
                         .HasColumnName("code");
 
+                    b.Property<decimal?>("Discount")
+                        .HasColumnType("decimal(20,4)")
+                        .HasColumnName("discount");
+
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2(7)")
                         .HasColumnName("expiry_date");
@@ -223,9 +227,17 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(512)")
                         .HasColumnName("description");
 
+                    b.Property<decimal?>("Discount")
+                        .HasColumnType("decimal(20,4)")
+                        .HasColumnName("discount");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("name");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("photo_url");
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(20,4)")
@@ -478,7 +490,7 @@ namespace BusinessObject.Migrations
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 3,
                             Name = "Baker",
                             ShortName = "Baker"
                         });
@@ -536,6 +548,22 @@ namespace BusinessObject.Migrations
                         .HasColumnType("varchar(128)")
                         .HasColumnName("id");
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(512)")
+                        .HasColumnName("address");
+
+                    b.Property<DateTime?>("CitizenshipDate")
+                        .HasColumnType("datetime2(7)")
+                        .HasColumnName("citizenship_date");
+
+                    b.Property<string>("CitizenshipNumber")
+                        .HasColumnType("varchar(24)")
+                        .HasColumnName("citizenship_number");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2(7)")
+                        .HasColumnName("date_of_birth");
+
                     b.Property<string>("DisplayName")
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("display_name");
@@ -544,21 +572,23 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("email");
 
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(16)")
+                        .HasColumnName("gender");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("password");
+
                     b.Property<string>("PhotoUrl")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("photo_url");
-
-                    b.Property<int?>("RoleId")
-                        .HasColumnType("int")
-                        .HasColumnName("role_id");
 
                     b.Property<int?>("Status")
                         .HasColumnType("int")
                         .HasColumnName("status");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
 
                     b.ToTable("User");
                 });
@@ -578,6 +608,30 @@ namespace BusinessObject.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserDevice");
+                });
+
+            modelBuilder.Entity("BusinessObject.UserHasRole", b =>
+                {
+                    b.Property<Guid?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("RoleId")
+                        .HasColumnType("int")
+                        .HasColumnName("role_id");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(128)")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserHasRole");
                 });
 
             modelBuilder.Entity("BusinessObject.ViolationReport", b =>
@@ -786,22 +840,29 @@ namespace BusinessObject.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("BusinessObject.User", b =>
-                {
-                    b.HasOne("BusinessObject.Role", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("BusinessObject.UserDevice", b =>
                 {
                     b.HasOne("BusinessObject.User", "User")
                         .WithMany("UserDevices")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessObject.UserHasRole", b =>
+                {
+                    b.HasOne("BusinessObject.Role", "Role")
+                        .WithMany("HasUsers")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BusinessObject.User", "User")
+                        .WithMany("HasRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Role");
 
                     b.Navigation("User");
                 });
@@ -868,7 +929,7 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Role", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("HasUsers");
                 });
 
             modelBuilder.Entity("BusinessObject.Store", b =>
@@ -883,6 +944,8 @@ namespace BusinessObject.Migrations
             modelBuilder.Entity("BusinessObject.User", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("HasRoles");
 
                     b.Navigation("Orders");
 

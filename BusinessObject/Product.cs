@@ -40,6 +40,12 @@ namespace BusinessObject
         [Column("price", TypeName = "decimal(20,4)")]
         public decimal? Price { get; set; }
 
+        [Column("discount", TypeName = "decimal(20,4)")]
+        public decimal? Discount { get; set; }
+
+        [Column("photo_url", TypeName = "nvarchar(max)")]
+        public string? PhotoUrl { get; set; }
+
         [Column("status")]
         public int? Status { get; set; }
 

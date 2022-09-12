@@ -8,7 +8,7 @@ namespace BusinessObject
     {
         public Role()
         {
-            Users = new HashSet<User>();
+            HasUsers = new HashSet<UserHasRole>();
         }
 
         [Key]
@@ -23,7 +23,7 @@ namespace BusinessObject
         public string? ShortName { get; set; }
 
         [InverseProperty("Role")]
-        public ICollection<User>? Users { get; set; }
+        public ICollection<UserHasRole>? HasUsers { get; set; }
 
     }
 }

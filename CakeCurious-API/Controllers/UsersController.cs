@@ -49,6 +49,7 @@ namespace CakeCurious_API.Controllers
                     {
                         UserRecord? userRecord = await FirebaseAuth.DefaultInstance.GetUserAsync(uid);
                         bool isUserRecordExisted = userRecord != null;
+                        var hasRoles = new HashSet<UserHasRole>();
                         User newUser = new User
                         {
                             Id = uid,
@@ -59,7 +60,7 @@ namespace CakeCurious_API.Controllers
                             : "Anonymous User",
                             Email = isUserRecordExisted ? userRecord!.Email : "Anonymous",
                             PhotoUrl = isUserRecordExisted ? userRecord!.PhotoUrl : "",
-                            RoleId = 4,
+                            // to do add roles based on device
                             Status = 0,
                         };
                         await userRepository.Add(newUser);
