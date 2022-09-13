@@ -23,9 +23,11 @@ namespace BusinessObject
             optionsBuilder.UseSqlServer(connectionString);
         }
 
+        public DbSet<Bookmark> Bookmarks { get; set; } = null!;
         public DbSet<Comment> Comments { get; set; } = null!;
         public DbSet<CommentImage> CommentImages { get; set; } = null!;
         public DbSet<Coupon> Coupons { get; set; } = null!;
+        public DbSet<Like> Likes { get; set; } = null!;
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
         public DbSet<Product> Products { get; set; } = null!;
@@ -35,11 +37,14 @@ namespace BusinessObject
         public DbSet<RecipeCategory> RecipeCategories { get; set; } = null!;
         public DbSet<RecipeHasCategory> RecipeHasCategories { get; set; } = null!;
         public DbSet<RecipeStep> RecipeSteps { get; set; } = null!;
+        public DbSet<RecipeStepMaterial> RecipeStepMaterials { get; set; } = null!;
         public DbSet<RecipeVisualMaterial> RecipeVisualMaterials { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<Store> Stores { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<UserDevice> UserDevices { get; set; } = null!;
+        public DbSet<UserFollow> UserFollows { get; set; } = null!;
+        public DbSet<UserHasRole> UserHasRoles { get; set; } = null!;
         public DbSet<ViolationReport> ViolationReports { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -50,6 +55,41 @@ namespace BusinessObject
                 new Role { Id = 2, Name = "Store Owner", ShortName = "Store" },
                 new Role { Id = 3, Name = "Baker", ShortName = "Baker" }
                 );
+
+            modelBuilder.Entity<UserFollow>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.Followers)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<UserFollow>()
+                .HasOne(x => x.Follower)
+                .WithMany(x => x.Followings)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Like>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.Likes)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Like>()
+                .HasOne(x => x.Recipe)
+                .WithMany(x => x.Likes)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Bookmark>()
+                .HasOne(x => x.Recipe)
+                .WithMany(x => x.Bookmarks)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Bookmark>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.Bookmarks)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<RecipeStepMaterial>()
+                .HasOne(x => x.RecipeStep)
+                .WithMany(x => x.StepMaterials)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<UserHasRole>()
                 .HasOne(x => x.Role)
@@ -95,6 +135,11 @@ namespace BusinessObject
                 .HasOne(x => x.Author)
                 .WithMany(x => x.Comments)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Comment>()
+                .HasOne(x => x.Root)
+                .WithMany(x => x.Replies)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<RecipeBakingMaterial>()
                 .HasOne(x => x.Recipe)

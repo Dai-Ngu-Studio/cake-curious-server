@@ -1,7 +1,6 @@
 ﻿using BusinessObject;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 using System.Security.Claims;
@@ -50,17 +49,22 @@ namespace CakeCurious_API.Controllers
                         UserRecord? userRecord = await FirebaseAuth.DefaultInstance.GetUserAsync(uid);
                         bool isUserRecordExisted = userRecord != null;
                         var hasRoles = new HashSet<UserHasRole>();
+                        hasRoles.Add(new UserHasRole
+                        {
+                            UserId = uid,
+                            RoleId = 3,
+                        });
                         User newUser = new User
                         {
                             Id = uid,
-                            DisplayName = isUserRecordExisted 
-                            ? userRecord!.DisplayName != null 
-                            ? userRecord!.DisplayName 
-                            : userRecord!.Email 
+                            DisplayName = isUserRecordExisted
+                            ? userRecord!.DisplayName != null
+                            ? userRecord!.DisplayName
+                            : userRecord!.Email
                             : "Anonymous User",
                             Email = isUserRecordExisted ? userRecord!.Email : "Anonymous",
                             PhotoUrl = isUserRecordExisted ? userRecord!.PhotoUrl : "",
-                            // to do add roles based on device
+                            HasRoles = hasRoles,
                             Status = 0,
                         };
                         await userRepository.Add(newUser);

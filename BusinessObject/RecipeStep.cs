@@ -6,6 +6,11 @@ namespace BusinessObject
     [Table("RecipeStep")]
     public class RecipeStep
     {
+        public RecipeStep()
+        {
+            StepMaterials = new HashSet<RecipeStepMaterial>();
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
@@ -25,5 +30,8 @@ namespace BusinessObject
 
         [Column("step_timestamp")]
         public int? StepTimestamp { get; set; }
+
+        [InverseProperty("RecipeStep")]
+        public ICollection<RecipeStepMaterial>? StepMaterials { get; set; }
     }
 }

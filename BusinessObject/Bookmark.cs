@@ -3,13 +3,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessObject
 {
-    [Table("RecipeBakingMaterial")]
-    public class RecipeBakingMaterial
+    [Table("Bookmark")]
+    public class Bookmark
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public Guid? Id { get; set; }
+
+        [Column("user_id", TypeName = "varchar(128)")]
+        public string? UserId { get; set; }
+
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
 
         [Column("recipe_id")]
         public Guid? RecipeId { get; set; }
@@ -17,10 +23,5 @@ namespace BusinessObject
         [ForeignKey("RecipeId")]
         public Recipe? Recipe { get; set; }
 
-        [Column("material_name", TypeName = "nvarchar(256)")]
-        public string? MaterialName { get; set; }
-
-        [Column("amount", TypeName = "nvarchar(64)")]
-        public string? Amount { get; set; }
     }
 }

@@ -16,6 +16,10 @@ namespace BusinessObject
             Orders = new HashSet<Order>();
             ViolationReports = new HashSet<ViolationReport>();
             ResolvedViolationReports = new HashSet<ViolationReport>();
+            Likes = new HashSet<Like>();
+            Bookmarks = new HashSet<Bookmark>();
+            Followers = new HashSet<UserFollow>();
+            Followings = new HashSet<UserFollow>();
         }
 
         [Key]
@@ -76,6 +80,18 @@ namespace BusinessObject
 
         [InverseProperty("Staff")]
         public ICollection<ViolationReport>? ResolvedViolationReports { get; set; }
+
+        [InverseProperty("User")]
+        public ICollection<Like>? Likes { get; set; }
+
+        [InverseProperty("User")]
+        public ICollection<Bookmark>? Bookmarks { get; set; }
+
+        [InverseProperty("User")]
+        public ICollection<UserFollow>? Followers { get; set; }
+
+        [InverseProperty("Follower")]
+        public ICollection<UserFollow>? Followings { get; set; }
 
     }
 }

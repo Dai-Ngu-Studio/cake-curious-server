@@ -1,11 +1,10 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace BusinessObject.Migrations
 {
-    public partial class DatabaseV1_2 : Migration
+    public partial class DatabaseV1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -78,6 +77,8 @@ namespace BusinessObject.Migrations
                     photo_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     time_needed = table.Column<decimal>(type: "decimal(9,4)", nullable: true),
                     published_date = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    likes = table.Column<int>(type: "int", nullable: true),
+                    bookmarks = table.Column<int>(type: "int", nullable: true),
                     status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -102,6 +103,7 @@ namespace BusinessObject.Migrations
                     longitude = table.Column<decimal>(type: "decimal(12,8)", nullable: true),
                     latitude = table.Column<decimal>(type: "decimal(12,8)", nullable: true),
                     photo_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    address = table.Column<string>(type: "nvarchar(512)", nullable: true),
                     rating = table.Column<decimal>(type: "decimal(8,2)", nullable: true),
                     status = table.Column<int>(type: "int", nullable: true)
                 },
@@ -128,6 +130,30 @@ namespace BusinessObject.Migrations
                     table.PrimaryKey("PK_UserDevice", x => x.token);
                     table.ForeignKey(
                         name: "FK_UserDevice_User_user_id",
+                        column: x => x.user_id,
+                        principalTable: "User",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserFollow",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    user_id = table.Column<string>(type: "varchar(128)", nullable: true),
+                    follower_id = table.Column<string>(type: "varchar(128)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFollow", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_UserFollow_User_follower_id",
+                        column: x => x.follower_id,
+                        principalTable: "User",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_UserFollow_User_user_id",
                         column: x => x.user_id,
                         principalTable: "User",
                         principalColumn: "id",
@@ -189,6 +215,31 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Bookmark",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    user_id = table.Column<string>(type: "varchar(128)", nullable: true),
+                    recipe_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bookmark", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_Bookmark_Recipe_recipe_id",
+                        column: x => x.recipe_id,
+                        principalTable: "Recipe",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Bookmark_User_user_id",
+                        column: x => x.user_id,
+                        principalTable: "User",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Comment",
                 columns: table => new
                 {
@@ -197,11 +248,18 @@ namespace BusinessObject.Migrations
                     recipe_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     content = table.Column<string>(type: "nvarchar(512)", nullable: true),
                     submitted_date = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    root_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    depth = table.Column<int>(type: "int", nullable: true),
                     status = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Comment", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_Comment_Comment_root_id",
+                        column: x => x.root_id,
+                        principalTable: "Comment",
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_Comment_Recipe_recipe_id",
                         column: x => x.recipe_id,
@@ -217,13 +275,38 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Like",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    user_id = table.Column<string>(type: "varchar(128)", nullable: true),
+                    recipe_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Like", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_Like_Recipe_recipe_id",
+                        column: x => x.recipe_id,
+                        principalTable: "Recipe",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Like_User_user_id",
+                        column: x => x.user_id,
+                        principalTable: "User",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RecipeBakingMaterial",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     recipe_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     material_name = table.Column<string>(type: "nvarchar(256)", nullable: true),
-                    amount = table.Column<string>(type: "nvarchar(256)", nullable: true)
+                    amount = table.Column<string>(type: "nvarchar(64)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -380,6 +463,26 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RecipeStepMaterial",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    step_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    material_name = table.Column<string>(type: "nvarchar(256)", nullable: true),
+                    amount = table.Column<string>(type: "nvarchar(64)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RecipeStepMaterial", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_RecipeStepMaterial_RecipeStep_step_id",
+                        column: x => x.step_id,
+                        principalTable: "RecipeStep",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Order",
                 columns: table => new
                 {
@@ -457,6 +560,16 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Bookmark_recipe_id",
+                table: "Bookmark",
+                column: "recipe_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bookmark_user_id",
+                table: "Bookmark",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Comment_author_id",
                 table: "Comment",
                 column: "author_id");
@@ -467,6 +580,11 @@ namespace BusinessObject.Migrations
                 column: "recipe_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comment_root_id",
+                table: "Comment",
+                column: "root_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CommentImage_comment_id",
                 table: "CommentImage",
                 column: "comment_id");
@@ -475,6 +593,16 @@ namespace BusinessObject.Migrations
                 name: "IX_Coupon_store_id",
                 table: "Coupon",
                 column: "store_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Like_recipe_id",
+                table: "Like",
+                column: "recipe_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Like_user_id",
+                table: "Like",
+                column: "user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Order_buyer_id",
@@ -537,6 +665,11 @@ namespace BusinessObject.Migrations
                 column: "recipe_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RecipeStepMaterial_step_id",
+                table: "RecipeStepMaterial",
+                column: "step_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RecipeVisualMaterial_recipe_id",
                 table: "RecipeVisualMaterial",
                 column: "recipe_id");
@@ -549,6 +682,16 @@ namespace BusinessObject.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_UserDevice_user_id",
                 table: "UserDevice",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserFollow_follower_id",
+                table: "UserFollow",
+                column: "follower_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserFollow_user_id",
+                table: "UserFollow",
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
@@ -575,7 +718,13 @@ namespace BusinessObject.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Bookmark");
+
+            migrationBuilder.DropTable(
                 name: "CommentImage");
+
+            migrationBuilder.DropTable(
+                name: "Like");
 
             migrationBuilder.DropTable(
                 name: "OrderDetail");
@@ -587,13 +736,16 @@ namespace BusinessObject.Migrations
                 name: "RecipeHasCategory");
 
             migrationBuilder.DropTable(
-                name: "RecipeStep");
+                name: "RecipeStepMaterial");
 
             migrationBuilder.DropTable(
                 name: "RecipeVisualMaterial");
 
             migrationBuilder.DropTable(
                 name: "UserDevice");
+
+            migrationBuilder.DropTable(
+                name: "UserFollow");
 
             migrationBuilder.DropTable(
                 name: "UserHasRole");
@@ -614,16 +766,19 @@ namespace BusinessObject.Migrations
                 name: "RecipeCategory");
 
             migrationBuilder.DropTable(
-                name: "Role");
+                name: "RecipeStep");
 
             migrationBuilder.DropTable(
-                name: "Recipe");
+                name: "Role");
 
             migrationBuilder.DropTable(
                 name: "Coupon");
 
             migrationBuilder.DropTable(
                 name: "ProductType");
+
+            migrationBuilder.DropTable(
+                name: "Recipe");
 
             migrationBuilder.DropTable(
                 name: "Store");

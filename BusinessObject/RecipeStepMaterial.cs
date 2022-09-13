@@ -3,19 +3,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessObject
 {
-    [Table("RecipeBakingMaterial")]
-    public class RecipeBakingMaterial
+    [Table("RecipeStepMaterial")]
+    public class RecipeStepMaterial
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public Guid? Id { get; set; }
 
-        [Column("recipe_id")]
-        public Guid? RecipeId { get; set; }
+        [Column("step_id")]
+        public Guid? StepId { get; set; }
 
-        [ForeignKey("RecipeId")]
-        public Recipe? Recipe { get; set; }
+        [ForeignKey("StepId")]
+        public RecipeStep? RecipeStep { get; set; }
 
         [Column("material_name", TypeName = "nvarchar(256)")]
         public string? MaterialName { get; set; }

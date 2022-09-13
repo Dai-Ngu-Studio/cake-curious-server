@@ -39,6 +39,9 @@ namespace BusinessObject
         [Column("photo_url", TypeName = "nvarchar(max)")]
         public string? PhotoUrl { get; set; }
 
+        [Column("address", TypeName = "nvarchar(512)")]
+        public string? Address { get; set; }
+
         [Column("rating", TypeName = "decimal(8,2)")]
         public decimal? Rating { get; set; }
 

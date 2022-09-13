@@ -13,6 +13,8 @@ namespace BusinessObject
             VisualMaterials = new HashSet<RecipeVisualMaterial>();
             Steps = new HashSet<RecipeStep>();
             Comments = new HashSet<Comment>();
+            Likes = new HashSet<Like>();
+            Bookmarks = new HashSet<Bookmark>();
         }
 
         [Key]
@@ -41,6 +43,12 @@ namespace BusinessObject
         [Column("published_date", TypeName = "datetime2(7)")]
         public DateTime? PublishedDate { get; set; }
 
+        [Column("likes")]
+        public int? NumberOfLikes { get; set; }
+
+        [Column("bookmarks")]
+        public int? NumberOfBookmarks { get; set; }
+
         [Column("status")]
         public int? Status { get; set; }
 
@@ -58,5 +66,11 @@ namespace BusinessObject
 
         [InverseProperty("Recipe")]
         public ICollection<Comment>? Comments { get; set; }
+
+        [InverseProperty("Recipe")]
+        public ICollection<Like>? Likes { get; set; }
+
+        [InverseProperty("Recipe")]
+        public ICollection<Bookmark>? Bookmarks { get; set; }
     }
 }

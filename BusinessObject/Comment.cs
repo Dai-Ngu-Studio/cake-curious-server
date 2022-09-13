@@ -9,6 +9,7 @@ namespace BusinessObject
         public Comment()
         {
             Images = new HashSet<CommentImage>();
+            Replies = new HashSet<Comment>();
         }
 
         [Key]
@@ -34,11 +35,23 @@ namespace BusinessObject
         [Column("submitted_date", TypeName = "datetime2(7)")]
         public DateTime? SubmittedDate { get; set; }
 
+        [Column("root_id")]
+        public Guid? RootId { get; set; }
+
+        [ForeignKey("RootId")]
+        public Comment? Root { get; set; }
+
+        [Column("depth")]
+        public int? Depth { get; set; }
+
         [Column("status")]
         public int? Status { get; set; }
 
         [InverseProperty("Comment")]
         public ICollection<CommentImage>? Images { get; set; }
+
+        [InverseProperty("Root")]
+        public ICollection<Comment>? Replies { get; set; }
 
     }
 }
