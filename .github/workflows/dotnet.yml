@@ -1,0 +1,110 @@
+name: .NET
+
+on:
+  push:
+    branches: [main]
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2.0.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_USERNAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3.1.1
+        with:
+          context: .
+          push: true
+          tags: hotiendat/cakecurious:latest
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Setup .NET
+#         uses: actions/setup-dotnet@v1
+#         with:
+#           dotnet-version: 6.0.x
+#       - name: Restore dependencies
+#         run: dotnet restore ./JARS/JARS-API
+#       - name: Build
+#         run: dotnet build ./JARS/JARS-API --no-restore
+#   test:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2.4.0
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v1
+#       - name: Login to DockerHub
+#         uses: docker/login-action@v1
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+#       - name: Build and push
+#         uses: docker/build-push-action@v2
+#         with:
+#           context: ./JARS/
+#           push: true
+#           tags: ngianguyen81/jars:test
+#           build-args: |
+#             SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}
+#       - name: SSH to Server
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.SSH_HOSTNAME }}
+#           username: ${{ secrets.SSH_USERNAME }}
+#           key: ${{ secrets.SSH_PRIVATEKEY }}
+#           port: ${{ secrets.SSH_PORT }}
+#           script: |
+#             sudo docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_TOKEN }}
+#             sudo docker stop jars-api-container-test
+#             sudo docker container rm jars-api-container-test
+#             sudo docker image rm ngianguyen81/jars:test
+#             sudo docker pull ngianguyen81/jars:test
+#             docker run --network jars_test_network --network-alias api_test -d -p 81:80 -p 8002:443 -e TZ=Asia/Jakarta -e ASPNETCORE_URLS="https://+;http://+" -e ASPNETCORE_HTTPS_PORT=8002 -e ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx -e ASPNETCORE_Kestrel__Certificates__Default__Password=${{ secrets.SSL_PASSWORD }} -e ASPNETCORE_ENVIRONMENT=Development -e SA_PASSWORD=${{secrets.SA_PASSWORD}} -e FIREBASE_SECRET=${{secrets.FIREBASE_SECRET}} -e GOOGLE_APPLICATION_CREDENTIALS="./jars-c19f8-firebase-adminsdk.json" --name jars-api-container-test ngianguyen81/jars:test
+#       - name: Test with Postman
+#         uses: matt-ball/newman-action@v1.0.4
+#         with:
+#           apiKey: PMAK-620dba0ee56bc80cdc1975e4-ed521c9e35a6b4905a049573a9415e0ed1
+#           collection: 19221303-96694d53-940f-4ae7-8d9f-4afc978498e1
+#           environment: 19221303-256e97c9-90ae-4a07-b4db-72f80bd6fc09
+#   deploy:
+#     needs: test
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2.4.0
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v1
+#       - name: Login to DockerHub
+#         uses: docker/login-action@v1
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+#       - name: Build and push
+#         uses: docker/build-push-action@v2
+#         with:
+#           context: ./JARS/
+#           push: true
+#           tags: ngianguyen81/jars:latest
+#           build-args: |
+#             SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}
+#       - name: SSH to Server
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.SSH_HOSTNAME }}
+#           username: ${{ secrets.SSH_USERNAME }}
+#           key: ${{ secrets.SSH_PRIVATEKEY }}
+#           port: ${{ secrets.SSH_PORT }}
+#           script: |
+#             sudo docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_TOKEN }}
+#             sudo docker stop jars-api-container
+#             sudo docker container rm jars-api-container
+#             sudo docker image rm ngianguyen81/jars:latest
+#             sudo docker pull ngianguyen81/jars:latest
+#             docker run --network jars_network --network-alias api -d -p 80:80 -p 8001:443 -e TZ=Asia/Jakarta -e ASPNETCORE_URLS="https://+;http://+" -e ASPNETCORE_HTTPS_PORT=8001 -e ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx -e ASPNETCORE_Kestrel__Certificates__Default__Password=${{ secrets.SSL_PASSWORD }} -e ASPNETCORE_ENVIRONMENT=Development -e SA_PASSWORD=${{secrets.SA_PASSWORD}} -e FIREBASE_SECRET=${{secrets.FIREBASE_SECRET}} -e GOOGLE_APPLICATION_CREDENTIALS="./jars-c19f8-firebase-adminsdk.json" --name jars-api-container ngianguyen81/jars:latest
