@@ -3,6 +3,7 @@ using CakeCurious_API.Utilities;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repository;
@@ -18,10 +19,9 @@ builder.Services.AddRouting(o =>
     o.LowercaseUrls = true;
 });
 
-builder.Services.AddControllers();
-
 builder.Services.AddControllers(o =>
 {
+    o.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
     o.InputFormatters.Insert(o.InputFormatters.Count, new TextPlainInputFormatter());
 }
 ).AddJsonOptions(x =>
