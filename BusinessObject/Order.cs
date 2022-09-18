@@ -16,11 +16,11 @@ namespace BusinessObject
         [Column("id")]
         public Guid? Id { get; set; }
 
-        [Column("buyer_id", TypeName = "varchar(128)")]
-        public string? BuyerId { get; set; }
+        [Column("user_id", TypeName = "varchar(128)")]
+        public string? UserId { get; set; }
 
-        [ForeignKey("BuyerId")]
-        public User? Buyer { get; set; }
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
 
         [Column("store_id")]
         public Guid? StoreId { get; set; }
@@ -28,8 +28,8 @@ namespace BusinessObject
         [ForeignKey("StoreId")]
         public Store? Store { get; set; }
 
-        [Column("subtotal", TypeName = "decimal(20,4)")]
-        public decimal? Subtotal { get; set; }
+        [Column("total", TypeName = "decimal(20,4)")]
+        public decimal? Total { get; set; }
 
         [Column("order_date", TypeName = "datetime2(7)")]
         public DateTime? OrderDate { get; set; }
@@ -45,9 +45,6 @@ namespace BusinessObject
 
         [ForeignKey("CouponId")]
         public Coupon? Coupon { get; set; }
-
-        [Column("coupon_code", TypeName = "varchar(24)")]
-        public string? CouponCode { get; set; }
 
         [Column("status")]
         public int? Status { get; set; }

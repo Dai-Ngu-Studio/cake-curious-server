@@ -8,7 +8,7 @@ namespace BusinessObject
     {
         public Comment()
         {
-            Images = new HashSet<CommentImage>();
+            Images = new HashSet<CommentMedia>();
             Replies = new HashSet<Comment>();
         }
 
@@ -17,11 +17,11 @@ namespace BusinessObject
         [Column("id")]
         public Guid? Id { get; set; }
 
-        [Column("author_id", TypeName = "varchar(128)")]
-        public string? AuthorId { get; set; }
+        [Column("user_id", TypeName = "varchar(128)")]
+        public string? UserId { get; set; }
 
-        [ForeignKey("AuthorId")]
-        public User? Author { get; set; }
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
 
         [Column("recipe_id")]
         public Guid? RecipeId { get; set; }
@@ -48,7 +48,7 @@ namespace BusinessObject
         public int? Status { get; set; }
 
         [InverseProperty("Comment")]
-        public ICollection<CommentImage>? Images { get; set; }
+        public ICollection<CommentMedia>? Images { get; set; }
 
         [InverseProperty("Root")]
         public ICollection<Comment>? Replies { get; set; }

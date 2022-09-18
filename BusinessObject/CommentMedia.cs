@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessObject
 {
-    [Table("CommentImage")]
-    public class CommentImage
+    [Table("CommentMedia")]
+    public class CommentMedia
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -17,7 +17,7 @@ namespace BusinessObject
         [ForeignKey("CommentId")]
         public Comment? Comment { get; set; }
 
-        [Column("image_url", TypeName = "nvarchar(max)")]
-        public string? ImageUrl { get; set; }
+        [Column("media_url", TypeName = "nvarchar(2048)")]
+        public string? MediaUrl { get; set; }
     }
 }

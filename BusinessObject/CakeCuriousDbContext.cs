@@ -24,21 +24,25 @@ namespace BusinessObject
         }
 
         public DbSet<Bookmark> Bookmarks { get; set; } = null!;
+        public DbSet<Color> Colors { get; set; } = null!;
         public DbSet<Comment> Comments { get; set; } = null!;
-        public DbSet<CommentImage> CommentImages { get; set; } = null!;
+        public DbSet<CommentMedia> CommentMedia { get; set; } = null!;
         public DbSet<Coupon> Coupons { get; set; } = null!;
         public DbSet<Like> Likes { get; set; } = null!;
+        public DbSet<Measurement> Measurements { get; set; } = null!;
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
         public DbSet<Product> Products { get; set; } = null!;
-        public DbSet<ProductType> ProductTypes { get; set; } = null!;
+        public DbSet<ProductCategory> ProductCategories { get; set; } = null!;
         public DbSet<Recipe> Recipes { get; set; } = null!;
-        public DbSet<RecipeBakingMaterial> RecipeBakingMaterials { get; set; } = null!;
         public DbSet<RecipeCategory> RecipeCategories { get; set; } = null!;
+        public DbSet<RecipeCategoryGroup> RecipeCategoryGroups { get; set; } = null!;
         public DbSet<RecipeHasCategory> RecipeHasCategories { get; set; } = null!;
+        public DbSet<RecipeMaterial> RecipeMaterials { get; set; } = null!;
+        public DbSet<RecipeMedia> RecipeMedia { get; set; } = null!;
         public DbSet<RecipeStep> RecipeSteps { get; set; } = null!;
         public DbSet<RecipeStepMaterial> RecipeStepMaterials { get; set; } = null!;
-        public DbSet<RecipeVisualMaterial> RecipeVisualMaterials { get; set; } = null!;
+        public DbSet<ReportCategory> ReportCategories { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<Store> Stores { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
@@ -55,162 +59,6 @@ namespace BusinessObject
                 new Role { Id = 2, Name = "Store Owner", ShortName = "Store" },
                 new Role { Id = 3, Name = "Baker", ShortName = "Baker" }
                 );
-
-            modelBuilder.Entity<UserFollow>()
-                .HasOne(x => x.User)
-                .WithMany(x => x.Followers)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<UserFollow>()
-                .HasOne(x => x.Follower)
-                .WithMany(x => x.Followings)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<Like>()
-                .HasOne(x => x.User)
-                .WithMany(x => x.Likes)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Like>()
-                .HasOne(x => x.Recipe)
-                .WithMany(x => x.Likes)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Bookmark>()
-                .HasOne(x => x.Recipe)
-                .WithMany(x => x.Bookmarks)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Bookmark>()
-                .HasOne(x => x.User)
-                .WithMany(x => x.Bookmarks)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<RecipeStepMaterial>()
-                .HasOne(x => x.RecipeStep)
-                .WithMany(x => x.StepMaterials)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<UserHasRole>()
-                .HasOne(x => x.Role)
-                .WithMany(x => x.HasUsers)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<UserHasRole>()
-                .HasOne(x => x.User)
-                .WithMany(x => x.HasRoles)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Recipe>()
-                .HasOne(x => x.Author)
-                .WithMany(x => x.Recipes)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Store>()
-                .HasOne(x => x.Owner)
-                .WithMany(x => x.Stores)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<UserDevice>()
-                .HasOne(x => x.User)
-                .WithMany(x => x.UserDevices)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<ViolationReport>()
-                .HasOne(x => x.Reporter)
-                .WithMany(x => x.ViolationReports)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<ViolationReport>()
-                .HasOne(x => x.Staff)
-                .WithMany(x => x.ResolvedViolationReports)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Comment>()
-                .HasOne(x => x.Recipe)
-                .WithMany(x => x.Comments)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Comment>()
-                .HasOne(x => x.Author)
-                .WithMany(x => x.Comments)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Comment>()
-                .HasOne(x => x.Root)
-                .WithMany(x => x.Replies)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<RecipeBakingMaterial>()
-                .HasOne(x => x.Recipe)
-                .WithMany(x => x.BakingMaterials)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<RecipeHasCategory>()
-                .HasOne(x => x.Category)
-                .WithMany(x => x.HasRecipes)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<RecipeHasCategory>()
-                .HasOne(x => x.Recipe)
-                .WithMany(x => x.HasCategories)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<RecipeStep>()
-                .HasOne(x => x.Recipe)
-                .WithMany(x => x.Steps)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<RecipeVisualMaterial>()
-                .HasOne(x => x.Recipe)
-                .WithMany(x => x.VisualMaterials)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Coupon>()
-                .HasOne(x => x.Store)
-                .WithMany(x => x.Coupons)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Order>()
-                .HasOne(x => x.Store)
-                .WithMany(x => x.Orders)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Order>()
-                .HasOne(x => x.Buyer)
-                .WithMany(x => x.Orders)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Order>()
-                .HasOne(x => x.Coupon)
-                .WithMany(x => x.Orders)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Product>()
-                .HasOne(x => x.Store)
-                .WithMany(x => x.Products)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Product>()
-                .HasOne(x => x.ProductType)
-                .WithMany(x => x.Products)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<CommentImage>()
-                .HasOne(x => x.Comment)
-                .WithMany(x => x.Images)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<OrderDetail>()
-                .HasOne(x => x.Order)
-                .WithMany(x => x.OrderDetails)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<OrderDetail>()
-                .HasOne(x => x.Product)
-                .WithMany(x => x.OrderDetails)
-                .OnDelete(DeleteBehavior.SetNull);
-
         }
     }
 }

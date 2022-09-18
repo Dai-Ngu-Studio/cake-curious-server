@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(CakeCuriousDbContext))]
-    [Migration("20220913175508_DatabaseV1")]
+    [Migration("20220918125509_DatabaseV1")]
     partial class DatabaseV1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,16 +48,23 @@ namespace BusinessObject.Migrations
                     b.ToTable("Bookmark");
                 });
 
+            modelBuilder.Entity("BusinessObject.Color", b =>
+                {
+                    b.Property<string>("HexCode")
+                        .HasColumnType("varchar(8)")
+                        .HasColumnName("hex_code");
+
+                    b.HasKey("HexCode");
+
+                    b.ToTable("Color");
+                });
+
             modelBuilder.Entity("BusinessObject.Comment", b =>
                 {
                     b.Property<Guid?>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
-
-                    b.Property<string>("AuthorId")
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("author_id");
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(512)")
@@ -83,18 +90,22 @@ namespace BusinessObject.Migrations
                         .HasColumnType("datetime2(7)")
                         .HasColumnName("submitted_date");
 
-                    b.HasKey("Id");
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(128)")
+                        .HasColumnName("user_id");
 
-                    b.HasIndex("AuthorId");
+                    b.HasKey("Id");
 
                     b.HasIndex("RecipeId");
 
                     b.HasIndex("RootId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Comment");
                 });
 
-            modelBuilder.Entity("BusinessObject.CommentImage", b =>
+            modelBuilder.Entity("BusinessObject.CommentMedia", b =>
                 {
                     b.Property<Guid?>("Id")
                         .ValueGeneratedOnAdd()
@@ -105,15 +116,15 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("comment_id");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("image_url");
+                    b.Property<string>("MediaUrl")
+                        .HasColumnType("nvarchar(2048)")
+                        .HasColumnName("media_url");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CommentId");
 
-                    b.ToTable("CommentImage");
+                    b.ToTable("CommentMedia");
                 });
 
             modelBuilder.Entity("BusinessObject.Coupon", b =>
@@ -131,6 +142,10 @@ namespace BusinessObject.Migrations
                         .HasColumnType("decimal(20,4)")
                         .HasColumnName("discount");
 
+                    b.Property<int?>("DiscountType")
+                        .HasColumnType("int")
+                        .HasColumnName("discount_type");
+
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2(7)")
                         .HasColumnName("expiry_date");
@@ -140,7 +155,7 @@ namespace BusinessObject.Migrations
                         .HasColumnName("max_uses");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(256)")
+                        .HasColumnType("nvarchar(64)")
                         .HasColumnName("name");
 
                     b.Property<int?>("Status")
@@ -150,10 +165,6 @@ namespace BusinessObject.Migrations
                     b.Property<Guid?>("StoreId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("store_id");
-
-                    b.Property<int?>("UsedCount")
-                        .HasColumnType("int")
-                        .HasColumnName("used_count");
 
                     b.HasKey("Id");
 
@@ -186,6 +197,17 @@ namespace BusinessObject.Migrations
                     b.ToTable("Like");
                 });
 
+            modelBuilder.Entity("BusinessObject.Measurement", b =>
+                {
+                    b.Property<string>("MeasurementUnit")
+                        .HasColumnType("nvarchar(24)")
+                        .HasColumnName("measurement_unit");
+
+                    b.HasKey("MeasurementUnit");
+
+                    b.ToTable("Measurement");
+                });
+
             modelBuilder.Entity("BusinessObject.Order", b =>
                 {
                     b.Property<Guid?>("Id")
@@ -193,17 +215,9 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
 
-                    b.Property<string>("BuyerId")
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("buyer_id");
-
                     b.Property<DateTime?>("CompletedDate")
                         .HasColumnType("datetime2(7)")
                         .HasColumnName("completed_date");
-
-                    b.Property<string>("CouponCode")
-                        .HasColumnType("varchar(24)")
-                        .HasColumnName("coupon_code");
 
                     b.Property<Guid?>("CouponId")
                         .HasColumnType("uniqueidentifier")
@@ -225,17 +239,21 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("store_id");
 
-                    b.Property<decimal?>("Subtotal")
+                    b.Property<decimal?>("Total")
                         .HasColumnType("decimal(20,4)")
-                        .HasColumnName("subtotal");
+                        .HasColumnName("total");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(128)")
+                        .HasColumnName("user_id");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BuyerId");
 
                     b.HasIndex("CouponId");
 
                     b.HasIndex("StoreId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Order");
                 });
@@ -246,10 +264,6 @@ namespace BusinessObject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
-
-                    b.Property<int?>("Amount")
-                        .HasColumnType("int")
-                        .HasColumnName("amount");
 
                     b.Property<Guid?>("OrderId")
                         .HasColumnType("uniqueidentifier")
@@ -266,6 +280,10 @@ namespace BusinessObject.Migrations
                     b.Property<string>("ProductName")
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("product_name");
+
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("quantity");
 
                     b.HasKey("Id");
 
@@ -296,16 +314,20 @@ namespace BusinessObject.Migrations
                         .HasColumnName("name");
 
                     b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(2048)")
                         .HasColumnName("photo_url");
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(20,4)")
                         .HasColumnName("price");
 
-                    b.Property<Guid?>("ProductTypeId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("type_id");
+                    b.Property<int?>("ProductCategoryId")
+                        .HasColumnType("int")
+                        .HasColumnName("category_id");
+
+                    b.Property<int?>("ProductType")
+                        .HasColumnType("int")
+                        .HasColumnName("product_type");
 
                     b.Property<int?>("Quantity")
                         .HasColumnType("int")
@@ -319,32 +341,28 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("store_id");
 
-                    b.Property<Guid?>("TypeId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("StoreId");
+                    b.HasIndex("ProductCategoryId");
 
-                    b.HasIndex("TypeId");
+                    b.HasIndex("StoreId");
 
                     b.ToTable("Product");
                 });
 
-            modelBuilder.Entity("BusinessObject.ProductType", b =>
+            modelBuilder.Entity("BusinessObject.ProductCategory", b =>
                 {
-                    b.Property<Guid?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<int?>("Id")
+                        .HasColumnType("int")
                         .HasColumnName("id");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(256)")
+                        .HasColumnType("nvarchar(32)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductType");
+                    b.ToTable("ProductCategory");
                 });
 
             modelBuilder.Entity("BusinessObject.Recipe", b =>
@@ -354,9 +372,9 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
 
-                    b.Property<string>("AuthorId")
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("author_id");
+                    b.Property<decimal?>("CookTime")
+                        .HasColumnType("decimal(9,4)")
+                        .HasColumnName("cook_time");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(512)")
@@ -366,77 +384,67 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("name");
 
-                    b.Property<int?>("NumberOfBookmarks")
-                        .HasColumnType("int")
-                        .HasColumnName("bookmarks");
-
-                    b.Property<int?>("NumberOfLikes")
-                        .HasColumnType("int")
-                        .HasColumnName("likes");
-
                     b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(2048)")
                         .HasColumnName("photo_url");
 
                     b.Property<DateTime?>("PublishedDate")
                         .HasColumnType("datetime2(7)")
                         .HasColumnName("published_date");
 
+                    b.Property<int?>("ServingSize")
+                        .HasColumnType("int")
+                        .HasColumnName("serving_size");
+
                     b.Property<int?>("Status")
                         .HasColumnType("int")
                         .HasColumnName("status");
 
-                    b.Property<decimal?>("TimeNeeded")
-                        .HasColumnType("decimal(9,4)")
-                        .HasColumnName("time_needed");
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(128)")
+                        .HasColumnName("user_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Recipe");
                 });
 
-            modelBuilder.Entity("BusinessObject.RecipeBakingMaterial", b =>
-                {
-                    b.Property<Guid?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Amount")
-                        .HasColumnType("nvarchar(64)")
-                        .HasColumnName("amount");
-
-                    b.Property<string>("MaterialName")
-                        .HasColumnType("nvarchar(256)")
-                        .HasColumnName("material_name");
-
-                    b.Property<Guid?>("RecipeId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("recipe_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecipeId");
-
-                    b.ToTable("RecipeBakingMaterial");
-                });
-
             modelBuilder.Entity("BusinessObject.RecipeCategory", b =>
                 {
-                    b.Property<Guid?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<int?>("Id")
+                        .HasColumnType("int")
                         .HasColumnName("id");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(128)")
+                        .HasColumnType("nvarchar(32)")
+                        .HasColumnName("name");
+
+                    b.Property<int?>("RecipeCategoryGroupId")
+                        .HasColumnType("int")
+                        .HasColumnName("group_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeCategoryGroupId");
+
+                    b.ToTable("RecipeCategory");
+                });
+
+            modelBuilder.Entity("BusinessObject.RecipeCategoryGroup", b =>
+                {
+                    b.Property<int?>("Id")
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(32)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.ToTable("RecipeCategory");
+                    b.ToTable("RecipeCategoryGroup");
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeHasCategory", b =>
@@ -446,8 +454,8 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<int?>("RecipeCategoryId")
+                        .HasColumnType("int")
                         .HasColumnName("category_id");
 
                     b.Property<Guid?>("RecipeId")
@@ -456,11 +464,71 @@ namespace BusinessObject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("RecipeCategoryId");
 
                     b.HasIndex("RecipeId");
 
                     b.ToTable("RecipeHasCategory");
+                });
+
+            modelBuilder.Entity("BusinessObject.RecipeMaterial", b =>
+                {
+                    b.Property<Guid?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("Amount")
+                        .HasColumnType("decimal(8,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("varchar(8)")
+                        .HasColumnName("color");
+
+                    b.Property<string>("MaterialName")
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("material_name");
+
+                    b.Property<string>("Measurement")
+                        .HasColumnType("nvarchar(24)")
+                        .HasColumnName("measurement");
+
+                    b.Property<Guid?>("RecipeId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("recipe_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("RecipeMaterial");
+                });
+
+            modelBuilder.Entity("BusinessObject.RecipeMedia", b =>
+                {
+                    b.Property<Guid?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("MediaType")
+                        .HasColumnType("int")
+                        .HasColumnName("media_type");
+
+                    b.Property<string>("MediaUrl")
+                        .HasColumnType("nvarchar(2048)")
+                        .HasColumnName("media_url");
+
+                    b.Property<Guid?>("RecipeId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("recipe_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("RecipeMedia");
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeStep", b =>
@@ -500,49 +568,36 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
 
-                    b.Property<string>("Amount")
-                        .HasColumnType("nvarchar(64)")
-                        .HasColumnName("amount");
+                    b.Property<Guid?>("RecipeMaterialId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("material_id");
 
-                    b.Property<string>("MaterialName")
-                        .HasColumnType("nvarchar(256)")
-                        .HasColumnName("material_name");
-
-                    b.Property<Guid?>("StepId")
+                    b.Property<Guid?>("RecipeStepId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("step_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StepId");
+                    b.HasIndex("RecipeMaterialId");
+
+                    b.HasIndex("RecipeStepId");
 
                     b.ToTable("RecipeStepMaterial");
                 });
 
-            modelBuilder.Entity("BusinessObject.RecipeVisualMaterial", b =>
+            modelBuilder.Entity("BusinessObject.ReportCategory", b =>
                 {
-                    b.Property<Guid?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<int?>("Id")
+                        .HasColumnType("int")
                         .HasColumnName("id");
 
-                    b.Property<string>("MaterialUrl")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("material_url");
-
-                    b.Property<Guid?>("RecipeId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("recipe_id");
-
-                    b.Property<int?>("VisualType")
-                        .HasColumnType("int")
-                        .HasColumnName("visual_type");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(32)")
+                        .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RecipeId");
-
-                    b.ToTable("RecipeVisualMaterial");
+                    b.ToTable("ReportCategory");
                 });
 
             modelBuilder.Entity("BusinessObject.Role", b =>
@@ -552,11 +607,11 @@ namespace BusinessObject.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("Name")
-                        .HasColumnType("varchar(256)")
+                        .HasColumnType("varchar(24)")
                         .HasColumnName("name");
 
                     b.Property<string>("ShortName")
-                        .HasColumnType("varchar(128)")
+                        .HasColumnType("varchar(16)")
                         .HasColumnName("short_name");
 
                     b.HasKey("Id");
@@ -614,28 +669,28 @@ namespace BusinessObject.Migrations
                         .HasColumnName("longitude");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(256)")
+                        .HasColumnType("nvarchar(128)")
                         .HasColumnName("name");
 
-                    b.Property<string>("OwnerId")
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("owner_id");
-
                     b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(2048)")
                         .HasColumnName("photo_url");
 
                     b.Property<decimal?>("Rating")
-                        .HasColumnType("decimal(8,2)")
+                        .HasColumnType("decimal(5,2)")
                         .HasColumnName("rating");
 
                     b.Property<int?>("Status")
                         .HasColumnType("int")
                         .HasColumnName("status");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(128)")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Store");
                 });
@@ -663,30 +718,40 @@ namespace BusinessObject.Migrations
                         .HasColumnName("date_of_birth");
 
                     b.Property<string>("DisplayName")
-                        .HasColumnType("nvarchar(256)")
+                        .HasColumnType("nvarchar(64)")
                         .HasColumnName("display_name");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("email");
 
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("full_name");
+
                     b.Property<string>("Gender")
                         .HasColumnType("nvarchar(16)")
                         .HasColumnName("gender");
 
                     b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(256)")
                         .HasColumnName("password");
 
                     b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(2048)")
                         .HasColumnName("photo_url");
 
                     b.Property<int?>("Status")
                         .HasColumnType("int")
                         .HasColumnName("status");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("store_id");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("StoreId");
 
                     b.ToTable("User");
                 });
@@ -767,9 +832,13 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(512)")
                         .HasColumnName("content");
 
-                    b.Property<int>("ItemType")
+                    b.Property<int?>("ItemType")
                         .HasColumnType("int")
                         .HasColumnName("item_type");
+
+                    b.Property<int?>("ReportCategoryId")
+                        .HasColumnType("int")
+                        .HasColumnName("category_id");
 
                     b.Property<string>("ReporterId")
                         .HasColumnType("varchar(128)")
@@ -779,7 +848,7 @@ namespace BusinessObject.Migrations
                         .HasColumnType("varchar(128)")
                         .HasColumnName("staff_id");
 
-                    b.Property<int>("Status")
+                    b.Property<int?>("Status")
                         .HasColumnType("int")
                         .HasColumnName("status");
 
@@ -788,10 +857,12 @@ namespace BusinessObject.Migrations
                         .HasColumnName("submitted_date");
 
                     b.Property<string>("Title")
-                        .HasColumnType("nvarchar(256)")
+                        .HasColumnType("nvarchar(128)")
                         .HasColumnName("title");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ReportCategoryId");
 
                     b.HasIndex("ReporterId");
 
@@ -804,13 +875,11 @@ namespace BusinessObject.Migrations
                 {
                     b.HasOne("BusinessObject.Recipe", "Recipe")
                         .WithMany("Bookmarks")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("RecipeId");
 
                     b.HasOne("BusinessObject.User", "User")
                         .WithMany("Bookmarks")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Recipe");
 
@@ -819,34 +888,30 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Comment", b =>
                 {
-                    b.HasOne("BusinessObject.User", "Author")
-                        .WithMany("Comments")
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("BusinessObject.Recipe", "Recipe")
                         .WithMany("Comments")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("RecipeId");
 
                     b.HasOne("BusinessObject.Comment", "Root")
                         .WithMany("Replies")
-                        .HasForeignKey("RootId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("RootId");
 
-                    b.Navigation("Author");
+                    b.HasOne("BusinessObject.User", "User")
+                        .WithMany("Comments")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Recipe");
 
                     b.Navigation("Root");
+
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BusinessObject.CommentImage", b =>
+            modelBuilder.Entity("BusinessObject.CommentMedia", b =>
                 {
                     b.HasOne("BusinessObject.Comment", "Comment")
                         .WithMany("Images")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("CommentId");
 
                     b.Navigation("Comment");
                 });
@@ -855,8 +920,7 @@ namespace BusinessObject.Migrations
                 {
                     b.HasOne("BusinessObject.Store", "Store")
                         .WithMany("Coupons")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("StoreId");
 
                     b.Navigation("Store");
                 });
@@ -865,13 +929,11 @@ namespace BusinessObject.Migrations
                 {
                     b.HasOne("BusinessObject.Recipe", "Recipe")
                         .WithMany("Likes")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("RecipeId");
 
                     b.HasOne("BusinessObject.User", "User")
                         .WithMany("Likes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Recipe");
 
@@ -880,39 +942,34 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Order", b =>
                 {
-                    b.HasOne("BusinessObject.User", "Buyer")
-                        .WithMany("Orders")
-                        .HasForeignKey("BuyerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("BusinessObject.Coupon", "Coupon")
                         .WithMany("Orders")
-                        .HasForeignKey("CouponId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("CouponId");
 
                     b.HasOne("BusinessObject.Store", "Store")
                         .WithMany("Orders")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("StoreId");
 
-                    b.Navigation("Buyer");
+                    b.HasOne("BusinessObject.User", "User")
+                        .WithMany("Orders")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Coupon");
 
                     b.Navigation("Store");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessObject.OrderDetail", b =>
                 {
                     b.HasOne("BusinessObject.Order", "Order")
                         .WithMany("OrderDetails")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("OrderId");
 
                     b.HasOne("BusinessObject.Product", "Product")
                         .WithMany("OrderDetails")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Order");
 
@@ -921,54 +978,66 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Product", b =>
                 {
+                    b.HasOne("BusinessObject.ProductCategory", "ProductCategory")
+                        .WithMany("Products")
+                        .HasForeignKey("ProductCategoryId");
+
                     b.HasOne("BusinessObject.Store", "Store")
                         .WithMany("Products")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("StoreId");
 
-                    b.HasOne("BusinessObject.ProductType", "ProductType")
-                        .WithMany("Products")
-                        .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ProductType");
+                    b.Navigation("ProductCategory");
 
                     b.Navigation("Store");
                 });
 
             modelBuilder.Entity("BusinessObject.Recipe", b =>
                 {
-                    b.HasOne("BusinessObject.User", "Author")
+                    b.HasOne("BusinessObject.User", "User")
                         .WithMany("Recipes")
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("UserId");
 
-                    b.Navigation("Author");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BusinessObject.RecipeBakingMaterial", b =>
+            modelBuilder.Entity("BusinessObject.RecipeCategory", b =>
                 {
-                    b.HasOne("BusinessObject.Recipe", "Recipe")
-                        .WithMany("BakingMaterials")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                    b.HasOne("BusinessObject.RecipeCategoryGroup", "RecipeCategoryGroup")
+                        .WithMany("RecipeCategories")
+                        .HasForeignKey("RecipeCategoryGroupId");
 
-                    b.Navigation("Recipe");
+                    b.Navigation("RecipeCategoryGroup");
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeHasCategory", b =>
                 {
-                    b.HasOne("BusinessObject.RecipeCategory", "Category")
+                    b.HasOne("BusinessObject.RecipeCategory", "RecipeCategory")
                         .WithMany("HasRecipes")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("RecipeCategoryId");
 
                     b.HasOne("BusinessObject.Recipe", "Recipe")
                         .WithMany("HasCategories")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("RecipeId");
 
-                    b.Navigation("Category");
+                    b.Navigation("Recipe");
+
+                    b.Navigation("RecipeCategory");
+                });
+
+            modelBuilder.Entity("BusinessObject.RecipeMaterial", b =>
+                {
+                    b.HasOne("BusinessObject.Recipe", "Recipe")
+                        .WithMany("RecipeMaterials")
+                        .HasForeignKey("RecipeId");
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("BusinessObject.RecipeMedia", b =>
+                {
+                    b.HasOne("BusinessObject.Recipe", "Recipe")
+                        .WithMany("RecipeMedia")
+                        .HasForeignKey("RecipeId");
 
                     b.Navigation("Recipe");
                 });
@@ -976,49 +1045,50 @@ namespace BusinessObject.Migrations
             modelBuilder.Entity("BusinessObject.RecipeStep", b =>
                 {
                     b.HasOne("BusinessObject.Recipe", "Recipe")
-                        .WithMany("Steps")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany("RecipeSteps")
+                        .HasForeignKey("RecipeId");
 
                     b.Navigation("Recipe");
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeStepMaterial", b =>
                 {
+                    b.HasOne("BusinessObject.RecipeMaterial", "RecipeMaterial")
+                        .WithMany("RecipeStepMaterials")
+                        .HasForeignKey("RecipeMaterialId");
+
                     b.HasOne("BusinessObject.RecipeStep", "RecipeStep")
-                        .WithMany("StepMaterials")
-                        .HasForeignKey("StepId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany("RecipeStepMaterials")
+                        .HasForeignKey("RecipeStepId");
+
+                    b.Navigation("RecipeMaterial");
 
                     b.Navigation("RecipeStep");
                 });
 
-            modelBuilder.Entity("BusinessObject.RecipeVisualMaterial", b =>
-                {
-                    b.HasOne("BusinessObject.Recipe", "Recipe")
-                        .WithMany("VisualMaterials")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Recipe");
-                });
-
             modelBuilder.Entity("BusinessObject.Store", b =>
                 {
-                    b.HasOne("BusinessObject.User", "Owner")
-                        .WithMany("Stores")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                    b.HasOne("BusinessObject.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
 
-                    b.Navigation("Owner");
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessObject.User", b =>
+                {
+                    b.HasOne("BusinessObject.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId");
+
+                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("BusinessObject.UserDevice", b =>
                 {
                     b.HasOne("BusinessObject.User", "User")
                         .WithMany("UserDevices")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -1027,13 +1097,11 @@ namespace BusinessObject.Migrations
                 {
                     b.HasOne("BusinessObject.User", "Follower")
                         .WithMany("Followings")
-                        .HasForeignKey("FollowerId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("FollowerId");
 
                     b.HasOne("BusinessObject.User", "User")
                         .WithMany("Followers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Follower");
 
@@ -1044,13 +1112,11 @@ namespace BusinessObject.Migrations
                 {
                     b.HasOne("BusinessObject.Role", "Role")
                         .WithMany("HasUsers")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("RoleId");
 
                     b.HasOne("BusinessObject.User", "User")
                         .WithMany("HasRoles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Role");
 
@@ -1059,15 +1125,19 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.ViolationReport", b =>
                 {
+                    b.HasOne("BusinessObject.ReportCategory", "ReportCategory")
+                        .WithMany("ViolationReports")
+                        .HasForeignKey("ReportCategoryId");
+
                     b.HasOne("BusinessObject.User", "Reporter")
                         .WithMany("ViolationReports")
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("ReporterId");
 
                     b.HasOne("BusinessObject.User", "Staff")
                         .WithMany("ResolvedViolationReports")
-                        .HasForeignKey("StaffId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("StaffId");
+
+                    b.Navigation("ReportCategory");
 
                     b.Navigation("Reporter");
 
@@ -1096,15 +1166,13 @@ namespace BusinessObject.Migrations
                     b.Navigation("OrderDetails");
                 });
 
-            modelBuilder.Entity("BusinessObject.ProductType", b =>
+            modelBuilder.Entity("BusinessObject.ProductCategory", b =>
                 {
                     b.Navigation("Products");
                 });
 
             modelBuilder.Entity("BusinessObject.Recipe", b =>
                 {
-                    b.Navigation("BakingMaterials");
-
                     b.Navigation("Bookmarks");
 
                     b.Navigation("Comments");
@@ -1113,9 +1181,11 @@ namespace BusinessObject.Migrations
 
                     b.Navigation("Likes");
 
-                    b.Navigation("Steps");
+                    b.Navigation("RecipeMaterials");
 
-                    b.Navigation("VisualMaterials");
+                    b.Navigation("RecipeMedia");
+
+                    b.Navigation("RecipeSteps");
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeCategory", b =>
@@ -1123,9 +1193,24 @@ namespace BusinessObject.Migrations
                     b.Navigation("HasRecipes");
                 });
 
+            modelBuilder.Entity("BusinessObject.RecipeCategoryGroup", b =>
+                {
+                    b.Navigation("RecipeCategories");
+                });
+
+            modelBuilder.Entity("BusinessObject.RecipeMaterial", b =>
+                {
+                    b.Navigation("RecipeStepMaterials");
+                });
+
             modelBuilder.Entity("BusinessObject.RecipeStep", b =>
                 {
-                    b.Navigation("StepMaterials");
+                    b.Navigation("RecipeStepMaterials");
+                });
+
+            modelBuilder.Entity("BusinessObject.ReportCategory", b =>
+                {
+                    b.Navigation("ViolationReports");
                 });
 
             modelBuilder.Entity("BusinessObject.Role", b =>
@@ -1161,8 +1246,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("Recipes");
 
                     b.Navigation("ResolvedViolationReports");
-
-                    b.Navigation("Stores");
 
                     b.Navigation("UserDevices");
 

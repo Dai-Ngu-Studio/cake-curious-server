@@ -18,13 +18,13 @@ namespace BusinessObject
         [Column("id")]
         public Guid? Id { get; set; }
 
-        [Column("owner_id", TypeName = "varchar(128)")]
-        public string? OwnerId { get; set; }
+        [Column("user_id", TypeName = "varchar(128)")]
+        public string? UserId { get; set; }
 
-        [ForeignKey("OwnerId")]
-        public User? Owner { get; set; }
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
 
-        [Column("name", TypeName = "nvarchar(256)")]
+        [Column("name", TypeName = "nvarchar(128)")]
         public string? Name { get; set; }
 
         [Column("description", TypeName = "nvarchar(512)")]
@@ -36,13 +36,13 @@ namespace BusinessObject
         [Column("latitude", TypeName = "decimal(12,8)")]
         public decimal? Latitude { get; set; }
 
-        [Column("photo_url", TypeName = "nvarchar(max)")]
+        [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
 
         [Column("address", TypeName = "nvarchar(512)")]
         public string? Address { get; set; }
 
-        [Column("rating", TypeName = "decimal(8,2)")]
+        [Column("rating", TypeName = "decimal(5,2)")]
         public decimal? Rating { get; set; }
 
         [Column("status")]

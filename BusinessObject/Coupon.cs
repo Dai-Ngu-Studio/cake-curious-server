@@ -22,7 +22,7 @@ namespace BusinessObject
         [ForeignKey("StoreId")]
         public Store? Store { get; set; }
 
-        [Column("name", TypeName = "nvarchar(256)")]
+        [Column("name", TypeName = "nvarchar(64)")]
         public string? Name { get; set; }
 
         [Column("code", TypeName = "varchar(24)")]
@@ -31,11 +31,11 @@ namespace BusinessObject
         [Column("discount", TypeName = "decimal(20,4)")]
         public decimal? Discount { get; set; }
 
+        [Column("discount_type")]
+        public int? DiscountType { get; set; }
+
         [Column("max_uses")]
         public int? MaxUses { get; set; }
-
-        [Column("used_count")]
-        public int? UsedCount { get; set; }
 
         [Column("expiry_date", TypeName = "datetime2(7)")]
         public DateTime? ExpiryDate { get; set; }

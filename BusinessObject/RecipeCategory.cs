@@ -12,14 +12,20 @@ namespace BusinessObject
         }
 
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Column("id")]
-        public Guid? Id { get; set; }
+        public int? Id { get; set; }
 
-        [Column("name", TypeName = "nvarchar(128)")]
+        [Column("name", TypeName = "nvarchar(32)")]
         public string? Name { get; set; }
 
-        [InverseProperty("Category")]
+        [Column("group_id")]
+        public int? RecipeCategoryGroupId { get; set; }
+
+        [ForeignKey("RecipeCategoryGroupId")]
+        public RecipeCategoryGroup? RecipeCategoryGroup { get; set; }
+
+        [InverseProperty("RecipeCategory")]
         public ICollection<RecipeHasCategory>? HasRecipes { get; set; }
     }
 }

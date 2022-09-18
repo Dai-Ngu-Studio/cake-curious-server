@@ -12,15 +12,15 @@ namespace BusinessObject
         public Guid? Id { get; set; }
 
         [Column("step_id")]
-        public Guid? StepId { get; set; }
+        public Guid? RecipeStepId { get; set; }
 
-        [ForeignKey("StepId")]
+        [ForeignKey("RecipeStepId")]
         public RecipeStep? RecipeStep { get; set; }
 
-        [Column("material_name", TypeName = "nvarchar(256)")]
-        public string? MaterialName { get; set; }
+        [Column("material_id")]
+        public Guid? RecipeMaterialId { get; set; }
 
-        [Column("amount", TypeName = "nvarchar(64)")]
-        public string? Amount { get; set; }
+        [ForeignKey("RecipeMaterialId")]
+        public RecipeMaterial? RecipeMaterial { get; set; }
     }
 }

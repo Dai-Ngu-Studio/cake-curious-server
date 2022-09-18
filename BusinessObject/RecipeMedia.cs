@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessObject
 {
-    [Table("RecipeVisualMaterial")]
-    public class RecipeVisualMaterial
+    [Table("RecipeMedia")]
+    public class RecipeMedia
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -17,10 +17,10 @@ namespace BusinessObject
         [ForeignKey("RecipeId")]
         public Recipe? Recipe { get; set; }
 
-        [Column("material_url", TypeName = "nvarchar(max)")]
-        public string? MaterialUrl { get; set; }
+        [Column("media_url", TypeName = "nvarchar(2048)")]
+        public string? MediaUrl { get; set; }
 
-        [Column("visual_type")]
-        public int? VisualType { get; set; }
+        [Column("media_type")]
+        public int? MediaType { get; set; }
     }
 }

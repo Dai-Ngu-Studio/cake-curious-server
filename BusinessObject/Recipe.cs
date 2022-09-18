@@ -9,9 +9,9 @@ namespace BusinessObject
         public Recipe()
         {
             HasCategories = new HashSet<RecipeHasCategory>();
-            BakingMaterials = new HashSet<RecipeBakingMaterial>();
-            VisualMaterials = new HashSet<RecipeVisualMaterial>();
-            Steps = new HashSet<RecipeStep>();
+            RecipeMaterials = new HashSet<RecipeMaterial>();
+            RecipeMedia = new HashSet<RecipeMedia>();
+            RecipeSteps = new HashSet<RecipeStep>();
             Comments = new HashSet<Comment>();
             Likes = new HashSet<Like>();
             Bookmarks = new HashSet<Bookmark>();
@@ -22,11 +22,11 @@ namespace BusinessObject
         [Column("id")]
         public Guid? Id { get; set; }
 
-        [Column("author_id", TypeName = "varchar(128)")]
-        public string? AuthorId { get; set; }
+        [Column("user_id", TypeName = "varchar(128)")]
+        public string? UserId { get; set; }
 
-        [ForeignKey("AuthorId")]
-        public User? Author { get; set; }
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
 
         [Column("name", TypeName = "nvarchar(256)")]
         public string? Name { get; set; }
@@ -34,20 +34,17 @@ namespace BusinessObject
         [Column("description", TypeName = "nvarchar(512)")]
         public string? Description { get; set; }
 
-        [Column("photo_url", TypeName = "nvarchar(max)")]
+        [Column("serving_size")]
+        public int? ServingSize { get; set; }
+
+        [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
 
-        [Column("time_needed", TypeName = "decimal(9,4)")]
-        public decimal? TimeNeeded { get; set; }
+        [Column("cook_time", TypeName = "decimal(9,4)")]
+        public decimal? CookTime { get; set; }
 
         [Column("published_date", TypeName = "datetime2(7)")]
         public DateTime? PublishedDate { get; set; }
-
-        [Column("likes")]
-        public int? NumberOfLikes { get; set; }
-
-        [Column("bookmarks")]
-        public int? NumberOfBookmarks { get; set; }
 
         [Column("status")]
         public int? Status { get; set; }
@@ -56,13 +53,13 @@ namespace BusinessObject
         public ICollection<RecipeHasCategory>? HasCategories { get; set; }
 
         [InverseProperty("Recipe")]
-        public ICollection<RecipeBakingMaterial>? BakingMaterials { get; set; }
+        public ICollection<RecipeMaterial>? RecipeMaterials { get; set; }
 
         [InverseProperty("Recipe")]
-        public ICollection<RecipeVisualMaterial>? VisualMaterials { get; set; }
+        public ICollection<RecipeMedia>? RecipeMedia { get; set; }
 
         [InverseProperty("Recipe")]
-        public ICollection<RecipeStep>? Steps { get; set; }
+        public ICollection<RecipeStep>? RecipeSteps { get; set; }
 
         [InverseProperty("Recipe")]
         public ICollection<Comment>? Comments { get; set; }

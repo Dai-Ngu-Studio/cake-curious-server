@@ -26,11 +26,10 @@ namespace BusinessObject
         [Column("product_name", TypeName = "nvarchar(256)")]
         public string? ProductName { get; set; }
 
-        [Column("amount")]
-        public int? Amount { get; set; }
+        [Column("quantity")]
+        public int? Quantity { get; set; }
 
         [Column("price", TypeName = "decimal(20,4)")]
         public decimal? Price { get; set; }
-
     }
 }

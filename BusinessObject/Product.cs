@@ -22,11 +22,14 @@ namespace BusinessObject
         [ForeignKey("StoreId")]
         public Store? Store { get; set; }
 
-        [Column("type_id")]
-        public Guid? ProductTypeId { get; set; }
+        [Column("product_type")]
+        public int? ProductType { get; set; }
 
-        [ForeignKey("TypeId")]
-        public ProductType? ProductType { get; set; }
+        [Column("category_id")]
+        public int? ProductCategoryId { get; set; }
+
+        [ForeignKey("ProductCategoryId")]
+        public ProductCategory? ProductCategory { get; set; }
 
         [Column("name", TypeName = "nvarchar(256)")]
         public string? Name { get; set; }
@@ -43,7 +46,7 @@ namespace BusinessObject
         [Column("discount", TypeName = "decimal(20,4)")]
         public decimal? Discount { get; set; }
 
-        [Column("photo_url", TypeName = "nvarchar(max)")]
+        [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
 
         [Column("status")]

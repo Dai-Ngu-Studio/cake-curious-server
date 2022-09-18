@@ -18,10 +18,10 @@ namespace BusinessObject
         public Recipe? Recipe { get; set; }
 
         [Column("category_id")]
-        public Guid? CategoryId { get; set; }
+        public int? RecipeCategoryId { get; set; }
 
-        [ForeignKey("CategoryId")]
-        public RecipeCategory? Category { get; set; }
+        [ForeignKey("RecipeCategoryId")]
+        public RecipeCategory? RecipeCategory { get; set; }
 
     }
 }

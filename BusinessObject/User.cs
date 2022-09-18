@@ -12,7 +12,6 @@ namespace BusinessObject
             UserDevices = new HashSet<UserDevice>();
             Recipes = new HashSet<Recipe>();
             Comments = new HashSet<Comment>();
-            Stores = new HashSet<Store>();
             Orders = new HashSet<Order>();
             ViolationReports = new HashSet<ViolationReport>();
             ResolvedViolationReports = new HashSet<ViolationReport>();
@@ -30,14 +29,17 @@ namespace BusinessObject
         [Column("email", TypeName = "nvarchar(256)")]
         public string? Email { get; set; }
 
-        [Column("display_name", TypeName = "nvarchar(256)")]
-        public string? DisplayName { get; set; }
-
-        [Column("password", TypeName = "nvarchar(max)")]
+        [Column("password", TypeName = "nvarchar(256)")]
         public string? Password { get; set; }
 
-        [Column("photo_url", TypeName = "nvarchar(max)")]
+        [Column("display_name", TypeName = "nvarchar(64)")]
+        public string? DisplayName { get; set; }
+
+        [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
+
+        [Column("full_name", TypeName = "nvarchar(256)")]
+        public string? FullName { get; set; }
 
         [Column("gender", TypeName = "nvarchar(16)")]
         public string? Gender { get; set; }
@@ -54,6 +56,12 @@ namespace BusinessObject
         [Column("citizenship_date", TypeName = "datetime2(7)")]
         public DateTime? CitizenshipDate { get; set; }
 
+        [Column("store_id")]
+        public Guid? StoreId { get; set; }
+
+        [ForeignKey("StoreId")]
+        public Store? Store { get; set; }
+
         [Column("status")]
         public int? Status { get; set; }
 
@@ -63,16 +71,13 @@ namespace BusinessObject
         [InverseProperty("User")]
         public ICollection<UserDevice>? UserDevices { get; set; }
 
-        [InverseProperty("Author")]
+        [InverseProperty("User")]
         public ICollection<Recipe>? Recipes { get; set; }
 
-        [InverseProperty("Author")]
+        [InverseProperty("User")]
         public ICollection<Comment>? Comments { get; set; }
 
-        [InverseProperty("Owner")]
-        public ICollection<Store>? Stores { get; set; }
-
-        [InverseProperty("Buyer")]
+        [InverseProperty("User")]
         public ICollection<Order>? Orders { get; set; }
 
         [InverseProperty("Reporter")]

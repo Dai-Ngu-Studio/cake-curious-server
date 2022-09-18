@@ -3,23 +3,23 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessObject
 {
-    [Table("ProductType")]
-    public class ProductType
+    [Table("ProductCategory")]
+    public class ProductCategory
     {
-        public ProductType()
+        public ProductCategory()
         {
             Products = new HashSet<Product>();
         }
 
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Column("id")]
-        public Guid? Id { get; set; }
+        public int? Id { get; set; }
 
-        [Column("name", TypeName = "nvarchar(256)")]
+        [Column("name", TypeName = "nvarchar(32)")]
         public string? Name { get; set; }
 
-        [InverseProperty("ProductType")]
+        [InverseProperty("ProductCategory")]
         public ICollection<Product>? Products { get; set; }
     }
 }

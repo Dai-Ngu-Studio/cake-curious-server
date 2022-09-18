@@ -16,10 +16,10 @@ namespace BusinessObject
         [Column("id")]
         public int? Id { get; set; }
 
-        [Column("name", TypeName = "varchar(256)")]
+        [Column("name", TypeName = "varchar(24)")]
         public string? Name { get; set; }
 
-        [Column("short_name", TypeName = "varchar(128)")]
+        [Column("short_name", TypeName = "varchar(16)")]
         public string? ShortName { get; set; }
 
         [InverseProperty("Role")]

@@ -1,5 +1,4 @@
 using BusinessObject;
-using CakeCurious_API.GraphQL;
 using CakeCurious_API.Utilities;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
@@ -13,6 +12,11 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddRouting(o =>
+{
+    o.LowercaseUrls = true;
+});
 
 builder.Services.AddControllers();
 
@@ -56,18 +60,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddGraphQLServer()
-    .AddAuthorization()
-    .AddQueryType<Query>()
-    .SetPagingOptions(new HotChocolate.Types.Pagination.PagingOptions
-    {
-        IncludeTotalCount = true
-    })
-    .AddProjections()
-    .AddFiltering()
-    .AddSorting()
-    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true);
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -97,12 +89,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapGraphQL("/graphql");
-
-app.UseGraphQLVoyager("/graphql/voyager", new GraphQL.Server.Ui.Voyager.VoyagerOptions()
-{
-    GraphQLEndPoint = "/graphql",
-});
 
 app.Run();

@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessObject
 {
-    [Table("RecipeStep")]
-    public class RecipeStep
+    [Table("RecipeMaterial")]
+    public class RecipeMaterial
     {
-        public RecipeStep()
+        public RecipeMaterial()
         {
             RecipeStepMaterials = new HashSet<RecipeStepMaterial>();
         }
@@ -22,16 +22,19 @@ namespace BusinessObject
         [ForeignKey("RecipeId")]
         public Recipe? Recipe { get; set; }
 
-        [Column("step_number")]
-        public int? StepNumber { get; set; }
+        [Column("material_name", TypeName = "nvarchar(64)")]
+        public string? MaterialName { get; set; }
 
-        [Column("content", TypeName = "nvarchar(512)")]
-        public string? Content { get; set; }
+        [Column("amount", TypeName = "decimal(8,2)")]
+        public decimal? Amount { get; set; }
 
-        [Column("step_timestamp")]
-        public int? StepTimestamp { get; set; }
+        [Column("measurement", TypeName = "nvarchar(24)")]
+        public string? Measurement { get; set; }
 
-        [InverseProperty("RecipeStep")]
+        [Column("color", TypeName = "varchar(8)")]
+        public string? Color { get; set; }
+
+        [InverseProperty("RecipeMaterial")]
         public ICollection<RecipeStepMaterial>? RecipeStepMaterials { get; set; }
     }
 }
