@@ -30,12 +30,6 @@ namespace BusinessObject
         [Column("description", TypeName = "nvarchar(512)")]
         public string? Description { get; set; }
 
-        [Column("longitude", TypeName = "decimal(12,8)")]
-        public decimal? Longitude { get; set; }
-
-        [Column("latitude", TypeName = "decimal(12,8)")]
-        public decimal? Latitude { get; set; }
-
         [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
 
