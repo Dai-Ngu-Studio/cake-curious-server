@@ -21,6 +21,7 @@ namespace BusinessObject
                 .Build();
             var connectionString = configuration.GetConnectionString("CakeCuriousDb");
             optionsBuilder.UseSqlServer(connectionString);
+            //optionsBuilder.LogTo(Console.WriteLine);
         }
 
         public DbSet<Bookmark> Bookmarks { get; set; } = null!;
