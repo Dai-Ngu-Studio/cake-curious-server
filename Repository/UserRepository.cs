@@ -6,10 +6,10 @@ namespace Repository
 {
     public class UserRepository : IUserRepository
     {
-        public IQueryable<User> GetList()
+        public ICollection<User> GetList()
         {
             var db = new CakeCuriousDbContext();
-            return db.Users;
+            return db.Users.ToList();
         }
 
         public async Task<User?> Get(string uid)

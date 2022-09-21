@@ -19,7 +19,7 @@ namespace Repository
             return await db.UserDevices.FirstOrDefaultAsync(x => x.Token == token);
         }
 
-        public IQueryable<UserDevice> GetList()
+        public ICollection<UserDevice> GetList()
         {
             throw new NotImplementedException();
         }
