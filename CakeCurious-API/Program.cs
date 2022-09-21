@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Repository;
-using Repository.Interfaces;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,8 +33,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
 
 builder.Services.AddDbContext<CakeCuriousDbContext>();
 
