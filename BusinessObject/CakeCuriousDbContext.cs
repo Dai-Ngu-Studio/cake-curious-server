@@ -53,11 +53,25 @@ namespace BusinessObject
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Seed roles
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 0, Name = "Administrator", ShortName = "Admin" },
                 new Role { Id = 1, Name = "Staff", ShortName = "Staff" },
                 new Role { Id = 2, Name = "Store Owner", ShortName = "Store" },
                 new Role { Id = 3, Name = "Baker", ShortName = "Baker" }
+                );
+
+            // Seed administrator account
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Id = "y0Bqpw0nQSaq4rJnZzntgmkQ6ar1",
+                    Email = "admin@cakecurious.net",
+                    DisplayName = "Administrator",
+                    Status = 0,
+                });
+            modelBuilder.Entity<UserHasRole>().HasData(
+                new UserHasRole { Id = Guid.NewGuid(), RoleId = 0, UserId = "y0Bqpw0nQSaq4rJnZzntgmkQ6ar1" }
                 );
         }
     }

@@ -29,9 +29,6 @@ namespace BusinessObject
         [Column("email", TypeName = "nvarchar(256)")]
         public string? Email { get; set; }
 
-        [Column("password", TypeName = "nvarchar(256)")]
-        public string? Password { get; set; }
-
         [Column("display_name", TypeName = "nvarchar(64)")]
         public string? DisplayName { get; set; }
 
