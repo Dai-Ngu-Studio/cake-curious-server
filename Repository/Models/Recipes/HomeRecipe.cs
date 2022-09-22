@@ -2,7 +2,7 @@
 
 namespace Repository.Models.Recipes
 {
-    public class FollowRecipe
+    public class HomeRecipe
     {
         public Guid? Id { get; set; }
         public SimpleUser? User { get; set; }

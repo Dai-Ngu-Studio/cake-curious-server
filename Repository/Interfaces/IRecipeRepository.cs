@@ -5,7 +5,8 @@ namespace Repository.Interfaces
 {
     public interface IRecipeRepository
     {
-        public ICollection<FollowRecipe> GetLatestRecipesForFollower(string uid, int skip, int take);
+        public ICollection<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take);
+        public HomeRecipes GetHomeRecipes();
         public Task Add(Recipe obj);
     }
 }

@@ -1,5 +1,4 @@
-﻿using BusinessObject;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
@@ -20,7 +19,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("following")]
         [Authorize]
-        public ActionResult<ICollection<FollowRecipe>> GetRecipesFromFollowing(int skip = 0, int take = 5)
+        public ActionResult<ICollection<HomeRecipe>> GetRecipesFromFollowing(int skip = 0, int take = 5)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -29,6 +28,13 @@ namespace CakeCurious_API.Controllers
                 return Ok(recipeRepository.GetLatestRecipesForFollower(uid, skip, take));
             }
             return Unauthorized();
+        }
+
+        [HttpGet("home")]
+        [Authorize]
+        public ActionResult<ICollection<ICollection<HomeRecipe>>> GetHomeRecipes()
+        {
+            return Ok(recipeRepository.GetHomeRecipes());
         }
     }
 }

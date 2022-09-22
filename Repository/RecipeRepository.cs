@@ -17,7 +17,7 @@ namespace Repository
 
         // Recipe was published within 2 days
         // Recipe has an author which is followed by the follower with UID
-        public ICollection<FollowRecipe> GetLatestRecipesForFollower(string uid, int skip, int take)
+        public ICollection<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take)
         {
             var db = new CakeCuriousDbContext();
             return db.Recipes
@@ -27,8 +27,7 @@ namespace Repository
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
                 .Skip(skip)
                 .Take(take)
-                .AsSplitQuery()
-                .Select(x => new FollowRecipe
+                .Select(x => new HomeRecipe
                 {
                     Id = x.Id,
                     User = new SimpleUser
@@ -44,6 +43,38 @@ namespace Repository
                     Likes = x.Likes!.Count,
                 })
                 .ToList();
+        }
+
+        // 10 recipes for each collection
+        // Collections:
+        // Trending - Most liked within 1 day
+        public HomeRecipes GetHomeRecipes()
+        {
+            var db = new CakeCuriousDbContext();
+            var home = new HomeRecipes();
+            var trending = db.Recipes
+                .OrderByDescending(x => x.Likes!.Count)
+                .Where(x => x.PublishedDate!.Value <= DateTime.Now 
+                && x.PublishedDate!.Value >= DateTime.Now.AddDays(-1))
+                .Take(10)
+                .Select(x => new HomeRecipe
+                {
+                    Id = x.Id,
+                    User = new SimpleUser
+                    {
+                        Id = x.UserId,
+                        DisplayName = x.User!.DisplayName,
+                        PhotoUrl = x.User.PhotoUrl,
+                    },
+                    Name = x.Name,
+                    ServingSize = x.ServingSize,
+                    PhotoUrl = x.PhotoUrl,
+                    CookTime = x.CookTime,
+                    Likes = x.Likes!.Count,
+                })
+                .ToList();
+            home.Trending = trending;
+            return home;
         }
     }
 }
