@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
@@ -27,21 +28,7 @@ namespace Repository
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
                 .Skip(skip)
                 .Take(take)
-                .Select(x => new HomeRecipe
-                {
-                    Id = x.Id,
-                    User = new SimpleUser
-                    {
-                        Id = x.UserId,
-                        DisplayName = x.User!.DisplayName,
-                        PhotoUrl = x.User.PhotoUrl,
-                    },
-                    Name = x.Name,
-                    ServingSize = x.ServingSize,
-                    PhotoUrl = x.PhotoUrl,
-                    CookTime = x.CookTime,
-                    Likes = x.Likes!.Count,
-                })
+                .ProjectToType<HomeRecipe>()
                 .ToList();
         }
 
@@ -57,21 +44,7 @@ namespace Repository
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now 
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-1))
                 .Take(10)
-                .Select(x => new HomeRecipe
-                {
-                    Id = x.Id,
-                    User = new SimpleUser
-                    {
-                        Id = x.UserId,
-                        DisplayName = x.User!.DisplayName,
-                        PhotoUrl = x.User.PhotoUrl,
-                    },
-                    Name = x.Name,
-                    ServingSize = x.ServingSize,
-                    PhotoUrl = x.PhotoUrl,
-                    CookTime = x.CookTime,
-                    Likes = x.Likes!.Count,
-                })
+                .ProjectToType<HomeRecipe>()
                 .ToList();
             home.Trending = trending;
             return home;

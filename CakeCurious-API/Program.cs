@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Repository.Configuration;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
 
 ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
+
+builder.Services.RegisterMapsterConfiguration();
 
 builder.Services.AddDbContext<CakeCuriousDbContext>();
 
