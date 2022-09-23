@@ -71,8 +71,8 @@ namespace CakeCurious_API.Controllers
                         await userRepository.Add(newUser);
                         // Check if device needed to be added
                         await CheckAndAddDevice(FcmToken, uid);
-                        var detachedUser = newUser.Adapt<DetachedUser>();
-                        return Ok(detachedUser);
+                        user = await userRepository.GetDetached(uid);
+                        return Ok(user);
                     }
                     catch (Exception e)
                     {
