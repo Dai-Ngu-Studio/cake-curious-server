@@ -33,13 +33,12 @@ namespace CakeCurious_API.Controllers
             if (!string.IsNullOrWhiteSpace(uid))
             {
                 // Check if user existed in database
-                User? user = await userRepository.Get(uid);
+                DetachedUser? user = await userRepository.GetDetached(uid);
                 if (user != null)
                 {
                     // User already exists in database, check if device needed to be added
                     await CheckAndAddDevice(FcmToken, uid);
-                    var detachedUser = user.Adapt<DetachedUser>();
-                    return Ok(detachedUser);
+                    return Ok(user);
                 }
                 else
                 {

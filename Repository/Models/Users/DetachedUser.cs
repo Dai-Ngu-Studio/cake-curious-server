@@ -1,4 +1,6 @@
-﻿namespace Repository.Models.Users
+﻿using BusinessObject;
+
+namespace Repository.Models.Users
 {
     public class DetachedUser
     {
@@ -14,5 +16,6 @@
         public DateTime? CitizenshipDate { get; set; }
         public Guid? StoreId { get; set; }
         public int? Status { get; set; }
+        public ICollection<UserHasRole>? HasRoles { get; set; }
     }
 }
