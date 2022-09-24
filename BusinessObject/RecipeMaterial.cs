@@ -22,6 +22,9 @@ namespace BusinessObject
         [ForeignKey("RecipeId")]
         public Recipe? Recipe { get; set; }
 
+        [Column("material_type")]
+        public int? MaterialType { get; set; }
+
         [Column("material_name", TypeName = "nvarchar(64)")]
         public string? MaterialName { get; set; }
 
