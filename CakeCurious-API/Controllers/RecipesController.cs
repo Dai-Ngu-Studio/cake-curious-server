@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
+using Repository.Models.Comments;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 using System.Security.Claims;
@@ -12,10 +13,12 @@ namespace CakeCurious_API.Controllers
     public class RecipesController : ControllerBase
     {
         private readonly IRecipeRepository recipeRepository;
+        private readonly ICommentRepository commentRepository;
 
-        public RecipesController(IRecipeRepository _recipeRepository)
+        public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository)
         {
             recipeRepository = _recipeRepository;
+            commentRepository = _commentRepository;
         }
 
         [HttpGet("following")]
@@ -68,9 +71,25 @@ namespace CakeCurious_API.Controllers
                 var recipe = recipeRepository.GetRecipeStepDetails(guid, step);
                 if (recipe != null)
                 {
-                    return recipe;
+                    return Ok(recipe);
                 }
                 return NotFound();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{id}/comments")]
+        [Authorize]
+        public ActionResult<ICollection<RecipeComment>> GetCommentsOfRecipe(string id)
+        {
+            try
+            {
+                var guid = Guid.Parse(id);
+                var comments = commentRepository.GetCommentsForRecipe(guid);
+                return Ok(comments);
             }
             catch (Exception)
             {

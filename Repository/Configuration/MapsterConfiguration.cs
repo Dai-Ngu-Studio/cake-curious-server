@@ -12,6 +12,7 @@ namespace Repository.Configuration
             RecipeMapConfiguration.RegisterRecipeMapping();
             RecipeStepMapConfiguration.RegisterRecipeStepMapping();
             OrderMapConfiguration.RegisterOrderMapping();
+            CommentMapConfiguration.RegisterCommentMapping();
             TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
         }
     }
