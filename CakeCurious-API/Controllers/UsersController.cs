@@ -1,10 +1,9 @@
 ﻿using BusinessObject;
-using CakeCurious_API.Constants.Roles;
-using CakeCurious_API.Constants.Users;
 using FirebaseAdmin.Auth;
-using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Constants.Roles;
+using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Users;
 using System.Security.Claims;
@@ -26,7 +25,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpPost("login")]
         [Authorize]
-        public async Task<ActionResult> Login([FromHeader] string? FcmToken = "")
+        public async Task<ActionResult<DetachedUser>> Login([FromHeader] string? FcmToken = "")
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -38,6 +37,7 @@ namespace CakeCurious_API.Controllers
                 {
                     // User already exists in database, check if device needed to be added
                     await CheckAndAddDevice(FcmToken, uid);
+                    // Return user with no collection attached (except roles)
                     return Ok(user);
                 }
                 else
@@ -71,6 +71,7 @@ namespace CakeCurious_API.Controllers
                         await userRepository.Add(newUser);
                         // Check if device needed to be added
                         await CheckAndAddDevice(FcmToken, uid);
+                        // Return user with no collection attached (except roles)
                         user = await userRepository.GetDetached(uid);
                         return Ok(user);
                     }

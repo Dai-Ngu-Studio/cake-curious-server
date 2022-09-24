@@ -1,9 +1,8 @@
 ﻿using BusinessObject;
 using Mapster;
-using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
-using Repository.Models.Users;
+using Repository.Models.RecipeSteps;
 
 namespace Repository
 {
@@ -14,6 +13,24 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             db.Recipes.Add(obj);
             await db.SaveChangesAsync();
+        }
+
+        public DetailRecipeStep? GetRecipeStepDetails(Guid recipeId, int stepNumber)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.RecipeSteps
+                .Where(x => x.RecipeId == recipeId && x.StepNumber == stepNumber)
+                .ProjectToType<DetailRecipeStep>()
+                .FirstOrDefault();
+        }
+
+        public DetailRecipe? GetRecipeDetails(Guid recipeId)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Recipes
+                .Where(x => x.Id == recipeId)
+                .ProjectToType<DetailRecipe>()
+                .FirstOrDefault();
         }
 
         // Recipe was published within 2 days
@@ -41,7 +58,7 @@ namespace Repository
             var home = new HomeRecipes();
             var trending = db.Recipes
                 .OrderByDescending(x => x.Likes!.Count)
-                .Where(x => x.PublishedDate!.Value <= DateTime.Now 
+                .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-1))
                 .Take(10)
                 .ProjectToType<HomeRecipe>()

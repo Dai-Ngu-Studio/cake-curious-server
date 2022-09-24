@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
+using Repository.Models.RecipeSteps;
 using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
@@ -32,9 +33,49 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("home")]
         [Authorize]
-        public ActionResult<ICollection<ICollection<HomeRecipe>>> GetHomeRecipes()
+        public ActionResult<HomeRecipes> GetHomeRecipes()
         {
             return Ok(recipeRepository.GetHomeRecipes());
+        }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        public ActionResult<DetailRecipe> GetRecipeDetails(string id)
+        {
+            try
+            {
+                var guid = Guid.Parse(id);
+                var recipe = recipeRepository.GetRecipeDetails(guid);
+                if (recipe != null)
+                {
+                    return recipe;
+                }
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{id}/{step}")]
+        [Authorize]
+        public ActionResult<DetailRecipeStep> GetRecipeStepDetails(string id, int step)
+        {
+            try
+            {
+                var guid = Guid.Parse(id);
+                var recipe = recipeRepository.GetRecipeStepDetails(guid, step);
+                if (recipe != null)
+                {
+                    return recipe;
+                }
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
     }
 }

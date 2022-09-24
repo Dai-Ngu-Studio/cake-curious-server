@@ -1,7 +1,6 @@
-﻿using BusinessObject;
-using Mapster;
+﻿using Mapster;
 using Microsoft.Extensions.DependencyInjection;
-using Repository.Models.Recipes;
+using Repository.Configuration.Mappings;
 using System.Reflection;
 
 namespace Repository.Configuration
@@ -10,9 +9,8 @@ namespace Repository.Configuration
     {
         public static void RegisterMapsterConfiguration(this IServiceCollection services)
         {
-            TypeAdapterConfig<Recipe, HomeRecipe>
-                .NewConfig()
-                .Map(dest => dest.Likes, src => src.Likes!.Count);
+            RecipeMapConfiguration.RegisterRecipeMapping();
+            RecipeStepMapConfiguration.RegisterRecipeStepMapping();
 
             TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
         }

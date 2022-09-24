@@ -1,4 +1,4 @@
-﻿namespace CakeCurious_API.Constants.Users
+﻿namespace Repository.Constants.Users
 {
     public enum UserStatusEnum
     {
