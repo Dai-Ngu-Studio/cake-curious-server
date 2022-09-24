@@ -11,6 +11,7 @@ namespace Repository.Configuration
         {
             RecipeMapConfiguration.RegisterRecipeMapping();
             RecipeStepMapConfiguration.RegisterRecipeStepMapping();
+            CommentMapConfiguration.RegisterCommentMapping();
 
             TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
         }
