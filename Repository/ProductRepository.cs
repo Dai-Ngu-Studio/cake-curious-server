@@ -9,7 +9,7 @@ using Repository.Utilites;
 namespace Repository
 {
     public class ProductRepository : IProductRepository
-    {   
+    {
         public async Task Add(Product obj)
         {
             var db = new CakeCuriousDbContext();
@@ -18,89 +18,82 @@ namespace Repository
 
         }
 
-     
-        public async Task<IEnumerable<Product>> FilterByDecsPrice()
+        public IEnumerable<Product> FilterByDecsPrice(IEnumerable<Product> prods)
         {
-            var db = new CakeCuriousDbContext();
-
-            return  db.Products.OrderBy(p => p.Price).ToList();
+            return prods.OrderBy(p => p.Price).ToList();
         }
-        public async Task<IEnumerable<Product>> FilterByAscPrice()
+        public IEnumerable<Product> FilterByAscPrice(IEnumerable<Product> prods)
         {
-            var db = new CakeCuriousDbContext();
-
-            return  db.Products.OrderByDescending(p => p.Price).ToList();
+            
+            return prods.OrderByDescending(p => p.Price).ToList();
         }
-        public async Task<IEnumerable<Product>> FilterByAscName()
+        public IEnumerable<Product> FilterByAscName(IEnumerable<Product> prods)
         {
-            var db = new CakeCuriousDbContext();
-
-            return  db.Products.OrderBy(p => p.Name).ToList();
+          
+            return prods.OrderBy(p => p.Name).ToList();
         }
-        public async Task<IEnumerable<Product>> FilterByDescName()
+        public IEnumerable<Product> FilterByDescName(IEnumerable<Product> prods)
         {
-            var db = new CakeCuriousDbContext();
-
-            return  db.Products.OrderByDescending(p => p.Name).ToList();
+            return prods.OrderByDescending(p => p.Name).ToList();
         }
-        public async Task<IEnumerable<Product>> FilterByStatusOutOfStock()
-        {
-            var db = new CakeCuriousDbContext();
-            IEnumerable<Product> prod = await db.Products.Where(p => p.Status == 2).ToListAsync();
-
-            return prod;
+        public  IEnumerable<Product> FilterByStatusOutOfStock(IEnumerable<Product> prods)
+        {   
+            return prods.Where(p => p.Status == 2).ToList();
         }
-        public async Task<IEnumerable<Product>> FilterByStatusInStock()
+        public  IEnumerable<Product> FilterByStatusInStock(IEnumerable<Product> prods)
         {
-            var db = new CakeCuriousDbContext();
-
-            return  db.Products.Where(p => p.Status == 1).ToList();
+            return prods.Where(p => p.Status == 1).ToList();
         }
-        public async Task<IEnumerable<Product>> FilterProduct(string keyWord)
+        public  IEnumerable<Product> SearchProduct(string keyWord)
         {
-            IEnumerable<Product> prod = null;
-
+            IEnumerable<Product> prods;
+            var db = new CakeCuriousDbContext();
+            prods =  db.Products.Where(p => p.Name.Contains(keyWord)).ToList();
+            return prods;
+        }
+        public IEnumerable<Product> FindProduct(string s,string fillter_product)
+        {   
+            IEnumerable<Product> result;
+            IEnumerable<Product> prod =  SearchProduct(s);
             try
             {
-                if (keyWord == null) throw new Exception("Keyword for filter is null");
-                else if(keyWord == "ByAscendingPrice")
+                if (fillter_product == null) return prod;
+                else if (fillter_product == "ByAscendingPrice")
                 {
-                    prod = await FilterByAscPrice();
-                    return  prod;
+                    result =  FilterByAscPrice(prod);
+                    return result;
                 }
-                else if (keyWord == "ByDescendingPrice")
+                else if (fillter_product == "ByDescendingPrice")
                 {
-                    prod =  await FilterByDecsPrice();
-                    return prod;
+                    result =  FilterByDecsPrice(prod);
+                    return result;
                 }
-                else if (keyWord == "ByDescendingName")
+                else if (fillter_product == "ByDescendingName")
                 {
-                    prod = await FilterByDescName();
-                    return prod;
+                    result =  FilterByDescName(prod);
+                    return result;
                 }
-                else if (keyWord == "ByAscendingName")
+                else if (fillter_product == "ByAscendingName")
                 {
-                    prod = await FilterByAscName();
-                    return prod;
+                    result =  FilterByAscName(prod);
+                    return result;
                 }
-                else if (keyWord == "ByOutOfStockStatus")
+                else if (fillter_product == "ByOutOfStockStatus")
                 {
-                    prod = await FilterByStatusOutOfStock();
-                    return prod;
+                    result =  FilterByStatusOutOfStock(prod);
+                    return result;
                 }
-                else if (keyWord == "ByInStockStatus")
+                else if (fillter_product == "ByInStockStatus")
                 {
-                    prod = await FilterByStatusInStock();
-                    return prod;
+                    result =  FilterByStatusInStock(prod);
+                    return result;
                 }
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine(ex.Message);
             }
             return null;
-
         }
 
         public async Task<Product> GetById(Guid id)
@@ -108,42 +101,25 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Products.FirstOrDefaultAsync(x => x.Id == id);
         }
-
-        public async Task<IEnumerable<Product>> GetProducts(int pageSize, int? pageIndex)
-
+        public async Task<IEnumerable<Product>> GetProducts(int pageSize, int pageIndex)
         {
             try
             {
-                
-                PaginatedList<Product> products;
+                IEnumerable<Product> products;
                 var db = new CakeCuriousDbContext();
-                IQueryable<Product> productIQ = from s in db.Products
-                                                select s;
-                products = await PaginatedList<Product>.CreateAsync(
-                    productIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
-                return products.ToList();
+                products = await db.Products
+                                .Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).ToListAsync();
+                return products;
             }
             catch (Exception ex)
             {
-
-                Console.WriteLine(ex.Message) ;
+                Console.WriteLine(ex.Message);
             }
             return null;
         }
-        /*public async Task<IEnumerable<Product>> GetProducts()
-        {
-            var db = new CakeCuriousDbContext();
-            return await db.Products.ToListAsync();
-        }*/
-
        
-
-        public async Task<IEnumerable<Product>> SearchProduct(string keyWord)
-        {
-            var db = new CakeCuriousDbContext();
-            return  db.Products.Where(p => p.Name.Contains(keyWord)).ToList();
-        }
-        public async Task Delete(Guid id)
+        public async Task<Product> Delete(Guid id)
         {
             Product prod = null;
             try
@@ -153,28 +129,24 @@ namespace Repository
                 var db = new CakeCuriousDbContext();
                 db.Products.Remove(prod);
                 db.SaveChanges();
+                return prod;
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine(ex.Message);
             }
-
+            return null;
         }
         public async Task Update(Product updateObj)
         {
-            Product prod = null;
             try
             {
-                prod = await GetById(updateObj.Id.Value);
-                if (prod == null) throw new Exception("Product that need to update does not exist");
                 var db = new CakeCuriousDbContext();
                 db.Entry<Product>(updateObj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 db.SaveChanges();
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine(ex.Message);
             }
         }

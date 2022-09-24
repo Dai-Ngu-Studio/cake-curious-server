@@ -31,6 +31,7 @@ builder.Services.AddControllers(o =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
@@ -38,11 +39,7 @@ builder.Services.AddCors();
 ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
 
 builder.Services.RegisterMapsterConfiguration();
-builder.Services.AddControllers()
-        .AddJsonOptions(options => {
-            // Ignore self reference loop
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        });
+
 builder.Services.AddDbContext<CakeCuriousDbContext>();
 
 FirebaseApp.Create(new AppOptions()

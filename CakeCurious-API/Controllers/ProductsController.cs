@@ -18,71 +18,105 @@ namespace CakeCurious_API.Controllers
         {
             productRepository = _productRepository;
         }
+
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProduct(int PageSize,int PageIndex)
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(int PageSize, int PageIndex)
         {
-           
-                var result = await productRepository.GetProducts(PageSize, PageIndex);
-                return Ok(result);        
+            var result = await productRepository.GetProducts(PageSize, PageIndex);
+            return Ok(result);
         }
-        [HttpGet("Search")]
+
+        [HttpGet("{guid}")]
         [Authorize]
-        public ActionResult<IEnumerable<Product>> SearchProduct(string keyword)
+        public async Task<ActionResult<Product>> GetProductsById(Guid guid)
         {
-            return Ok(productRepository.SearchProduct(keyword));
+            var result = await productRepository.GetById(guid);
+            return Ok(result);
         }
-        [HttpGet("Filter")]
+
+        [HttpGet("Find")]
         [Authorize]
-        public ActionResult<IEnumerable<Product>> FilterProduct(string keyword)
+        public ActionResult<IEnumerable<Product>> FindProduct(string s,string filter_product)
         {
-            return Ok( productRepository.FilterProduct(keyword));
+            return Ok(productRepository.FindProduct(s,filter_product));
         }
+
         [HttpPost]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<Product> PostProduct(Product product)
         {
-            // if (_context.Products == null)
-            // {
-            //     return Problem("Entity set 'FStoreDBContext.Products'  is null.");
-            // }
+            Guid id = Guid.NewGuid();
+            Product prod  = new Product(){
+                Id = id,
+                Name = product.Name,
+                Description = product.Description,
+                Discount = product.Discount,
+                PhotoUrl = product.PhotoUrl,
+                Quantity = product.Quantity,
+                StoreId = product.StoreId,
+                ProductCategoryId = product.ProductCategoryId,
+                Price = product.Price,
+                Status = product.Status,
+                ProductType = product.ProductType,
+                
+            };
             try
-            {
-                productRepository.Add(product);
+            {   
+                productRepository.Add(prod);
             }
             catch (DbUpdateException)
             {
-                if (productRepository.GetById(product.Id.Value) != null)
-                {
+                if (productRepository.GetById(prod.Id.Value) != null) 
                     return Conflict();
-                }
-
-                throw;
             }
-
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            //return CreatedAtAction("GetProductsById", new { id = prod.Id }, prod);
+            return Ok(prod);
         }
 
         [HttpDelete("{guid}")]
         [Authorize]
         public async Task<ActionResult> DeleteProduct(Guid guid)
         {
-            productRepository.Delete(guid);
-            Product prod = await productRepository.GetById(guid);
-            return Ok("Delete product "+prod.Name+" success");
+            Product prod = await productRepository.Delete(guid);
+            return Ok("Delete product " + prod.Name + " success");
         }
         [HttpPut("{guid}")]
-        public async Task<ActionResult> PutProduct(Guid guid,Product product) {
-            if (guid != product.Id)
-            {
-                return BadRequest();
-            }
-
+        public async Task<ActionResult> PutProduct(Guid guid, Product product)
+        {
+           
             try
             {
-                 productRepository.Update(product);
+                if (guid != product.Id) return BadRequest();
+                Product beforeUpdateProd = await productRepository.GetById(product.Id.Value);
+                if (beforeUpdateProd == null) throw new Exception("Product that need to update does not exist");
+                Product updateProd = new Product()
+                {
+                    Id = product.Id == null ? beforeUpdateProd.Id : product.Id ,
+
+                    Name = product.Name == null ? beforeUpdateProd.Name : product.Name,
+
+                    Description = product.Description == null ? beforeUpdateProd.Description : product.Description,
+
+                    Discount = product.Discount == 0 ? beforeUpdateProd.Discount : product.Discount,
+
+                    PhotoUrl = product.PhotoUrl == null ? beforeUpdateProd.PhotoUrl : product.PhotoUrl,
+
+                    Quantity = product.Quantity == 0 ? beforeUpdateProd.Quantity : product.Quantity,
+
+                    Price = product.Price == 0 ? beforeUpdateProd.Price : product.Price,
+
+                    ProductType = product.ProductType == null ? beforeUpdateProd.ProductType : product.ProductType,
+
+                    Status = product.Status == null ? beforeUpdateProd.Status : product.Status,
+
+                    StoreId = product.StoreId == null ? beforeUpdateProd.StoreId : product.StoreId,
+
+                    ProductCategoryId = product.ProductCategoryId == null ? beforeUpdateProd.ProductCategoryId : product.ProductCategoryId,
+                };
+                await productRepository.Update(updateProd);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -93,7 +127,6 @@ namespace CakeCurious_API.Controllers
 
                 throw;
             }
-
             return NoContent();
         }
 
