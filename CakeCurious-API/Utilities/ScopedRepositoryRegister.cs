@@ -10,6 +10,7 @@ namespace CakeCurious_API.Utilities
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRecipeRepository, RecipeRepository>();
             services.AddScoped<IUserDeviceRepository, UserDeviceRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
         }
     }
 }

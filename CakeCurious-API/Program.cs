@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repository.Configuration;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;  
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +38,11 @@ builder.Services.AddCors();
 ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
 
 builder.Services.RegisterMapsterConfiguration();
-
+builder.Services.AddControllers()
+        .AddJsonOptions(options => {
+            // Ignore self reference loop
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        });
 builder.Services.AddDbContext<CakeCuriousDbContext>();
 
 FirebaseApp.Create(new AppOptions()
