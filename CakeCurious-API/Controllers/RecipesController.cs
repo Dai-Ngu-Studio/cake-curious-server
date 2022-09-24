@@ -32,9 +32,29 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("home")]
         [Authorize]
-        public ActionResult<ICollection<ICollection<HomeRecipe>>> GetHomeRecipes()
+        public ActionResult<HomeRecipes> GetHomeRecipes()
         {
             return Ok(recipeRepository.GetHomeRecipes());
+        }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        public ActionResult<DetailRecipe> GetRecipeDetails(string id)
+        {
+            try
+            {
+                var guid = Guid.Parse(id);
+                var recipe = recipeRepository.GetRecipeDetails(guid);
+                if (recipe != null)
+                {
+                    return recipe;
+                }
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
     }
 }

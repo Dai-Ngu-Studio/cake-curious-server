@@ -3,7 +3,6 @@ using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
-using Repository.Models.Users;
 
 namespace Repository
 {
@@ -14,6 +13,24 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             db.Recipes.Add(obj);
             await db.SaveChangesAsync();
+        }
+
+        public DetailRecipe? GetRecipeDetails(Guid recipeId)
+        {
+            var db = new CakeCuriousDbContext();
+            var recipe = db.Recipes
+                .Include(x => x.User)
+                .Include(x => x.Likes)
+                .Include(x => x.RecipeMaterials)
+                .Include(x => x.RecipeSteps)
+                .Include(x => x.RecipeMedia)
+                .FirstOrDefault(x => x.Id == recipeId);
+
+            if (recipe != null)
+            {
+                return recipe.Adapt<DetailRecipe>();
+            }
+            return null;
         }
 
         // Recipe was published within 2 days
