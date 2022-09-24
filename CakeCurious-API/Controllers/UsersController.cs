@@ -1,9 +1,9 @@
 ﻿using BusinessObject;
-using CakeCurious_API.Constants.Roles;
-using CakeCurious_API.Constants.Users;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Constants.Roles;
+using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Users;
 using System.Security.Claims;

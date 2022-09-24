@@ -1,4 +1,4 @@
-﻿namespace CakeCurious_API.Constants.Roles
+﻿namespace Repository.Constants.Roles
 {
     public enum RoleEnum
     {
