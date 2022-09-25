@@ -83,10 +83,10 @@ namespace CakeCurious_API.Controllers
             Product prod = await productRepository.Delete(guid);
             return Ok("Delete product " + prod.Name + " success");
         }
+
         [HttpPut("{guid}")]
         public async Task<ActionResult> PutProduct(Guid guid, Product product)
-        {
-           
+        {          
             try
             {
                 if (guid != product.Id) return BadRequest();

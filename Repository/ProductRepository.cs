@@ -3,9 +3,12 @@ using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
+using Repository.Models.Product;
 using Repository.Models.Recipes;
 using Repository.Models.Users;
 using Repository.Utilites;
+using Mapster;
+
 namespace Repository
 {
     public class ProductRepository : IProductRepository
@@ -22,70 +25,75 @@ namespace Repository
         {
             return prods.OrderBy(p => p.Price).ToList();
         }
+
         public IEnumerable<Product> FilterByAscPrice(IEnumerable<Product> prods)
         {
-            
+
             return prods.OrderByDescending(p => p.Price).ToList();
         }
+
         public IEnumerable<Product> FilterByAscName(IEnumerable<Product> prods)
         {
-          
+
             return prods.OrderBy(p => p.Name).ToList();
         }
         public IEnumerable<Product> FilterByDescName(IEnumerable<Product> prods)
         {
             return prods.OrderByDescending(p => p.Name).ToList();
         }
-        public  IEnumerable<Product> FilterByStatusOutOfStock(IEnumerable<Product> prods)
-        {   
+
+        public IEnumerable<Product> FilterByStatusOutOfStock(IEnumerable<Product> prods)
+        {
             return prods.Where(p => p.Status == 2).ToList();
         }
-        public  IEnumerable<Product> FilterByStatusInStock(IEnumerable<Product> prods)
+        public IEnumerable<Product> FilterByStatusInStock(IEnumerable<Product> prods)
         {
             return prods.Where(p => p.Status == 1).ToList();
         }
-        public  IEnumerable<Product> SearchProduct(string keyWord)
+
+        public IEnumerable<Product> SearchProduct(string keyWord)
         {
             IEnumerable<Product> prods;
             var db = new CakeCuriousDbContext();
-            prods =  db.Products.Where(p => p.Name.Contains(keyWord)).ToList();
+            prods = db.Products.Where(p => p.Name.Contains(keyWord)).ToList();
             return prods;
         }
-        public IEnumerable<Product> FindProduct(string s,string fillter_product)
-        {   
+
+        public IEnumerable<Product> FindProduct(string s, string fillter_product)
+        {
             IEnumerable<Product> result;
-            IEnumerable<Product> prod =  SearchProduct(s);
+            IEnumerable<Product> prod = SearchProduct(s);
             try
             {
                 if (fillter_product == null) return prod;
                 else if (fillter_product == "ByAscendingPrice")
                 {
-                    result =  FilterByAscPrice(prod);
+                    result = FilterByAscPrice(prod);
                     return result;
                 }
                 else if (fillter_product == "ByDescendingPrice")
                 {
-                    result =  FilterByDecsPrice(prod);
+                    result = FilterByDecsPrice(prod);
                     return result;
                 }
                 else if (fillter_product == "ByDescendingName")
                 {
-                    result =  FilterByDescName(prod);
+                    result = FilterByDescName(prod);
                     return result;
                 }
                 else if (fillter_product == "ByAscendingName")
                 {
-                    result =  FilterByAscName(prod);
+                    result = FilterByAscName(prod);
                     return result;
                 }
                 else if (fillter_product == "ByOutOfStockStatus")
                 {
-                    result =  FilterByStatusOutOfStock(prod);
+                    result = FilterByStatusOutOfStock(prod);
                     return result;
                 }
                 else if (fillter_product == "ByInStockStatus")
                 {
-                    result =  FilterByStatusInStock(prod);
+                    result = FilterByStatusInStock(prod);
                     return result;
                 }
             }
@@ -101,15 +109,15 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Products.FirstOrDefaultAsync(x => x.Id == id);
         }
-        public async Task<IEnumerable<Product>> GetProducts(int pageSize, int pageIndex)
+        public async Task<IEnumerable<StoreDashboardProducts>> GetProducts(int pageSize, int pageIndex)
         {
             try
             {
-                IEnumerable<Product> products;
+                IEnumerable<StoreDashboardProducts> products;
                 var db = new CakeCuriousDbContext();
                 products = await db.Products
                                 .Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToListAsync();
+                                .Take(pageSize).ProjectToType<StoreDashboardProducts>().ToListAsync();
                 return products;
             }
             catch (Exception ex)
@@ -118,7 +126,7 @@ namespace Repository
             }
             return null;
         }
-       
+
         public async Task<Product> Delete(Guid id)
         {
             Product prod = null;
@@ -137,6 +145,7 @@ namespace Repository
             }
             return null;
         }
+
         public async Task Update(Product updateObj)
         {
             try

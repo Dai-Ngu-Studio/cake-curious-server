@@ -18,8 +18,8 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             IEnumerable<StoreDashboardOrders> orders;
             orders = await db.Orders
-                               .Skip((pageIndex - 1) * pageSize)
-                               .Take(pageSize).Include(o => o.User).Include(o => o.Store).ProjectToType<StoreDashboardOrders>().ToListAsync();
+                            .Skip((pageIndex - 1) * pageSize)
+                            .Take(pageSize).Include(o => o.User).Include(o => o.Store).ProjectToType<StoreDashboardOrders>().ToListAsync();
             return orders;
         }
         public async Task<Order> GetById(Guid id)

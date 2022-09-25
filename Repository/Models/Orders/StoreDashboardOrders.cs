@@ -1,4 +1,4 @@
-﻿using Repository.Models.Store;
+﻿using Repository.Models.Stores;
 using Repository.Models.Users;
 using System;
 using System.Collections.Generic;
@@ -14,9 +14,7 @@ namespace Repository.Models.Orders
         public SimpleUser? User { get; set; }
         public SimpleStore? Store { get; set; }
         public decimal? Total { get; set; }
-
         public DateTime? OrderDate { get; set; }
-
         public DateTime? ProcessedDate { get; set; }
         public DateTime? CompletedDate { get; set; }
 
