@@ -13,7 +13,19 @@ namespace CakeCurious_API.Controllers
         private const string BucketName = "cake-curious.appspot.com";
         private const string BaseUrl = $"{GoogleStorage}{BucketName}";
 
-        // File-Extension must be included in headers
+        /// <summary>
+        /// <para>Returns an URL which could then be put in a request to the upload endpoint.</para>
+        /// <para>Headers must include File-Extension: &lt;file-extension&gt;</para>
+        /// <para>Replace &lt;file-extension&gt; with file extension.</para>
+        /// <example>
+        /// This shows examples for File-Extension header.
+        /// <code>
+        /// File-Extension: mp4
+        /// File-Extensoin: png
+        /// </code>
+        /// </example>
+        /// </summary>
+        /// <returns>An URL</returns>
         [HttpGet("url")]
         [Authorize]
         public ActionResult<string> GetUploadUrl()

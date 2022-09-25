@@ -1,0 +1,16 @@
+name: Dispatch to Docs Repository
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to Docs Repository
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.DOCFX_ACCESS_TOKEN }}
+          repository: ${{ secrets.DOCFX_REPOSITORY }}
+          event-type: deploy-docfx

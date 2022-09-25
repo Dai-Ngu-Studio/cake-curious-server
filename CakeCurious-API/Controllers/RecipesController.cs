@@ -41,14 +41,13 @@ namespace CakeCurious_API.Controllers
             return Ok(recipeRepository.GetHomeRecipes());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [Authorize]
-        public ActionResult<DetailRecipe> GetRecipeDetails(string id)
+        public ActionResult<DetailRecipe> GetRecipeDetails(Guid id)
         {
             try
             {
-                var guid = Guid.Parse(id);
-                var recipe = recipeRepository.GetRecipeDetails(guid);
+                var recipe = recipeRepository.GetRecipeDetails(id);
                 if (recipe != null)
                 {
                     return recipe;
@@ -61,14 +60,13 @@ namespace CakeCurious_API.Controllers
             }
         }
 
-        [HttpGet("{id}/{step}")]
+        [HttpGet("{id:guid}/{step:int}")]
         [Authorize]
-        public ActionResult<DetailRecipeStep> GetRecipeStepDetails(string id, int step)
+        public ActionResult<DetailRecipeStep> GetRecipeStepDetails(Guid id, int step)
         {
             try
             {
-                var guid = Guid.Parse(id);
-                var recipe = recipeRepository.GetRecipeStepDetails(guid, step);
+                var recipe = recipeRepository.GetRecipeStepDetails(id, step);
                 if (recipe != null)
                 {
                     return Ok(recipe);
@@ -81,14 +79,13 @@ namespace CakeCurious_API.Controllers
             }
         }
 
-        [HttpGet("{id}/comments")]
+        [HttpGet("{id:guid}/comments")]
         [Authorize]
-        public ActionResult<ICollection<RecipeComment>> GetCommentsOfRecipe(string id)
+        public ActionResult<ICollection<RecipeComment>> GetCommentsOfRecipe(Guid id)
         {
             try
             {
-                var guid = Guid.Parse(id);
-                var comments = commentRepository.GetCommentsForRecipe(guid);
+                var comments = commentRepository.GetCommentsForRecipe(id);
                 return Ok(comments);
             }
             catch (Exception)
