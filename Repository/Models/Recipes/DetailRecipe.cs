@@ -1,4 +1,5 @@
-﻿using Repository.Models.RecipeMaterials;
+﻿using BusinessObject;
+using Repository.Models.RecipeMaterials;
 using Repository.Models.RecipeSteps;
 using Repository.Models.Users;
 
@@ -16,6 +17,7 @@ namespace Repository.Models.Recipes
         public decimal? CookTime { get; set; }
         public DateTime? PublishedDate { get; set; }
         public int? Likes { get; set; }
+        public Like? UserLike { get; set; }
         public IEnumerable<DetachedRecipeMaterial>? Ingredients { get; set; }
         public IEnumerable<DetachedRecipeMaterial>? Equipment { get; set; }
         public IEnumerable<SimpleRecipeStep>? RecipeSteps { get; set; }
