@@ -20,67 +20,74 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
-        public IEnumerable<Store> FilterByAscName(IEnumerable<Store> stores)
+        public IEnumerable<AdminDashboardStore> FilterByAscName(IEnumerable<AdminDashboardStore> stores)
         {
             return stores.OrderBy(p => p.Name).ToList();
         }
-        public IEnumerable<Store> FilterByDescName(IEnumerable<Store> stores)
+        public IEnumerable<AdminDashboardStore> FilterByDescName(IEnumerable<AdminDashboardStore> stores)
         {
             return stores.OrderByDescending(p => p.Name).ToList();
         }
-        public IEnumerable<Store> FilterByStatusUnAvailable(IEnumerable<Store> stores)
+        public IEnumerable<AdminDashboardStore> FilterByStatusUnAvailable(IEnumerable<AdminDashboardStore> stores)
         {
             return stores.Where(p => p.Status == 2).ToList();
         }
 
-        public IEnumerable<Store> FilterByStatusMaintaining(IEnumerable<Store> stores)
+        public IEnumerable<AdminDashboardStore> FilterByStatusMaintaining(IEnumerable<AdminDashboardStore> stores)
         {
             return stores.Where(p => p.Status == 3).ToList();
         }
-        public IEnumerable<Store> FilterByStatusAvailable(IEnumerable<Store> stores)
+        public IEnumerable<AdminDashboardStore> FilterByStatusAvailable(IEnumerable<AdminDashboardStore> stores)
         {
             return stores.Where(p => p.Status == 1).ToList();
         }
 
-        public IEnumerable<Store> SearchStore(string keyWord)
+        public IEnumerable<AdminDashboardStore> SearchStore(string keyWord)
         {
-            IEnumerable<Store> stores;
+            IEnumerable<AdminDashboardStore> stores;
             var db = new CakeCuriousDbContext();
-            stores = db.Stores.Where(p => p.Name.Contains(keyWord)).ToList();
+            stores = db.Stores.Where(p => p.Name!.Contains(keyWord)).ProjectToType<AdminDashboardStore>().ToList();
             return stores;
         }
 
-        public IEnumerable<Store> FindStore(string s, string fillter_Store)
+        public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? fillter_Store, int pageSize, int pageIndex)
         {
-            IEnumerable<Store> result;
-            IEnumerable<Store> store = SearchStore(s);
+            IEnumerable<AdminDashboardStore> result;
+            IEnumerable<AdminDashboardStore> store = SearchStore(s!);
             try
             {
-                if (fillter_Store == null) return store;
+                if (fillter_Store == null)
+                    return store.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).ToList();
                 else if (fillter_Store == "ByDescendingName")
                 {
                     result = FilterByDescName(store);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).ToList();
                 }
                 else if (fillter_Store == "ByAscendingName")
                 {
                     result = FilterByAscName(store);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).ToList();
                 }
                 else if (fillter_Store == "ByStatusMaintaining")
                 {
                     result = FilterByStatusMaintaining(store);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).ToList();
                 }
                 else if (fillter_Store == "ByStatusUnaVailable")
                 {
                     result = FilterByStatusUnAvailable(store);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).ToList();
                 }
                 else if (fillter_Store == "ByStatusAvailable")
                 {
                     result = FilterByStatusAvailable(store);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize).ToList();
                 }
             }
             catch (Exception ex)
@@ -90,35 +97,18 @@ namespace Repository
             return null;
         }
 
-        public async Task<Store> GetById(Guid id)
+        public async Task<Store?> GetById(Guid id)
         {
             var db = new CakeCuriousDbContext();
             return await db.Stores.FirstOrDefaultAsync(x => x.Id == id);
         }
-        public async Task<IEnumerable<AdminDashboardStores>> GetStores(int pageSize, int pageIndex)
-        {
-            try
-            {
-                IEnumerable<AdminDashboardStores> Stores;
-                var db = new CakeCuriousDbContext();
-                Stores = await db.Stores
-                                .Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ProjectToType<AdminDashboardStores>().ToListAsync();
-                return Stores;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            return null;
-        }
 
-        public async Task<Store> Delete(Guid id)
+        public async Task<Store?> Delete(Guid? id)
         {
-            Store store = null;
+            Store? store = null;
             try
             {
-                store = await GetById(id);
+                store = await GetById(id!.Value);
                 if (store == null) throw new Exception("Store that need to delete does not exist");
                 var db = new CakeCuriousDbContext();
                 db.Stores.Remove(store);
@@ -138,12 +128,53 @@ namespace Repository
             {
                 var db = new CakeCuriousDbContext();
                 db.Entry<Store>(updateObj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public int CountDashboardStores(string? s, string? filter_Store)
+        {
+            IEnumerable<AdminDashboardStore> result;
+            IEnumerable<AdminDashboardStore> store = SearchStore(s!);
+            try
+            {
+                if (filter_Store == null)
+                    return store.Count();
+                else if (filter_Store == "ByDescendingName")
+                {
+                    result = FilterByDescName(store);
+                    return result.Count();
+                }
+                else if (filter_Store == "ByAscendingName")
+                {
+                    result = FilterByAscName(store);
+                    return result.Count();
+                }
+                else if (filter_Store == "ByStatusMaintaining")
+                {
+                    result = FilterByStatusMaintaining(store);
+                    return result.Count();
+                }
+                else if (filter_Store == "ByStatusUnaVailable")
+                {
+                    result = FilterByStatusUnAvailable(store);
+                    return result.Count();
+                }
+                else if (filter_Store == "ByStatusAvailable")
+                {
+                    result = FilterByStatusAvailable(store);
+                    return result.Count();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return 0;
         }
     }
 }

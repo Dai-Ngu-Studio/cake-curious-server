@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Repository.Interfaces;
 using System.Net.Mime;
 using Microsoft.EntityFrameworkCore;
+using Repository.Models.Product;
 
 namespace CakeCurious_API.Controllers
 {
@@ -12,18 +13,20 @@ namespace CakeCurious_API.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IProductRepository productRepository;
+        private readonly IProductRepository _productRepository;
 
-        public ProductsController(IProductRepository _productRepository)
+        public ProductsController(IProductRepository productRepository)
         {
-            productRepository = _productRepository;
+            _productRepository = productRepository;
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(int PageSize, int PageIndex)
+        public ActionResult<IEnumerable<Product>> GetProducts(string? s, string? filter_Product, int PageIndex, int PageSize)
         {
-            var result = await productRepository.GetProducts(PageSize, PageIndex);
+            var result = new StoreDashboardProductPage();
+            result.Products = _productRepository.GetProducts(s, filter_Product, PageIndex, PageSize);
+            result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s!, filter_Product!) / PageSize);
             return Ok(result);
         }
 
@@ -31,15 +34,8 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult<Product>> GetProductsById(Guid guid)
         {
-            var result = await productRepository.GetById(guid);
+            var result = await _productRepository.GetById(guid);
             return Ok(result);
-        }
-
-        [HttpGet("Find")]
-        [Authorize]
-        public ActionResult<IEnumerable<Product>> FindProduct(string s, string filter_product)
-        {
-            return Ok(productRepository.FindProduct(s, filter_product));
         }
 
         [HttpPost]
@@ -66,14 +62,13 @@ namespace CakeCurious_API.Controllers
             };
             try
             {
-                productRepository.Add(prod);
+                _productRepository.Add(prod);
             }
             catch (DbUpdateException)
             {
-                if (productRepository.GetById(prod.Id.Value) != null)
+                if (_productRepository.GetById(prod.Id.Value) != null)
                     return Conflict();
             }
-            //return CreatedAtAction("GetProductsById", new { id = prod.Id }, prod);
             return Ok(prod);
         }
 
@@ -81,8 +76,8 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult> DeleteProduct(Guid guid)
         {
-            Product prod = await productRepository.Delete(guid);
-            return Ok("Delete product " + prod.Name + " success");
+            Product? prod = await _productRepository.Delete(guid);
+            return Ok("Delete product " + prod!.Name + " success");
         }
 
         [HttpPut("{guid}")]
@@ -91,7 +86,7 @@ namespace CakeCurious_API.Controllers
             try
             {
                 if (guid != product.Id) return BadRequest();
-                Product beforeUpdateObj = await productRepository.GetById(product.Id.Value);
+                Product? beforeUpdateObj = await _productRepository.GetById(product.Id.Value);
                 if (beforeUpdateObj == null) throw new Exception("Product that need to update does not exist");
                 Product updateProd = new Product()
                 {
@@ -107,11 +102,11 @@ namespace CakeCurious_API.Controllers
                     StoreId = product.StoreId == null ? beforeUpdateObj.StoreId : product.StoreId,
                     ProductCategoryId = product.ProductCategoryId == null ? beforeUpdateObj.ProductCategoryId : product.ProductCategoryId,
                 };
-                await productRepository.Update(updateProd);
+                await _productRepository.Update(updateProd);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (productRepository.GetById(guid) == null)
+                if (_productRepository.GetById(guid) == null)
                 {
                     return NotFound();
                 }

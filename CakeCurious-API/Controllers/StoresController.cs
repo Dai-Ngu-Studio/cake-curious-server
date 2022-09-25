@@ -4,26 +4,29 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
+using Repository.Models.Stores;
 using System.Net.Mime;
 
 namespace CakeCurious_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StoreController : ControllerBase
+    public class StoresController : ControllerBase
     {
         private readonly IStoreRepository _storeReposiotry;
 
-        public StoreController(IStoreRepository storeReposiotry)
+        public StoresController(IStoreRepository storeReposiotry)
         {
             _storeReposiotry = storeReposiotry;
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<Store>>> GetStores(int PageSize, int PageIndex)
+        public ActionResult<IEnumerable<AdminDashboardStore>> GetStores(string s, string fillter_Store, int PageSize, int PageIndex)
         {
-            var result = await _storeReposiotry.GetStores(PageSize, PageIndex);
+            var result = new AdminDashboardStorePage();
+            result.Stores = _storeReposiotry.GetStores(s, fillter_Store, PageSize, PageIndex);
+            result.TotalPage = (int)Math.Ceiling((decimal)_storeReposiotry.CountDashboardStores(s!, fillter_Store!) / PageSize);
             return Ok(result);
         }
 
@@ -33,13 +36,6 @@ namespace CakeCurious_API.Controllers
         {
             var result = await _storeReposiotry.GetById(guid);
             return Ok(result);
-        }
-
-        [HttpGet("Find")]
-        [Authorize]
-        public ActionResult<IEnumerable<Store>> FindStore(string s, string filter_Store)
-        {
-            return Ok(_storeReposiotry.FindStore(s, filter_Store));
         }
 
         [HttpPost]
@@ -59,7 +55,6 @@ namespace CakeCurious_API.Controllers
                 UserId = Store.UserId,
                 Rating = Store.Rating,
                 Status = Store.Status,
-
             };
             try
             {
@@ -67,7 +62,7 @@ namespace CakeCurious_API.Controllers
             }
             catch (DbUpdateException)
             {
-                if (_storeReposiotry.GetById(prod.Id.Value) != null)
+                if (_storeReposiotry.GetById(prod.Id!.Value) != null)
                     return Conflict();
             }
             return Ok(prod);
@@ -75,10 +70,10 @@ namespace CakeCurious_API.Controllers
 
         [HttpDelete("{guid}")]
         [Authorize]
-        public async Task<ActionResult> DeleteStore(Guid guid)
+        public async Task<ActionResult> DeleteStore(Guid? guid)
         {
-            Store store = await _storeReposiotry.Delete(guid);
-            return Ok("Delete Store " + store.Name + " success");
+            Store? store = await _storeReposiotry.Delete(guid);
+            return Ok("Delete Store " + store!.Name + " success");
         }
 
         [HttpPut("{guid}")]
@@ -87,7 +82,7 @@ namespace CakeCurious_API.Controllers
             try
             {
                 if (guid != Store.Id) return BadRequest();
-                Store beforeUpdateObj = await _storeReposiotry.GetById(Store.Id.Value);
+                Store? beforeUpdateObj = await _storeReposiotry.GetById(Store.Id.Value);
                 if (beforeUpdateObj == null) throw new Exception("Store that need to update does not exist");
                 Store updateObj = new Store()
                 {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Models.Product
 {
-    public class StoreDashboardProducts
+    public class StoreDashboardProduct
     {
       
         public Guid? Id { get; set; }
@@ -17,7 +17,9 @@ namespace Repository.Models.Product
         
         public int? Quantity { get; set; }
 
-        public decimal? Price { get; set; }    
+        public decimal? Price { get; set; }   
+        
+        public int? Status { get; set; }
 
         public string? PhotoUrl { get; set; }
     }

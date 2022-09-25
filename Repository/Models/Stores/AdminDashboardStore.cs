@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Models.Stores
 {
-    public class AdminDashboardStores
+    public class AdminDashboardStore
     {
         public Guid? Id { get; set; }
         public int? Status { get; set; }

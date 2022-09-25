@@ -7,7 +7,6 @@ using Repository.Models.Product;
 using Repository.Models.Recipes;
 using Repository.Models.Users;
 using Repository.Utilites;
-using Mapster;
 
 namespace Repository
 {
@@ -20,80 +19,88 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
-        public IEnumerable<Product> FilterByDecsPrice(IEnumerable<Product> prods)
+        public IEnumerable<StoreDashboardProduct> FilterByDecsPrice(IEnumerable<StoreDashboardProduct> prods)
         {
             return prods.OrderBy(p => p.Price).ToList();
         }
 
-        public IEnumerable<Product> FilterByAscPrice(IEnumerable<Product> prods)
+        public IEnumerable<StoreDashboardProduct> FilterByAscPrice(IEnumerable<StoreDashboardProduct> prods)
         {
 
             return prods.OrderByDescending(p => p.Price).ToList();
         }
 
-        public IEnumerable<Product> FilterByAscName(IEnumerable<Product> prods)
+        public IEnumerable<StoreDashboardProduct> FilterByAscName(IEnumerable<StoreDashboardProduct> prods)
         {
 
             return prods.OrderBy(p => p.Name).ToList();
         }
-        public IEnumerable<Product> FilterByDescName(IEnumerable<Product> prods)
+        public IEnumerable<StoreDashboardProduct> FilterByDescName(IEnumerable<StoreDashboardProduct> prods)
         {
             return prods.OrderByDescending(p => p.Name).ToList();
         }
 
-        public IEnumerable<Product> FilterByStatusOutOfStock(IEnumerable<Product> prods)
+        public IEnumerable<StoreDashboardProduct> FilterByStatusOutOfStock(IEnumerable<StoreDashboardProduct> prods)
         {
             return prods.Where(p => p.Status == 2).ToList();
         }
-        public IEnumerable<Product> FilterByStatusInStock(IEnumerable<Product> prods)
+        public IEnumerable<StoreDashboardProduct> FilterByStatusInStock(IEnumerable<StoreDashboardProduct> prods)
         {
             return prods.Where(p => p.Status == 1).ToList();
         }
 
-        public IEnumerable<Product> SearchProduct(string keyWord)
+        public IEnumerable<StoreDashboardProduct> SearchProduct(string keyWord)
         {
-            IEnumerable<Product> prods;
+            IEnumerable<StoreDashboardProduct> prods;
             var db = new CakeCuriousDbContext();
-            prods = db.Products.Where(p => p.Name.Contains(keyWord)).ToList();
+            prods = db.Products.Where(p => p.Name!.Contains(keyWord)).ProjectToType<StoreDashboardProduct>().ToList();
             return prods;
         }
 
-        public IEnumerable<Product> FindProduct(string s, string fillter_product)
+        public IEnumerable<StoreDashboardProduct>? GetProducts(string? s, string? filter_product, int pageIndex, int pageSize)
         {
-            IEnumerable<Product> result;
-            IEnumerable<Product> prod = SearchProduct(s);
+            IEnumerable<StoreDashboardProduct> result;
+            IEnumerable<StoreDashboardProduct> prod = SearchProduct(s!);
             try
             {
-                if (fillter_product == null) return prod;
-                else if (fillter_product == "ByAscendingPrice")
+                if (filter_product == null)
+                    return prod.Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize).ToList();
+                else if (filter_product == "ByAscendingPrice")
                 {
                     result = FilterByAscPrice(prod);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize).ToList();
                 }
-                else if (fillter_product == "ByDescendingPrice")
+                else if (filter_product == "ByDescendingPrice")
                 {
                     result = FilterByDecsPrice(prod);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize).ToList();
                 }
-                else if (fillter_product == "ByDescendingName")
+                else if (filter_product == "ByDescendingName")
                 {
                     result = FilterByDescName(prod);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize).ToList();
                 }
-                else if (fillter_product == "ByAscendingName")
+                else if (filter_product == "ByAscendingName")
                 {
                     result = FilterByAscName(prod);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize).ToList();
                 }
-                else if (fillter_product == "ByOutOfStockStatus")
+                else if (filter_product == "ByOutOfStockStatus")
                 {
                     result = FilterByStatusOutOfStock(prod);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize).ToList();
                 }
-                else if (fillter_product == "ByInStockStatus")
+                else if (filter_product == "ByInStockStatus")
                 {
                     result = FilterByStatusInStock(prod);
-                    return result;
+                    return result.Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize).ToList();
                 }
             }
             catch (Exception ex)
@@ -103,32 +110,15 @@ namespace Repository
             return null;
         }
 
-        public async Task<Product> GetById(Guid id)
+        public async Task<Product?> GetById(Guid id)
         {
             var db = new CakeCuriousDbContext();
             return await db.Products.FirstOrDefaultAsync(x => x.Id == id);
         }
-        public async Task<IEnumerable<StoreDashboardProducts>> GetProducts(int pageSize, int pageIndex)
-        {
-            try
-            {
-                IEnumerable<StoreDashboardProducts> products;
-                var db = new CakeCuriousDbContext();
-                products = await db.Products
-                                .Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ProjectToType<StoreDashboardProducts>().ToListAsync();
-                return products;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            return null;
-        }
 
-        public async Task<Product> Delete(Guid id)
+        public async Task<Product?> Delete(Guid id)
         {
-            Product prod = null;
+            Product? prod;
             try
             {
                 prod = await GetById(id);
@@ -151,12 +141,59 @@ namespace Repository
             {
                 var db = new CakeCuriousDbContext();
                 db.Entry<Product>(updateObj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public int CountDashboardProducts(string? s, string? filter_product)
+        {
+            IEnumerable<StoreDashboardProduct> result;
+            IEnumerable<StoreDashboardProduct> prod = SearchProduct(s!);
+            try
+            {
+                if (filter_product == null)
+                    return prod.Count();
+                else if (filter_product == "ByAscendingPrice")
+                {
+                    result = FilterByAscPrice(prod);
+                    return result.Count();
+                }
+                else if (filter_product == "ByDescendingPrice")
+                {
+                    result = FilterByDecsPrice(prod);
+                    return result.Count();
+                }
+                else if (filter_product == "ByDescendingName")
+                {
+                    result = FilterByDescName(prod);
+                    return result.Count();
+                }
+                else if (filter_product == "ByAscendingName")
+                {
+                    result = FilterByAscName(prod);
+                    return result.Count();
+                }
+                else if (filter_product == "ByOutOfStockStatus")
+                {
+                    result = FilterByStatusOutOfStock(prod);
+                    return result.Count();
+                }
+                else if (filter_product == "ByInStockStatus")
+                {
+                    result = FilterByStatusInStock(prod);
+                    return result.Count();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }       
+            return 0;
         }
     }
 }
