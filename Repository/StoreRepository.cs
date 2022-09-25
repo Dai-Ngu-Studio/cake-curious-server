@@ -103,16 +103,17 @@ namespace Repository
             return await db.Stores.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<Store?> Delete(Guid? id)
+        public async Task<Store?> HideStore(Guid? id)
         {
             Store? store = null;
             try
             {
                 store = await GetById(id!.Value);
                 if (store == null) throw new Exception("Store that need to delete does not exist");
+                store.Status = 3;
                 var db = new CakeCuriousDbContext();
-                db.Stores.Remove(store);
-                db.SaveChanges();
+                db.Entry<Store>(store).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                await db.SaveChangesAsync();
                 return store;
             }
             catch (Exception ex)
