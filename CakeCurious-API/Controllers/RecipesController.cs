@@ -4,6 +4,7 @@ using Repository.Interfaces;
 using Repository.Models.Comments;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
@@ -23,13 +24,16 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("following")]
         [Authorize]
-        public ActionResult<ICollection<HomeRecipe>> GetRecipesFromFollowing(int skip = 0, int take = 5)
+        public ActionResult<ICollection<HomeRecipe>> GetRecipesFromFollowing(
+            [Range(1, int.MaxValue)] int page = 1, 
+            [Range(0, int.MaxValue)] int take = 5)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                return Ok(recipeRepository.GetLatestRecipesForFollower(uid, skip, take));
+                return Ok(recipeRepository.GetLatestRecipesForFollower(uid, (page - 1) * take, take));
             }
             return Unauthorized();
         }
@@ -62,7 +66,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/{step:int}")]
         [Authorize]
-        public ActionResult<DetailRecipeStep> GetRecipeStepDetails(Guid id, int step)
+        public ActionResult<DetailRecipeStep> GetRecipeStepDetails(Guid id, [Range(1, int.MaxValue)] int step)
         {
             try
             {
