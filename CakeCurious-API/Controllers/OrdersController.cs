@@ -34,19 +34,19 @@ namespace CakeCurious_API.Controllers
             try
             {
                 if (guid != order.Id) return BadRequest();
-                Order beforeUpdateOrder = await orderRepository.GetById(order.Id.Value);
-                if (beforeUpdateOrder == null) throw new Exception("Order that need to update does not exist");
+                Order beforeUpdateObj= await orderRepository.GetById(order.Id.Value);
+                if (beforeUpdateObj == null) throw new Exception("Order that need to update does not exist");
                 Order updateOrder = new Order()
                 {
-                    Id = order.Id == null ? beforeUpdateOrder.Id : order.Id,
-                    CompletedDate = order.CompletedDate == null ? beforeUpdateOrder.CompletedDate : order.CompletedDate,
-                    CouponId = order.CouponId == null ? beforeUpdateOrder.CouponId : order.CouponId,
-                    Status = order.Status == 0 ? beforeUpdateOrder.Status : order.Status,
-                    ProcessedDate = order.ProcessedDate == null ? beforeUpdateOrder.ProcessedDate : order.ProcessedDate,
-                    StoreId = order.StoreId == null ? beforeUpdateOrder.StoreId : order.StoreId,
-                    OrderDate = order.OrderDate == null ? beforeUpdateOrder.OrderDate : order.OrderDate,
-                    Total = order.Total == 0 ? beforeUpdateOrder.Total : order.Total,
-                    UserId = order.UserId == null ? beforeUpdateOrder.UserId : order.UserId,
+                    Id = order.Id == null ? beforeUpdateObj.Id : order.Id,
+                    CompletedDate = order.CompletedDate == null ? beforeUpdateObj.CompletedDate : order.CompletedDate,
+                    CouponId = order.CouponId == null ? beforeUpdateObj.CouponId : order.CouponId,
+                    Status = order.Status == 0 ? beforeUpdateObj.Status : order.Status,
+                    ProcessedDate = order.ProcessedDate == null ? beforeUpdateObj.ProcessedDate : order.ProcessedDate,
+                    StoreId = order.StoreId == null ? beforeUpdateObj.StoreId : order.StoreId,
+                    OrderDate = order.OrderDate == null ? beforeUpdateObj.OrderDate : order.OrderDate,
+                    Total = order.Total == 0 ? beforeUpdateObj.Total : order.Total,
+                    UserId = order.UserId == null ? beforeUpdateObj.UserId : order.UserId,
                 };
                 await orderRepository.UpdateOrder(updateOrder);
             }

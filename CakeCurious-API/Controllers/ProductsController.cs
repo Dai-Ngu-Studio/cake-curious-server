@@ -37,9 +37,9 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("Find")]
         [Authorize]
-        public ActionResult<IEnumerable<Product>> FindProduct(string s,string filter_product)
+        public ActionResult<IEnumerable<Product>> FindProduct(string s, string filter_product)
         {
-            return Ok(productRepository.FindProduct(s,filter_product));
+            return Ok(productRepository.FindProduct(s, filter_product));
         }
 
         [HttpPost]
@@ -49,7 +49,8 @@ namespace CakeCurious_API.Controllers
         public ActionResult<Product> PostProduct(Product product)
         {
             Guid id = Guid.NewGuid();
-            Product prod  = new Product(){
+            Product prod = new Product()
+            {
                 Id = id,
                 Name = product.Name,
                 Description = product.Description,
@@ -61,15 +62,15 @@ namespace CakeCurious_API.Controllers
                 Price = product.Price,
                 Status = product.Status,
                 ProductType = product.ProductType,
-                
+
             };
             try
-            {   
+            {
                 productRepository.Add(prod);
             }
             catch (DbUpdateException)
             {
-                if (productRepository.GetById(prod.Id.Value) != null) 
+                if (productRepository.GetById(prod.Id.Value) != null)
                     return Conflict();
             }
             //return CreatedAtAction("GetProductsById", new { id = prod.Id }, prod);
@@ -86,35 +87,25 @@ namespace CakeCurious_API.Controllers
 
         [HttpPut("{guid}")]
         public async Task<ActionResult> PutProduct(Guid guid, Product product)
-        {          
+        {
             try
             {
                 if (guid != product.Id) return BadRequest();
-                Product beforeUpdateProd = await productRepository.GetById(product.Id.Value);
-                if (beforeUpdateProd == null) throw new Exception("Product that need to update does not exist");
+                Product beforeUpdateObj = await productRepository.GetById(product.Id.Value);
+                if (beforeUpdateObj == null) throw new Exception("Product that need to update does not exist");
                 Product updateProd = new Product()
                 {
-                    Id = product.Id == null ? beforeUpdateProd.Id : product.Id ,
-
-                    Name = product.Name == null ? beforeUpdateProd.Name : product.Name,
-
-                    Description = product.Description == null ? beforeUpdateProd.Description : product.Description,
-
-                    Discount = product.Discount == 0 ? beforeUpdateProd.Discount : product.Discount,
-
-                    PhotoUrl = product.PhotoUrl == null ? beforeUpdateProd.PhotoUrl : product.PhotoUrl,
-
-                    Quantity = product.Quantity == 0 ? beforeUpdateProd.Quantity : product.Quantity,
-
-                    Price = product.Price == 0 ? beforeUpdateProd.Price : product.Price,
-
-                    ProductType = product.ProductType == null ? beforeUpdateProd.ProductType : product.ProductType,
-
-                    Status = product.Status == null ? beforeUpdateProd.Status : product.Status,
-
-                    StoreId = product.StoreId == null ? beforeUpdateProd.StoreId : product.StoreId,
-
-                    ProductCategoryId = product.ProductCategoryId == null ? beforeUpdateProd.ProductCategoryId : product.ProductCategoryId,
+                    Id = product.Id == null ? beforeUpdateObj.Id : product.Id,
+                    Name = product.Name == null ? beforeUpdateObj.Name : product.Name,
+                    Description = product.Description == null ? beforeUpdateObj.Description : product.Description,
+                    Discount = product.Discount == 0 ? beforeUpdateObj.Discount : product.Discount,
+                    PhotoUrl = product.PhotoUrl == null ? beforeUpdateObj.PhotoUrl : product.PhotoUrl,
+                    Quantity = product.Quantity == 0 ? beforeUpdateObj.Quantity : product.Quantity,
+                    Price = product.Price == 0 ? beforeUpdateObj.Price : product.Price,
+                    ProductType = product.ProductType == null ? beforeUpdateObj.ProductType : product.ProductType,
+                    Status = product.Status == null ? beforeUpdateObj.Status : product.Status,
+                    StoreId = product.StoreId == null ? beforeUpdateObj.StoreId : product.StoreId,
+                    ProductCategoryId = product.ProductCategoryId == null ? beforeUpdateObj.ProductCategoryId : product.ProductCategoryId,
                 };
                 await productRepository.Update(updateProd);
             }

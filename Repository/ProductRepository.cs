@@ -18,7 +18,6 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             db.Products.Add(obj);
             await db.SaveChangesAsync();
-
         }
 
         public IEnumerable<Product> FilterByDecsPrice(IEnumerable<Product> prods)
