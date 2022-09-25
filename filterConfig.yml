@@ -1,0 +1,5 @@
+apiRules:
+- exclude:
+      uidRegex: ^System\.Object
+- exclude:
+      uidRegex: ^Microsoft\.AspNetCore\.Mvc\.Controller

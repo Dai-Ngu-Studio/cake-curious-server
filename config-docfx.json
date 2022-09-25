@@ -5,9 +5,10 @@
         {
           "files": [
             "cake-curious-server.sln"
-          ]
+          ],
         }
       ],
+	  "filter": "filterConfig.yml",
       "dest": "api",
       "disableGitFeatures": false,
       "disableDefaultFilter": false
