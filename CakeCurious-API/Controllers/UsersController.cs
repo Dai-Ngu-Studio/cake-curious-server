@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
+using Repository.Models.Roles;
 using Repository.Models.Users;
 using System.Security.Claims;
 
@@ -21,6 +22,43 @@ namespace CakeCurious_API.Controllers
         {
             userRepository = _userRepository;
             userDeviceRepository = _userDeviceRepository;
+        }
+
+        [HttpPost("current/role")]
+        public async Task<ActionResult<DetachedUser>> AddRoleToCurrentUser(AddRoleRequest roleRequest)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                // Check if user existed in database
+                User? user = await userRepository.Get(uid);
+                if (user != null)
+                {
+                    // Check if user already has requested role
+                    var roleExisted = user.HasRoles!.Any(x => x.RoleId == roleRequest.RoleId);
+                    if (!roleExisted)
+                    {
+                        try
+                        {
+                            // Add role to user
+                            user.HasRoles!.Add(new UserHasRole
+                            {
+                                UserId = uid,
+                                RoleId = roleRequest.RoleId,
+                            });
+                            await userRepository.Update(user);
+                            return Ok();
+                        }
+                        catch (Exception)
+                        {
+                            return BadRequest();
+                        }
+                    }
+                    return BadRequest();
+                }
+            }
+            return Unauthorized();
         }
 
         [HttpPost("login")]

@@ -25,13 +25,18 @@ namespace Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<DetailRecipe?> GetRecipeDetails(Guid recipeId)
+        public async Task<DetailRecipe?> GetRecipeDetails(Guid recipeId, string userId)
         {
-            var db = new CakeCuriousDbContext();
-            return await db.Recipes
-                .Where(x => x.Id == recipeId)
-                .ProjectToType<DetailRecipe>()
-                .FirstOrDefaultAsync();
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("userId", userId);
+
+                var db = new CakeCuriousDbContext();
+                return await db.Recipes
+                    .Where(x => x.Id == recipeId)
+                    .ProjectToType<DetailRecipe>()
+                    .FirstOrDefaultAsync();
+            }
         }
 
         public int CountLatestRecipesForFollower(string uid)

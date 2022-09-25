@@ -53,12 +53,18 @@ namespace CakeCurious_API.Controllers
         {
             try
             {
-                var recipe = await recipeRepository.GetRecipeDetails(id);
-                if (recipe != null)
+                // Get ID Token
+                string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrWhiteSpace(uid))
                 {
-                    return Ok(recipe);
+                    var recipe = await recipeRepository.GetRecipeDetails(id, uid);
+                    if (recipe != null)
+                    {
+                        return Ok(recipe);
+                    }
+                    return NotFound();
                 }
-                return NotFound();
+                return Unauthorized();
             }
             catch (Exception)
             {

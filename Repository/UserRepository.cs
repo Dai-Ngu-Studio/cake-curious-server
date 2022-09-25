@@ -17,7 +17,7 @@ namespace Repository
         public async Task<User?> Get(string uid)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Users.FirstOrDefaultAsync(x => x.Id == uid);
+            return await db.Users.Include(x => x.HasRoles).FirstOrDefaultAsync(x => x.Id == uid);
         }
 
         public async Task<DetachedUser?> GetDetached(string uid)
@@ -33,9 +33,11 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
-        public Task Update(User obj)
+        public async Task Update(User obj)
         {
-            throw new NotImplementedException();
+            var db = new CakeCuriousDbContext();
+            db.Users.Update(obj);
+            await db.SaveChangesAsync();
         }
     }
 }
