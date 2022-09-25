@@ -24,16 +24,18 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("following")]
         [Authorize]
-        public ActionResult<ICollection<HomeRecipe>> GetRecipesFromFollowing(
-            [Range(1, int.MaxValue)] int page = 1, 
-            [Range(0, int.MaxValue)] int take = 5)
+        public ActionResult<HomeRecipePage> GetRecipesFromFollowing(
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                return Ok(recipeRepository.GetLatestRecipesForFollower(uid, (page - 1) * take, take));
+                var recipePage = new HomeRecipePage();
+                recipePage.TotalPages = (int)Math.Ceiling((decimal)recipeRepository.CountLatestRecipesForFollower(uid) / take);
+                recipePage.Recipes = recipeRepository.GetLatestRecipesForFollower(uid, (page - 1) * take, take);
+                return Ok(recipePage);
             }
             return Unauthorized();
         }
@@ -47,14 +49,14 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}")]
         [Authorize]
-        public ActionResult<DetailRecipe> GetRecipeDetails(Guid id)
+        public async Task<ActionResult<DetailRecipe>> GetRecipeDetails(Guid id)
         {
             try
             {
-                var recipe = recipeRepository.GetRecipeDetails(id);
+                var recipe = await recipeRepository.GetRecipeDetails(id);
                 if (recipe != null)
                 {
-                    return recipe;
+                    return Ok(recipe);
                 }
                 return NotFound();
             }
@@ -66,11 +68,11 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/{step:int}")]
         [Authorize]
-        public ActionResult<DetailRecipeStep> GetRecipeStepDetails(Guid id, [Range(1, int.MaxValue)] int step)
+        public async Task<ActionResult<DetailRecipeStep>> GetRecipeStepDetails(Guid id, [Range(1, int.MaxValue)] int step)
         {
             try
             {
-                var recipe = recipeRepository.GetRecipeStepDetails(id, step);
+                var recipe = await recipeRepository.GetRecipeStepDetails(id, step);
                 if (recipe != null)
                 {
                     return Ok(recipe);
@@ -85,7 +87,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/comments")]
         [Authorize]
-        public ActionResult<ICollection<RecipeComment>> GetCommentsOfRecipe(Guid id)
+        public ActionResult<IEnumerable<RecipeComment>> GetCommentsOfRecipe(Guid id)
         {
             try
             {

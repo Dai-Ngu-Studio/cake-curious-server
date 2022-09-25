@@ -1,5 +1,6 @@
 ﻿using BusinessObject;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
@@ -15,27 +16,38 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
-        public DetailRecipeStep? GetRecipeStepDetails(Guid recipeId, int stepNumber)
+        public async Task<DetailRecipeStep?> GetRecipeStepDetails(Guid recipeId, int stepNumber)
         {
             var db = new CakeCuriousDbContext();
-            return db.RecipeSteps
+            return await db.RecipeSteps
                 .Where(x => x.RecipeId == recipeId && x.StepNumber == stepNumber)
                 .ProjectToType<DetailRecipeStep>()
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public DetailRecipe? GetRecipeDetails(Guid recipeId)
+        public async Task<DetailRecipe?> GetRecipeDetails(Guid recipeId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes
+                .Where(x => x.Id == recipeId)
+                .ProjectToType<DetailRecipe>()
+                .FirstOrDefaultAsync();
+        }
+
+        public int CountLatestRecipesForFollower(string uid)
         {
             var db = new CakeCuriousDbContext();
             return db.Recipes
-                .Where(x => x.Id == recipeId)
-                .ProjectToType<DetailRecipe>()
-                .FirstOrDefault();
+                .OrderBy(x => x.Id)
+                .Where(x => x.PublishedDate!.Value <= DateTime.Now
+                && x.PublishedDate!.Value >= DateTime.Now.AddDays(-2))
+                .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
+                .Count();
         }
 
         // Recipe was published within 2 days
         // Recipe has an author which is followed by the follower with UID
-        public ICollection<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take)
+        public IEnumerable<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take)
         {
             var db = new CakeCuriousDbContext();
             return db.Recipes
@@ -45,8 +57,7 @@ namespace Repository
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
                 .Skip(skip)
                 .Take(take)
-                .ProjectToType<HomeRecipe>()
-                .ToList();
+                .ProjectToType<HomeRecipe>();
         }
 
         // 10 recipes for each collection
@@ -61,8 +72,7 @@ namespace Repository
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-1))
                 .Take(10)
-                .ProjectToType<HomeRecipe>()
-                .ToList();
+                .ProjectToType<HomeRecipe>();
             home.Trending = trending;
             return home;
         }

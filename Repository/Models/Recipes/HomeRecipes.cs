@@ -2,6 +2,6 @@
 {
     public class HomeRecipes
     {
-        public ICollection<HomeRecipe>? Trending { get; set; }
+        public IEnumerable<HomeRecipe>? Trending { get; set; }
     }
 }

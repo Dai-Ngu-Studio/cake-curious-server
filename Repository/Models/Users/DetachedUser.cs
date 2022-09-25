@@ -16,6 +16,6 @@ namespace Repository.Models.Users
         public DateTime? CitizenshipDate { get; set; }
         public Guid? StoreId { get; set; }
         public int? Status { get; set; }
-        public ICollection<UserHasRole>? HasRoles { get; set; }
+        public IEnumerable<UserHasRole>? HasRoles { get; set; }
     }
 }

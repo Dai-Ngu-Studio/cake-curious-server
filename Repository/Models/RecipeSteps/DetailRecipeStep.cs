@@ -8,7 +8,7 @@ namespace Repository.Models.RecipeSteps
         public int? StepNumber { get; set; }
         public string? Content { get; set; }
         public int? StepTimestamp { get; set; }
-        public ICollection<DetachedRecipeMaterial>? Ingredients { get; set; }
-        public ICollection<DetachedRecipeMaterial>? Equipment { get; set; }
+        public IEnumerable<DetachedRecipeMaterial>? Ingredients { get; set; }
+        public IEnumerable<DetachedRecipeMaterial>? Equipment { get; set; }
     }
 }

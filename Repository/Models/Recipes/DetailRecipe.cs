@@ -16,8 +16,8 @@ namespace Repository.Models.Recipes
         public decimal? CookTime { get; set; }
         public DateTime? PublishedDate { get; set; }
         public int? Likes { get; set; }
-        public ICollection<DetachedRecipeMaterial>? Ingredients { get; set; }
-        public ICollection<DetachedRecipeMaterial>? Equipment { get; set; }
-        public ICollection<SimpleRecipeStep>? RecipeSteps { get; set; }
+        public IEnumerable<DetachedRecipeMaterial>? Ingredients { get; set; }
+        public IEnumerable<DetachedRecipeMaterial>? Equipment { get; set; }
+        public IEnumerable<SimpleRecipeStep>? RecipeSteps { get; set; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using BusinessObject;
-using Repository.Models.Users;
+﻿using Repository.Models.Users;
 
 namespace Repository.Models.Comments
 {
@@ -10,7 +9,7 @@ namespace Repository.Models.Comments
         public string? Content { get; set; }
         public DateTime? SubmittedDate { get; set; }
         public int? Depth { get; set; }
-        public ICollection<RecipeCommentMedia>? Images { get; set; }
-        public ICollection<RecipeComment>? Replies { get; set; }
+        public IEnumerable<RecipeCommentMedia>? Images { get; set; }
+        public IEnumerable<RecipeComment>? Replies { get; set; }
     }
 }

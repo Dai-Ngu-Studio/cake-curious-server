@@ -4,6 +4,6 @@ namespace Repository.Interfaces
 {
     public interface ICommentRepository
     {
-        public ICollection<RecipeComment> GetCommentsForRecipe(Guid recipeId);
+        public IEnumerable<RecipeComment> GetCommentsForRecipe(Guid recipeId);
     }
 }

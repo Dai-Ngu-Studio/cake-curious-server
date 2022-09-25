@@ -6,9 +6,10 @@ namespace Repository.Interfaces
 {
     public interface IRecipeRepository
     {
-        public DetailRecipeStep? GetRecipeStepDetails(Guid recipeId, int stepNumber);
-        public DetailRecipe? GetRecipeDetails(Guid recipeId);
-        public ICollection<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take);
+        public Task<DetailRecipeStep?> GetRecipeStepDetails(Guid recipeId, int stepNumber);
+        public Task<DetailRecipe?> GetRecipeDetails(Guid recipeId);
+        public int CountLatestRecipesForFollower(string uid);
+        public IEnumerable<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take);
         public HomeRecipes GetHomeRecipes();
         public Task Add(Recipe obj);
     }
