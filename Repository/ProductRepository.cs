@@ -2,6 +2,7 @@
 using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Repository.Constants.Products;
 using Repository.Interfaces;
 using Repository.Models.Product;
 using Repository.Models.Recipes;
@@ -40,13 +41,13 @@ namespace Repository
             return prods.OrderByDescending(p => p.Name).ToList();
         }
 
-        public IEnumerable<StoreDashboardProduct> FilterByStatusOutOfStock(IEnumerable<StoreDashboardProduct> prods)
+        public IEnumerable<StoreDashboardProduct> FilterByInactiveStatus(IEnumerable<StoreDashboardProduct> prods)
         {
-            return prods.Where(p => p.Status == 2).ToList();
+            return prods.Where(p => p.Status == (int)ProductStatusEnum.Inactive).ToList();
         }
-        public IEnumerable<StoreDashboardProduct> FilterByStatusInStock(IEnumerable<StoreDashboardProduct> prods)
+        public IEnumerable<StoreDashboardProduct> FilterByActiveStatus(IEnumerable<StoreDashboardProduct> prods)
         {
-            return prods.Where(p => p.Status == 1).ToList();
+            return prods.Where(p => p.Status == (int)ProductStatusEnum.Active).ToList();
         }
 
         public IEnumerable<StoreDashboardProduct> SearchProduct(string keyWord)
@@ -90,15 +91,15 @@ namespace Repository
                     return result.Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize).ToList();
                 }
-                else if (filter_product == "ByOutOfStockStatus")
+                else if (filter_product == "ByActiveStatus")
                 {
-                    result = FilterByStatusOutOfStock(prod);
+                    result = FilterByActiveStatus(prod);
                     return result.Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize).ToList();
                 }
                 else if (filter_product == "ByInStockStatus")
                 {
-                    result = FilterByStatusInStock(prod);
+                    result = FilterByInactiveStatus(prod);
                     return result.Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize).ToList();
                 }
@@ -178,14 +179,14 @@ namespace Repository
                     result = FilterByAscName(prod);
                     return result.Count();
                 }
-                else if (filter_product == "ByOutOfStockStatus")
+                else if (filter_product == "ByInactiveStatus")
                 {
-                    result = FilterByStatusOutOfStock(prod);
+                    result = FilterByInactiveStatus(prod);
                     return result.Count();
                 }
-                else if (filter_product == "ByInStockStatus")
+                else if (filter_product == "ByActiveStatus")
                 {
-                    result = FilterByStatusInStock(prod);
+                    result = FilterByActiveStatus(prod);
                     return result.Count();
                 }
             }

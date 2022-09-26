@@ -72,7 +72,7 @@ namespace CakeCurious_API.Controllers
             return Ok(prod);
         }
 
-        [HttpPut("hide/{guid}")]
+        [HttpDelete("{guid}")]
         [Authorize]
         public async Task<ActionResult> HideProduct(Guid guid)
         {
