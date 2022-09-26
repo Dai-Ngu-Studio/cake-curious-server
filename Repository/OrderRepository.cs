@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mapster;
+using Repository.Constants.Orders;
 
 namespace Repository
 {
@@ -23,12 +24,12 @@ namespace Repository
         }
         public IEnumerable<StoreDashboardOrder> FilterByStatusComplelted(IEnumerable<StoreDashboardOrder> orders)
         {
-            return orders.Where(p => p.Status == 1).ToList();
+            return orders.Where(p => p.Status == (int)OrderStatusEnum.Completed).ToList();
         }
 
         public IEnumerable<StoreDashboardOrder> FilterByStatusPending(IEnumerable<StoreDashboardOrder> orders)
         {
-            return orders.Where(p => p.Status == 2).ToList();
+            return orders.Where(p => p.Status == (int)OrderStatusEnum.Pending).ToList();
         }
 
         public IEnumerable<StoreDashboardOrder> SearchOrder(string? keyWord)
@@ -96,6 +97,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Orders.FirstOrDefaultAsync(x => x.Id == id);
         }
+
         public async Task UpdateOrder(Order updateObj)
         {
             try

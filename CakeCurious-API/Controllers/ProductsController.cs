@@ -76,7 +76,7 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult> HideProduct(Guid guid)
         {
-            Product? prod = await _productRepository.HideProduct(guid);
+            Product? prod = await _productRepository.Delete(guid);
             return Ok("Delete product " + prod!.Name + " success");
         }
 

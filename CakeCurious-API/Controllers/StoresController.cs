@@ -68,11 +68,11 @@ namespace CakeCurious_API.Controllers
             return Ok(prod);
         }
 
-        [HttpPut("hide/{guid}")]
+        [HttpDelete("{guid}")]
         [Authorize]
         public async Task<ActionResult> DeleteStore(Guid? guid)
         {
-            Store? store = await _storeReposiotry.HideStore(guid);
+            Store? store = await _storeReposiotry.Delete(guid);
             return Ok("Delete Store " + store!.Name + " success");
         }
 

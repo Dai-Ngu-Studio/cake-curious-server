@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Repository.Models.Stores;
 using Mapster;
 using Repository.Interfaces;
+using Repository.Constants.Products;
 
 namespace Repository
 {
@@ -28,18 +29,14 @@ namespace Repository
         {
             return stores.OrderByDescending(p => p.Name).ToList();
         }
-        public IEnumerable<AdminDashboardStore> FilterByStatusUnAvailable(IEnumerable<AdminDashboardStore> stores)
+        public IEnumerable<AdminDashboardStore> FilterByStatusActive(IEnumerable<AdminDashboardStore> stores)
         {
-            return stores.Where(p => p.Status == 2).ToList();
+            return stores.Where(p => p.Status == (int)StoreStatusEnum.Active).ToList();
         }
 
-        public IEnumerable<AdminDashboardStore> FilterByStatusMaintaining(IEnumerable<AdminDashboardStore> stores)
+        public IEnumerable<AdminDashboardStore> FilterByStatusInactive(IEnumerable<AdminDashboardStore> stores)
         {
-            return stores.Where(p => p.Status == 3).ToList();
-        }
-        public IEnumerable<AdminDashboardStore> FilterByStatusAvailable(IEnumerable<AdminDashboardStore> stores)
-        {
-            return stores.Where(p => p.Status == 1).ToList();
+            return stores.Where(p => p.Status == (int)StoreStatusEnum.Inactive).ToList();
         }
 
         public IEnumerable<AdminDashboardStore> SearchStore(string keyWord)
@@ -70,22 +67,16 @@ namespace Repository
                     result = FilterByAscName(store);
                     return result.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).ToList();
-                }
-                else if (fillter_Store == "ByStatusMaintaining")
+                }           
+                else if (fillter_Store == "ByStatusActive")
                 {
-                    result = FilterByStatusMaintaining(store);
+                    result = FilterByStatusActive(store);
                     return result.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).ToList();
                 }
-                else if (fillter_Store == "ByStatusUnaVailable")
+                else if (fillter_Store == "ByStatusInactive")
                 {
-                    result = FilterByStatusUnAvailable(store);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
-                }
-                else if (fillter_Store == "ByStatusAvailable")
-                {
-                    result = FilterByStatusAvailable(store);
+                    result = FilterByStatusInactive(store);
                     return result.Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize).ToList();
                 }
@@ -103,14 +94,14 @@ namespace Repository
             return await db.Stores.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<Store?> HideStore(Guid? id)
+        public async Task<Store?> Delete(Guid? id)
         {
             Store? store = null;
             try
             {
                 store = await GetById(id!.Value);
                 if (store == null) throw new Exception("Store that need to delete does not exist");
-                store.Status = 3;
+                store.Status = (int)StoreStatusEnum.Inactive;
                 var db = new CakeCuriousDbContext();
                 db.Entry<Store>(store).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 await db.SaveChangesAsync();
@@ -155,19 +146,15 @@ namespace Repository
                     result = FilterByAscName(store);
                     return result.Count();
                 }
-                else if (filter_Store == "ByStatusMaintaining")
+              
+                else if (filter_Store == "ByStatusInactive")
                 {
-                    result = FilterByStatusMaintaining(store);
+                    result = FilterByStatusInactive(store);
                     return result.Count();
                 }
-                else if (filter_Store == "ByStatusUnaVailable")
+                else if (filter_Store == "ByStatusActive")
                 {
-                    result = FilterByStatusUnAvailable(store);
-                    return result.Count();
-                }
-                else if (filter_Store == "ByStatusAvailable")
-                {
-                    result = FilterByStatusAvailable(store);
+                    result = FilterByStatusActive(store);
                     return result.Count();
                 }
             }
