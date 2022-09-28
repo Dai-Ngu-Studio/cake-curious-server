@@ -35,6 +35,9 @@ namespace BusinessObject
         [ForeignKey("StaffId")]
         public User? Staff { get; set; }
 
+        [Column("item_id")]
+        public Guid? ItemId { get; set; }
+
         [Column("item_type")]
         public int? ItemType { get; set; }
 
