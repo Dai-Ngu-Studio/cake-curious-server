@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 
@@ -11,6 +12,6 @@ namespace Repository.Interfaces
         public int CountLatestRecipesForFollower(string uid);
         public IEnumerable<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take);
         public HomeRecipes GetHomeRecipes();
-        public Task Add(Recipe obj);
+        public Task<bool> AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials);
     }
 }

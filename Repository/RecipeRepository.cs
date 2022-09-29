@@ -2,6 +2,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
+using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 
@@ -9,11 +10,44 @@ namespace Repository
 {
     public class RecipeRepository : IRecipeRepository
     {
-        public async Task Add(Recipe obj)
+        public async Task<bool> AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials)
         {
             var db = new CakeCuriousDbContext();
-            db.Recipes.Add(obj);
-            await db.SaveChangesAsync();
+            var transaction = await db.Database.BeginTransactionAsync();
+            try
+            {
+                // Add recipe, materials and steps
+                await db.Recipes.AddAsync(obj);
+                // Add relationship between material and step
+                var stepMaterials = new List<RecipeStepMaterial>();
+                foreach (var material in recipeMaterials)
+                {
+                    if (material.UsedInSteps != null)
+                    {
+                        foreach (var step in material.UsedInSteps)
+                        {
+                            var recipeStep = obj.RecipeSteps!.FirstOrDefault(x => x.StepNumber == step);
+                            if (recipeStep != null)
+                            {
+                                stepMaterials.Add(new RecipeStepMaterial
+                                {
+                                    RecipeMaterialId = material.Id,
+                                    RecipeStepId = recipeStep.Id,
+                                });
+                            }
+                        }
+                    }
+                }
+                await db.RecipeStepMaterials.AddRangeAsync(stepMaterials);
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+            }
+            return false;
         }
 
         public async Task<DetailRecipeStep?> GetRecipeStepDetails(Guid recipeId, int stepNumber)

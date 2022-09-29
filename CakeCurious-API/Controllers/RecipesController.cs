@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BusinessObject;
+using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 using Repository.Models.Comments;
+using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 using System.ComponentModel.DataAnnotations;
@@ -36,6 +39,32 @@ namespace CakeCurious_API.Controllers
                 recipePage.TotalPages = (int)Math.Ceiling((decimal)recipeRepository.CountLatestRecipesForFollower(uid) / take);
                 recipePage.Recipes = recipeRepository.GetLatestRecipesForFollower(uid, (page - 1) * take, take);
                 return Ok(recipePage);
+            }
+            return Unauthorized();
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult<DetailRecipe>> CreateRecipe(CreateRecipe createRecipe)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var materials = new List<CreateRecipeMaterial>();
+                materials.AddRange(createRecipe.Ingredients);
+                materials.AddRange(createRecipe.Equipment);
+                foreach (var material in materials)
+                {
+                    material.Id = Guid.NewGuid();
+                }
+
+                var recipe = createRecipe.Adapt<Recipe>();
+
+                recipe.Status = 0;
+                recipe.PublishedDate = DateTime.Now;
+                recipe.UserId = uid;
+
+                await recipeRepository.AddRecipe(recipe, materials);
             }
             return Unauthorized();
         }
