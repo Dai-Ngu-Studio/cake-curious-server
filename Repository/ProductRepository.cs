@@ -19,92 +19,80 @@ namespace Repository
             db.Products.Add(obj);
             await db.SaveChangesAsync();
         }
-
-        public IEnumerable<StoreDashboardProduct> FilterByDecsPrice(IEnumerable<StoreDashboardProduct> prods)
+        public IEnumerable<Product> FilterByIngredient(IEnumerable<Product> prods)
+        {
+            return prods.Where(p => p.ProductType == (int)ProductTypeEnum.Ingredient).ToList();
+        }
+        public IEnumerable<Product> FilterByTool(IEnumerable<Product> prods)
+        {
+            return prods.Where(p => p.ProductType == (int)ProductTypeEnum.Tool).ToList();
+        }
+        public IEnumerable<Product> OrderByAscPrice(IEnumerable<Product> prods)
         {
             return prods.OrderBy(p => p.Price).ToList();
         }
 
-        public IEnumerable<StoreDashboardProduct> FilterByAscPrice(IEnumerable<StoreDashboardProduct> prods)
+        public IEnumerable<Product> OrderbyByDescPrice(IEnumerable<Product> prods)
         {
 
             return prods.OrderByDescending(p => p.Price).ToList();
         }
 
-        public IEnumerable<StoreDashboardProduct> FilterByAscName(IEnumerable<StoreDashboardProduct> prods)
+        public IEnumerable<Product> OrderByAscName(IEnumerable<Product> prods)
         {
 
             return prods.OrderBy(p => p.Name).ToList();
         }
-        public IEnumerable<StoreDashboardProduct> FilterByDescName(IEnumerable<StoreDashboardProduct> prods)
+        public IEnumerable<Product> OrderByDescName(IEnumerable<Product> prods)
         {
             return prods.OrderByDescending(p => p.Name).ToList();
         }
 
-        public IEnumerable<StoreDashboardProduct> FilterByInactiveStatus(IEnumerable<StoreDashboardProduct> prods)
+        public IEnumerable<Product> SearchProduct(string? keyWord, IEnumerable<Product> prods)
         {
-            return prods.Where(p => p.Status == (int)ProductStatusEnum.Inactive).ToList();
-        }
+            //IEnumerable<StoreDashboardProduct> prods;
 
-        public IEnumerable<StoreDashboardProduct> FilterByActiveStatus(IEnumerable<StoreDashboardProduct> prods)
-        {
-            return prods.Where(p => p.Status == (int)ProductStatusEnum.Active).ToList();
-        }
-
-        public IEnumerable<StoreDashboardProduct> SearchProduct(string? keyWord)
-        {
-            IEnumerable<StoreDashboardProduct> prods;
-            var db = new CakeCuriousDbContext();
-            prods = keyWord != null
-                    ? db.Products.Where(p => p.Name!.Contains(keyWord!)).ProjectToType<StoreDashboardProduct>().ToList()
-                    : db.Products.ProjectToType<StoreDashboardProduct>().ToList();
+            prods = prods.Where(p => p.Name == keyWord).ToList();
             return prods;
         }
-        public IEnumerable<StoreDashboardProduct>? GetProducts(string? s, string? filter_product, int pageIndex, int pageSize)
+        public IEnumerable<StoreDashboardProduct>? GetProducts(string? s, string? order_by, string? product_type, int pageIndex, int pageSize)
         {
-            IEnumerable<StoreDashboardProduct> result;
-            IEnumerable<StoreDashboardProduct> prod = SearchProduct(s!);
+            var db = new CakeCuriousDbContext();
+            IEnumerable<Product> prods = db.Products.ToList();
             try
-            {
-                if (filter_product == null)
-                    return prod.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
-                else if (filter_product == "ByAscendingPrice")
+            {   //Search
+                if (s != null)
                 {
-                    result = FilterByAscPrice(prod);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    prods = SearchProduct(s, prods);
                 }
-                else if (filter_product == "ByDescendingPrice")
+                //Filter
+                if (product_type != null && product_type == ProductTypeEnum.Ingredient.ToString())
                 {
-                    result = FilterByDecsPrice(prod);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    prods = FilterByIngredient(prods);
                 }
-                else if (filter_product == "ByDescendingName")
+                else if (product_type != null && product_type == ProductTypeEnum.Tool.ToString())
                 {
-                    result = FilterByDescName(prod);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    prods = FilterByTool(prods);
                 }
-                else if (filter_product == "ByAscendingName")
+                //Orderby
+                if (order_by == ProductOrderByEnum.AscName.ToString())
                 {
-                    result = FilterByAscName(prod);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    prods = OrderByAscName(prods);
                 }
-                else if (filter_product == "ByActiveStatus")
+                else if (order_by == ProductOrderByEnum.DescName.ToString())
                 {
-                    result = FilterByActiveStatus(prod);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    prods = OrderByDescName(prods);
                 }
-                else if (filter_product == "ByInactiveStatus")
+                else if (order_by == ProductOrderByEnum.AscPrice.ToString())
                 {
-                    result = FilterByInactiveStatus(prod);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    prods = OrderByAscPrice(prods);
                 }
+                else
+                {
+                    prods = OrderbyByDescPrice(prods);
+                }
+                return prods.Adapt<IEnumerable<StoreDashboardProduct>>().Skip((pageIndex - 1) * pageSize)
+                            .Take(pageSize).ToList();
             }
             catch (Exception ex)
             {
@@ -153,44 +141,43 @@ namespace Repository
             }
         }
 
-        public int CountDashboardProducts(string? s, string? filter_product)
+        public int CountDashboardProducts(string? s, string? order_by, string? product_type)
         {
-            IEnumerable<StoreDashboardProduct> result;
-            IEnumerable<StoreDashboardProduct> prod = SearchProduct(s!);
+            var db = new CakeCuriousDbContext();
+            IEnumerable<Product> prods = db.Products.ToList();
             try
-            {
-                if (filter_product == null)
-                    return prod.Count();
-                else if (filter_product == "ByAscendingPrice")
+            {   //Search
+                if (s != null)
                 {
-                    result = FilterByAscPrice(prod);
-                    return result.Count();
+                    prods = SearchProduct(s, prods);
                 }
-                else if (filter_product == "ByDescendingPrice")
+                //Filter
+                if (product_type != null && product_type == ProductTypeEnum.Ingredient.ToString())
                 {
-                    result = FilterByDecsPrice(prod);
-                    return result.Count();
+                    prods = FilterByIngredient(prods);
                 }
-                else if (filter_product == "ByDescendingName")
+                else if (product_type != null && product_type == ProductTypeEnum.Tool.ToString())
                 {
-                    result = FilterByDescName(prod);
-                    return result.Count();
+                    prods = FilterByTool(prods);
                 }
-                else if (filter_product == "ByAscendingName")
+                //Orderby
+                if (order_by == ProductOrderByEnum.AscName.ToString())
                 {
-                    result = FilterByAscName(prod);
-                    return result.Count();
+                    prods = OrderByAscName(prods);
                 }
-                else if (filter_product == "ByInactiveStatus")
+                else if (order_by == ProductOrderByEnum.DescName.ToString())
                 {
-                    result = FilterByInactiveStatus(prod);
-                    return result.Count();
+                    prods = OrderByAscName(prods);
                 }
-                else if (filter_product == "ByActiveStatus")
+                else if (order_by == ProductOrderByEnum.AscPrice.ToString())
                 {
-                    result = FilterByActiveStatus(prod);
-                    return result.Count();
+                    prods = OrderByAscPrice(prods);
                 }
+                else
+                {
+                    prods = OrderbyByDescPrice(prods);
+                }
+                return prods.Count();
             }
             catch (Exception ex)
             {

@@ -22,11 +22,34 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<Product>> GetProducts(string? s, string? filter_Product, int PageIndex, int PageSize)
+        public ActionResult<IEnumerable<Product>> GetProducts(string? s, string? order_by, string? product_type, int? PageIndex, int? PageSize)
         {
+            int DefaultPageIndex = 0, DefaultPageSize = 0;
             var result = new StoreDashboardProductPage();
-            result.Products = _productRepository.GetProducts(s, filter_Product, PageIndex, PageSize);
-            result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s!, filter_Product!) / PageSize);
+            if (PageIndex == null && PageSize == null)
+            {
+                DefaultPageIndex = 1;
+                DefaultPageSize = 10;
+                result.Products = _productRepository.GetProducts(s, order_by, product_type, DefaultPageIndex, DefaultPageSize);
+                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s, order_by, product_type) / DefaultPageSize);
+            }
+            else if (PageIndex != null && PageSize == null)
+            {
+                DefaultPageSize = 10;
+                result.Products = _productRepository.GetProducts(s, order_by, product_type, PageIndex.Value, DefaultPageSize);
+                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s, order_by, product_type) / DefaultPageSize);
+            }
+            else if (PageIndex == null && PageSize != null)
+            {
+                DefaultPageIndex = 1;
+                result.Products = _productRepository.GetProducts(s, order_by, product_type, DefaultPageIndex, PageSize.Value);
+                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s, order_by, product_type) / PageSize.Value);
+            }
+            else
+            {
+                result.Products = _productRepository.GetProducts(s, order_by, product_type, PageIndex!.Value, PageSize!.Value);
+                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s, order_by, product_type) / PageSize.Value);
+            }
             return Ok(result);
         }
 
