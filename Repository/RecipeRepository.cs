@@ -1,6 +1,7 @@
 ﻿using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Repository.Constants.Recipes;
 using Repository.Interfaces;
 using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
@@ -62,15 +63,16 @@ namespace Repository
             }
         }
 
-        public int CountLatestRecipesForFollower(string uid)
+        public async Task<int> CountLatestRecipesForFollower(string uid)
         {
             var db = new CakeCuriousDbContext();
-            return db.Recipes
+            return await db.Recipes
                 .OrderBy(x => x.Id)
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-2))
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
-                .Count();
+                .Where(x => x.Status == (int)RecipeStatusEnum.Active)
+                .CountAsync();
         }
 
         // Recipe was published within 2 days
@@ -83,6 +85,7 @@ namespace Repository
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-2))
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
+                .Where(x => x.Status == (int)RecipeStatusEnum.Active)
                 .Skip(skip)
                 .Take(take)
                 .ProjectToType<HomeRecipe>();
@@ -99,6 +102,7 @@ namespace Repository
                 .OrderByDescending(x => x.Likes!.Count)
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-1))
+                .Where(x => x.Status == (int)RecipeStatusEnum.Active)
                 .Take(10)
                 .ProjectToType<HomeRecipe>();
             home.Trending = trending;

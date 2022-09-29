@@ -28,7 +28,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("following")]
         [Authorize]
-        public ActionResult<HomeRecipePage> GetRecipesFromFollowing(
+        public async Task<ActionResult<HomeRecipePage>> GetRecipesFromFollowing(
             [Range(1, int.MaxValue)] int page = 1,
             [Range(1, int.MaxValue)] int take = 5)
         {
@@ -37,7 +37,7 @@ namespace CakeCurious_API.Controllers
             if (!string.IsNullOrWhiteSpace(uid))
             {
                 var recipePage = new HomeRecipePage();
-                recipePage.TotalPages = (int)Math.Ceiling((decimal)recipeRepository.CountLatestRecipesForFollower(uid) / take);
+                recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountLatestRecipesForFollower(uid) / take);
                 recipePage.Recipes = recipeRepository.GetLatestRecipesForFollower(uid, (page - 1) * take, take);
                 return Ok(recipePage);
             }

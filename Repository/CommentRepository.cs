@@ -1,5 +1,6 @@
 ﻿using BusinessObject;
 using Mapster;
+using Repository.Constants.Comments;
 using Repository.Interfaces;
 using Repository.Models.Comments;
 
@@ -12,6 +13,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return db.Comments
                 .Where(x => x.RecipeId == recipeId && x.RootId == null)
+                .Where(x => x.Status == (int)CommentStatusEnum.Active)
                 .ProjectToType<RecipeComment>();
         }
 
