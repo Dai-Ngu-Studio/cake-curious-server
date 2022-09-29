@@ -45,19 +45,21 @@ namespace Repository
         {
             return prods.Where(p => p.Status == (int)ProductStatusEnum.Inactive).ToList();
         }
+
         public IEnumerable<StoreDashboardProduct> FilterByActiveStatus(IEnumerable<StoreDashboardProduct> prods)
         {
             return prods.Where(p => p.Status == (int)ProductStatusEnum.Active).ToList();
         }
 
-        public IEnumerable<StoreDashboardProduct> SearchProduct(string keyWord)
+        public IEnumerable<StoreDashboardProduct> SearchProduct(string? keyWord)
         {
             IEnumerable<StoreDashboardProduct> prods;
             var db = new CakeCuriousDbContext();
-            prods = db.Products.Where(p => p.Name!.Contains(keyWord)).ProjectToType<StoreDashboardProduct>().ToList();
+            prods = keyWord != null
+                    ? db.Products.Where(p => p.Name!.Contains(keyWord!)).ProjectToType<StoreDashboardProduct>().ToList()
+                    : db.Products.ProjectToType<StoreDashboardProduct>().ToList();
             return prods;
         }
-
         public IEnumerable<StoreDashboardProduct>? GetProducts(string? s, string? filter_product, int pageIndex, int pageSize)
         {
             IEnumerable<StoreDashboardProduct> result;
@@ -97,7 +99,7 @@ namespace Repository
                     return result.Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize).ToList();
                 }
-                else if (filter_product == "ByInStockStatus")
+                else if (filter_product == "ByInactiveStatus")
                 {
                     result = FilterByInactiveStatus(prod);
                     return result.Skip((pageIndex - 1) * pageSize)
@@ -194,7 +196,7 @@ namespace Repository
             {
 
                 Console.WriteLine(ex.Message);
-            }       
+            }
             return 0;
         }
     }

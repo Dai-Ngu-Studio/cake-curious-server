@@ -39,11 +39,13 @@ namespace Repository
             return stores.Where(p => p.Status == (int)StoreStatusEnum.Inactive).ToList();
         }
 
-        public IEnumerable<AdminDashboardStore> SearchStore(string keyWord)
+        public IEnumerable<AdminDashboardStore> SearchStore(string? keyWord)
         {
             IEnumerable<AdminDashboardStore> stores;
             var db = new CakeCuriousDbContext();
-            stores = db.Stores.Where(p => p.Name!.Contains(keyWord)).ProjectToType<AdminDashboardStore>().ToList();
+            stores = keyWord != null
+                ? db.Stores.Where(p => p.Name!.Contains(keyWord!)).ProjectToType<AdminDashboardStore>().ToList()
+                : db.Stores.ProjectToType<AdminDashboardStore>().ToList();
             return stores;
         }
 
@@ -67,7 +69,7 @@ namespace Repository
                     result = FilterByAscName(store);
                     return result.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).ToList();
-                }           
+                }
                 else if (fillter_Store == "ByStatusActive")
                 {
                     result = FilterByStatusActive(store);
@@ -146,7 +148,7 @@ namespace Repository
                     result = FilterByAscName(store);
                     return result.Count();
                 }
-              
+
                 else if (filter_Store == "ByStatusInactive")
                 {
                     result = FilterByStatusInactive(store);

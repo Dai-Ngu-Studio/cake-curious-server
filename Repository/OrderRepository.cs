@@ -33,30 +33,22 @@ namespace Repository
         }
 
         public IEnumerable<StoreDashboardOrder> SearchOrder(string? keyWord)
-        {   
+        {
             IEnumerable<StoreDashboardOrder>? orders;
             var db = new CakeCuriousDbContext();
-            if(keyWord != null)
-            {
-                orders = db.Orders.Include(o => o.User).Where(p => p.User!.DisplayName!.Contains(keyWord!)).ProjectToType<StoreDashboardOrder>().ToList();
-                Console.WriteLine("Ket qua seach co: " + orders!.Count());
-            }
-
-            else
-            {
-                orders = db.Orders.Include(o => o.User).ProjectToType<StoreDashboardOrder>().ToList();
-                Console.WriteLine("List không search co: " + orders.Count());
-            }  
+            orders = keyWord != null
+                    ? db.Orders.Include(o => o.User).Where(p => p.User!.DisplayName!.Contains(keyWord!)).ProjectToType<StoreDashboardOrder>().ToList()
+                    : db.Orders.Include(o => o.User).ProjectToType<StoreDashboardOrder>().ToList();
             return orders;
         }
-        public IEnumerable<StoreDashboardOrder>? GetOrders(string? s,string? filter_Order,int pageSize, int pageIndex)
+        public IEnumerable<StoreDashboardOrder>? GetOrders(string? s, string? filter_Order, int pageSize, int pageIndex)
         {
             IEnumerable<StoreDashboardOrder> result;
-            IEnumerable<StoreDashboardOrder> orders =  SearchOrder(s);
+            IEnumerable<StoreDashboardOrder> orders = SearchOrder(s);
             try
             {
                 if (filter_Order == null)
-                    return  orders.Skip((pageIndex - 1) * pageSize)
+                    return orders.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).ToList();
                 else if (filter_Order == "ByStatusPending")
                 {
@@ -84,7 +76,6 @@ namespace Repository
                     return result.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).ToList();
                 }
-                
             }
             catch (Exception ex)
             {
@@ -142,7 +133,6 @@ namespace Repository
                     result = FilterByAscOrderDate(orders);
                     return result.Count();
                 }
-
             }
             catch (Exception ex)
             {
