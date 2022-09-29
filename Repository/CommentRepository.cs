@@ -11,8 +11,15 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return db.Comments
-                .Where(x => x.RecipeId == recipeId && x.Depth == 0)
+                .Where(x => x.RecipeId == recipeId && x.RootId == null)
                 .ProjectToType<RecipeComment>();
+        }
+
+        public async Task Add(Comment comment)
+        {
+            var db = new CakeCuriousDbContext();
+            await db.Comments.AddAsync(comment);
+            await db.SaveChangesAsync();
         }
     }
 }

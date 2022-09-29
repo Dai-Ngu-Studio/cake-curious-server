@@ -2,6 +2,7 @@
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Constants.Recipes;
 using Repository.Interfaces;
 using Repository.Models.Comments;
 using Repository.Models.RecipeMaterials;
@@ -60,7 +61,7 @@ namespace CakeCurious_API.Controllers
 
                 var recipe = createRecipe.Adapt<Recipe>();
 
-                recipe.Status = 0;
+                recipe.Status = (int)RecipeStatusEnum.Active;
                 recipe.PublishedDate = DateTime.Now;
                 recipe.UserId = uid;
 
