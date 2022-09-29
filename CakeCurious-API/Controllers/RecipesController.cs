@@ -58,14 +58,21 @@ namespace CakeCurious_API.Controllers
                 {
                     material.Id = Guid.NewGuid();
                 }
+                try
+                {
+                    var recipe = createRecipe.Adapt<Recipe>();
 
-                var recipe = createRecipe.Adapt<Recipe>();
+                    recipe.Status = (int)RecipeStatusEnum.Active;
+                    recipe.PublishedDate = DateTime.Now;
+                    recipe.UserId = uid;
 
-                recipe.Status = (int)RecipeStatusEnum.Active;
-                recipe.PublishedDate = DateTime.Now;
-                recipe.UserId = uid;
-
-                await recipeRepository.AddRecipe(recipe, materials);
+                    await recipeRepository.AddRecipe(recipe, materials);
+                    return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
+                }
+                catch (Exception)
+                {
+                    return StatusCode(500);
+                }
             }
             return Unauthorized();
         }

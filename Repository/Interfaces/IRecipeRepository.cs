@@ -12,6 +12,6 @@ namespace Repository.Interfaces
         public int CountLatestRecipesForFollower(string uid);
         public IEnumerable<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take);
         public HomeRecipes GetHomeRecipes();
-        public Task<bool> AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials);
+        public Task AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials);
     }
 }
