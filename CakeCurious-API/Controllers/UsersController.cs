@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using CakeCurious_API.Utilities;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,55 @@ namespace CakeCurious_API.Controllers
             userDeviceRepository = _userDeviceRepository;
         }
 
+        /// <summary>
+        /// Add store role to current user
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("current/to-store")]
+        [Authorize]
+        public async Task<ActionResult<DetachedUser>> AddStoreRoleToCurrentUser()
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                // Check if user existed in database
+                User? user = await userRepository.Get(uid);
+                if (user != null)
+                {
+                    // Check if user already has store role
+                    var roleExisted = user.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner);
+                    if (!roleExisted)
+                    {
+                        try
+                        {
+                            // Add role to user
+                            user.HasRoles!.Add(new UserHasRole
+                            {
+                                UserId = uid,
+                                RoleId = (int)RoleEnum.StoreOwner,
+                            });
+                            await userRepository.Update(user);
+                            return Ok();
+                        }
+                        catch (Exception)
+                        {
+                            return BadRequest();
+                        }
+                    }
+                    return BadRequest();
+                }
+            }
+            return Unauthorized();
+        }
+
+        /// <summary>
+        /// For development purpose only.
+        /// </summary>
+        /// <param name="roleRequest"></param>
+        /// <returns></returns>
         [HttpPost("current/role")]
+        [Authorize]
         public async Task<ActionResult<DetachedUser>> AddRoleToCurrentUser(AddRoleRequest roleRequest)
         {
             // Get ID Token
