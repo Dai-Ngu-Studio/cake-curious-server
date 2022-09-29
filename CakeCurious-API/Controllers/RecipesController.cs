@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BusinessObject;
+using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Constants.Recipes;
 using Repository.Interfaces;
 using Repository.Models.Comments;
+using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 using System.ComponentModel.DataAnnotations;
@@ -24,7 +28,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("following")]
         [Authorize]
-        public ActionResult<HomeRecipePage> GetRecipesFromFollowing(
+        public async Task<ActionResult<HomeRecipePage>> GetRecipesFromFollowing(
             [Range(1, int.MaxValue)] int page = 1,
             [Range(1, int.MaxValue)] int take = 5)
         {
@@ -33,9 +37,42 @@ namespace CakeCurious_API.Controllers
             if (!string.IsNullOrWhiteSpace(uid))
             {
                 var recipePage = new HomeRecipePage();
-                recipePage.TotalPages = (int)Math.Ceiling((decimal)recipeRepository.CountLatestRecipesForFollower(uid) / take);
+                recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountLatestRecipesForFollower(uid) / take);
                 recipePage.Recipes = recipeRepository.GetLatestRecipesForFollower(uid, (page - 1) * take, take);
                 return Ok(recipePage);
+            }
+            return Unauthorized();
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult<DetailRecipe>> CreateRecipe(CreateRecipe createRecipe)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var materials = new List<CreateRecipeMaterial>();
+                materials.AddRange(createRecipe.Ingredients);
+                materials.AddRange(createRecipe.Equipment);
+                foreach (var material in materials)
+                {
+                    material.Id = Guid.NewGuid();
+                }
+                try
+                {
+                    var recipe = createRecipe.Adapt<Recipe>();
+
+                    recipe.Status = (int)RecipeStatusEnum.Active;
+                    recipe.PublishedDate = DateTime.Now;
+                    recipe.UserId = uid;
+
+                    await recipeRepository.AddRecipe(recipe, materials);
+                    return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
+                }
+                catch (Exception)
+                {
+                    return StatusCode(500);
+                }
             }
             return Unauthorized();
         }

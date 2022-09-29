@@ -30,6 +30,10 @@ namespace Repository.Configuration.Mappings
                     x.MediaType == (int)RecipeMediaTypeEnum.Video) != null
                     ? src.RecipeMedia!.FirstOrDefault(x => x.MediaType == (int)RecipeMediaTypeEnum.Video)!.MediaUrl
                     : null);
+
+            TypeAdapterConfig<CreateRecipe, Recipe>
+                .NewConfig()
+                .Map(dest => dest.RecipeMaterials, src => src.Ingredients!.Concat(src.Equipment!));
         }
     }
 }
