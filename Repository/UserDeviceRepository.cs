@@ -9,7 +9,7 @@ namespace Repository
         public async Task Add(UserDevice obj)
         {
             var db = new CakeCuriousDbContext();
-            db.UserDevices.Add(obj);
+            await db.UserDevices.AddAsync(obj);
             await db.SaveChangesAsync();
         }
 

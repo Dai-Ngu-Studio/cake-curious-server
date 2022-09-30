@@ -1,20 +1,21 @@
 ﻿using BusinessObject;
 using Microsoft.EntityFrameworkCore;
+using Repository.Interfaces;
 
-namespace Repository.Interfaces
+namespace Repository
 {
-    public class LikeRepository : ILikeRepository
+    public class BookmarkRepository : IBookmarkRepository
     {
-        public async Task<bool> IsRecipeLikedByUser(string userId, Guid recipeId)
+        public async Task<bool> IsRecipeBookmarkedByUser(string userId, Guid recipeId)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Likes.AnyAsync(x => x.UserId == userId && x.RecipeId == recipeId);
+            return await db.Bookmarks.AnyAsync(x => x.UserId == userId && x.RecipeId == recipeId);
         }
 
         public async Task Add(string userId, Guid recipeId)
         {
             var db = new CakeCuriousDbContext();
-            await db.Likes.AddAsync(new Like
+            await db.Bookmarks.AddAsync(new Bookmark
             {
                 UserId = userId,
                 RecipeId = recipeId,
@@ -25,10 +26,10 @@ namespace Repository.Interfaces
         public async Task Remove(string userId, Guid recipeId)
         {
             var db = new CakeCuriousDbContext();
-            var like = await db.Likes.FirstOrDefaultAsync(x => x.UserId == userId && x.RecipeId == recipeId);
-            if (like != null)
+            var bookmark = await db.Bookmarks.FirstOrDefaultAsync(x => x.UserId == userId && x.RecipeId == recipeId);
+            if (bookmark != null)
             {
-                db.Likes.Remove(like);
+                db.Bookmarks.Remove(bookmark);
                 await db.SaveChangesAsync();
             }
         }

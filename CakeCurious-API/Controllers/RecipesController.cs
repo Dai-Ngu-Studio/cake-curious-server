@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Constants.Recipes;
 using Repository.Interfaces;
+using Repository.Models.Bookmarks;
 using Repository.Models.Comments;
 using Repository.Models.Likes;
 using Repository.Models.RecipeMaterials;
@@ -21,12 +22,15 @@ namespace CakeCurious_API.Controllers
         private readonly IRecipeRepository recipeRepository;
         private readonly ICommentRepository commentRepository;
         private readonly ILikeRepository likeRepository;
+        private readonly IBookmarkRepository bookmarkRepository;
 
-        public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository, ILikeRepository _likeRepository)
+        public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
             likeRepository = _likeRepository;
+            bookmarkRepository = _bookmarkRepository;
         }
 
         [HttpGet("following")]
@@ -47,6 +51,36 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
+        [HttpPost("{id:guid}/bookmark")]
+        [Authorize]
+        public async Task<ActionResult<DetachedBookmark>> Bookmark(Guid id)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (await bookmarkRepository.IsRecipeBookmarkedByUser(uid, id))
+                {
+                    // Remove bookmark
+                    await bookmarkRepository.Remove(uid, id);
+                    return Ok();
+                }
+                else
+                {
+                    // Add bookmark
+                    try
+                    {
+                        await bookmarkRepository.Add(uid, id);
+                        return Ok();
+                    }
+                    catch (Exception)
+                    {
+                        // Recipe might not exist
+                        return BadRequest();
+                    }
+                }
+            }
+            return Unauthorized();
+        }
 
         [HttpPost("{id:guid}/like")]
         [Authorize]
@@ -58,7 +92,7 @@ namespace CakeCurious_API.Controllers
                 if (await likeRepository.IsRecipeLikedByUser(uid, id))
                 {
                     // Remove like
-                    await likeRepository.RemoveLike(uid, id);
+                    await likeRepository.Remove(uid, id);
                     return Ok();
                 }
                 else
@@ -66,7 +100,7 @@ namespace CakeCurious_API.Controllers
                     // Add like
                     try
                     {
-                        await likeRepository.AddLike(uid, id);
+                        await likeRepository.Add(uid, id);
                         return Ok();
                     }
                     catch (Exception)
