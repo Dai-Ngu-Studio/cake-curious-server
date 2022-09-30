@@ -1,4 +1,5 @@
-﻿using Repository.Models.Likes;
+﻿using Repository.Models.Bookmarks;
+using Repository.Models.Likes;
 using Repository.Models.RecipeMaterials;
 using Repository.Models.RecipeSteps;
 using Repository.Models.Users;
@@ -18,6 +19,7 @@ namespace Repository.Models.Recipes
         public DateTime? PublishedDate { get; set; }
         public int? Likes { get; set; }
         public DetachedLike? UserLike { get; set; }
+        public DetachedBookmark? UserBookmark { get; set; }
         public IEnumerable<DetachedRecipeMaterial>? Ingredients { get; set; }
         public IEnumerable<DetachedRecipeMaterial>? Equipment { get; set; }
         public IEnumerable<SimpleRecipeStep>? RecipeSteps { get; set; }

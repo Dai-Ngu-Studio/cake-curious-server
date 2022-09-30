@@ -21,6 +21,11 @@ namespace Repository.Configuration.Mappings
                     MapContext.Current!.Parameters["userId"] != null
                     ? x.UserId == (string)MapContext.Current.Parameters["userId"]!
                     : false))
+                .Map(dest => dest.UserBookmark, src => src.Bookmarks!
+                .FirstOrDefault(x =>
+                    MapContext.Current!.Parameters["userId"] != null
+                    ? x.UserId == (string)MapContext.Current.Parameters["userId"]!
+                    :false))
                 .Map(dest => dest.Likes, src => src.Likes!.Count)
                 .Map(dest => dest.Ingredients, src => src.RecipeMaterials!.Where(x => x.MaterialType == (int)RecipeMaterialTypeEnum.Ingredient))
                 .Map(dest => dest.Equipment, src => src.RecipeMaterials!.Where(x => x.MaterialType == (int)RecipeMaterialTypeEnum.Equipment))
