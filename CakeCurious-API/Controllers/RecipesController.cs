@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Repository.Constants.Recipes;
 using Repository.Interfaces;
 using Repository.Models.Comments;
+using Repository.Models.Likes;
 using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
@@ -19,11 +20,13 @@ namespace CakeCurious_API.Controllers
     {
         private readonly IRecipeRepository recipeRepository;
         private readonly ICommentRepository commentRepository;
+        private readonly ILikeRepository likeRepository;
 
-        public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository)
+        public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository, ILikeRepository _likeRepository)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
+            likeRepository = _likeRepository;
         }
 
         [HttpGet("following")]
@@ -40,6 +43,38 @@ namespace CakeCurious_API.Controllers
                 recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountLatestRecipesForFollower(uid) / take);
                 recipePage.Recipes = recipeRepository.GetLatestRecipesForFollower(uid, (page - 1) * take, take);
                 return Ok(recipePage);
+            }
+            return Unauthorized();
+        }
+
+
+        [HttpPost("{id:guid}/like")]
+        [Authorize]
+        public async Task<ActionResult<DetachedLike>> Like(Guid id)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (await likeRepository.IsRecipeLikedByUser(uid, id))
+                {
+                    // Remove like
+                    await likeRepository.RemoveLike(uid, id);
+                    return Ok();
+                }
+                else
+                {
+                    // Add like
+                    try
+                    {
+                        await likeRepository.AddLike(uid, id);
+                        return Ok();
+                    }
+                    catch (Exception)
+                    {
+                        // Recipe might not exist
+                        return BadRequest();
+                    }
+                }
             }
             return Unauthorized();
         }
