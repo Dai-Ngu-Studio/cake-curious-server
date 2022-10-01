@@ -25,11 +25,34 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<ViolationReport>>> GetProducts(string? s, string? filter_Report, int PageIndex, int PageSize)
+        public async Task<ActionResult<IEnumerable<ViolationReport>>> GetProducts(string? search, string? sort, string? filter, int? page, int? size)
         {
             var result = new StaffDashboardReportPage();
-            result.StaffDashboardReports = await _ReportRepository.GetViolationReports(s, filter_Report, PageIndex, PageSize);
-            result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(s!, filter_Report!) / PageSize);
+            int DefaultPageIndex = 0, DefaultPageSize = 0;
+            if (page == null && size == null)
+            {
+                DefaultPageIndex = 1;
+                DefaultPageSize = 10;
+                result.StaffDashboardReports = await _ReportRepository.GetViolationReports(search, sort, filter, DefaultPageIndex, DefaultPageSize);
+                result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(search, sort, filter) / DefaultPageSize);
+            }
+            else if (page != null && size == null)
+            {
+                DefaultPageSize = 10;
+                result.StaffDashboardReports = await _ReportRepository.GetViolationReports(search, sort, filter, page.Value, DefaultPageSize);
+                result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(search, sort, filter) / DefaultPageSize);
+            }
+            else if (page == null && size != null)
+            {
+                DefaultPageIndex = 1;
+                result.StaffDashboardReports = await _ReportRepository.GetViolationReports(search, sort, filter, DefaultPageIndex, size.Value);
+                result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(search, sort, filter) / size.Value);
+            }
+            else
+            {
+                result.StaffDashboardReports = await _ReportRepository.GetViolationReports(search, sort, filter, page!.Value, size!.Value);
+                result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(search, sort, filter) / size.Value);
+            }
             return Ok(result);
         }
 

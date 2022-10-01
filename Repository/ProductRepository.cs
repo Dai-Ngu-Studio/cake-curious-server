@@ -50,8 +50,6 @@ namespace Repository
 
         public IEnumerable<Product> SearchProduct(string? keyWord, IEnumerable<Product> prods)
         {
-            //IEnumerable<StoreDashboardProduct> prods;
-
             prods = prods.Where(p => p.Name == keyWord).ToList();
             return prods;
         }

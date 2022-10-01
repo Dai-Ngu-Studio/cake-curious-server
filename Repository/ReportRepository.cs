@@ -39,12 +39,12 @@ namespace Repository
             return reports.Where(p => p.ItemType == (int)ItemTypeEnum.Recipe).ToList();
         }
 
-        public IEnumerable<StaffDashboardReport> FilterByAscTitle(IEnumerable<StaffDashboardReport> reports)
+        public IEnumerable<StaffDashboardReport> OrderByAscTitle(IEnumerable<StaffDashboardReport> reports)
         {
 
             return reports.OrderBy(p => p.Title).ToList();
         }
-        public IEnumerable<StaffDashboardReport> FilterByDescTitle(IEnumerable<StaffDashboardReport> reports)
+        public IEnumerable<StaffDashboardReport> OrderByDescTitle(IEnumerable<StaffDashboardReport> reports)
         {
             return reports.OrderByDescending(p => p.Title).ToList();
         }
@@ -58,15 +58,9 @@ namespace Repository
             return reports.Where(p => p.Status == (int)ReportStatusEnum.Censored).ToList();
         }
 
-        public IEnumerable<StaffDashboardReport> SearchViolationReport(string? keyWord)
+        public IEnumerable<StaffDashboardReport> SearchViolationReport(string? keyWord, IEnumerable<StaffDashboardReport> reports)
         {
-            IEnumerable<StaffDashboardReport> reports;
-            var db = new CakeCuriousDbContext();
-
-            reports = keyWord != null 
-                ? db.ViolationReports.Where(p => p.Title!.Contains(keyWord!)).Include(p => p.Reporter).ProjectToType<StaffDashboardReport>().ToList()
-                : db.ViolationReports.Include(p => p.Reporter).ProjectToType<StaffDashboardReport>().ToList();
-            return reports;
+            return reports.Where(p => p.Title!.Contains(keyWord!)).ToList();
         }
         public async Task<SimpleUser?> getReportedUser(Guid? itemId)
         {
@@ -83,11 +77,10 @@ namespace Repository
             }
             return null;
         }
-        public async Task<IEnumerable<StaffDashboardReport>?> GetViolationReports(string? s, string? filter_ViolationReport, int pageIndex, int pageSize)
+        public async Task<IEnumerable<StaffDashboardReport>?> GetViolationReports(string? s, string? order_by, string? report_type, int pageIndex, int pageSize)
         {
-            IEnumerable<StaffDashboardReport> result;
-            IEnumerable<StaffDashboardReport> reports = SearchViolationReport(s!);
             var db = new CakeCuriousDbContext();
+            IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Include(r => r.Reporter).Adapt<IEnumerable<StaffDashboardReport>>().ToList();
             foreach (var report in reports)
             {
                 report.ReportedUser = await getReportedUser(report.ItemId);
@@ -95,45 +88,29 @@ namespace Repository
             }
             try
             {
-                if (filter_ViolationReport == null)
-                    return reports.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
-                else if (filter_ViolationReport == "ByComment")
+                if (s != null)
                 {
-                    result = FilterByComment(reports);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    reports = SearchViolationReport(s, reports);
                 }
-                else if (filter_ViolationReport == "ByRecipe")
+                if (report_type != null && report_type == "Comment")
                 {
-                    result = FilterByRecipe(reports);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    reports = FilterByComment(reports);
                 }
-                else if (filter_ViolationReport == "ByDescendingTitle")
+                else if (report_type != null && report_type == "Recipe")
                 {
-                    result = FilterByDescTitle(reports);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    reports = FilterByRecipe(reports);
+
                 }
-                else if (filter_ViolationReport == "ByAscendingTitle")
+                if (order_by != null && order_by == "DescTitle")
                 {
-                    result = FilterByAscTitle(reports);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    reports = OrderByDescTitle(reports);
                 }
-                else if (filter_ViolationReport == "ByCensoredStatus")
+                else if (order_by != null && order_by == "AscTitle")
                 {
-                    result = FilterByCensoredStatus(reports);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    reports = OrderByAscTitle(reports);
                 }
-                else if (filter_ViolationReport == "ByPendingStatus")
-                {
-                    result = FilterByPendingStatus(reports);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
-                }
+                return reports.Skip((pageIndex - 1) * pageSize)
+                            .Take(pageSize).ToList();
             }
             catch (Exception ex)
             {
@@ -162,44 +139,34 @@ namespace Repository
             }
         }
 
-        public int CountDashboardViolationReports(string? s, string? filter_ViolationReport)
+        public int CountDashboardViolationReports(string? s, string? order_by, string? report_type)
         {
-            IEnumerable<StaffDashboardReport> result;
-            IEnumerable<StaffDashboardReport> report = SearchViolationReport(s!);
+            var db = new CakeCuriousDbContext();
+            IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Include(r => r.Reporter).Adapt<IEnumerable<StaffDashboardReport>>().ToList();
             try
             {
-                if (filter_ViolationReport == null)
-                    return report.Count();
-                else if (filter_ViolationReport == "ByComment")
+                if (s != null)
                 {
-                    result = FilterByComment(report);
-                    return result.Count();
+                    reports = SearchViolationReport(s, reports);
                 }
-                else if (filter_ViolationReport == "ByRecipe")
+                if (report_type != null && report_type == "ByComment")
                 {
-                    result = FilterByRecipe(report);
-                    return result.Count();
+                    reports = FilterByComment(reports);
                 }
-                else if (filter_ViolationReport == "ByDescendingTitle")
+                else if (report_type != null && report_type == "ByRecipe")
                 {
-                    result = FilterByDescTitle(report);
-                    return result.Count();
+                    reports = FilterByRecipe(reports);
+
                 }
-                else if (filter_ViolationReport == "ByAscendingTitle")
+                if (order_by != null && order_by == "DescTitle")
                 {
-                    result = FilterByAscTitle(report);
-                    return result.Count();
+                    reports = OrderByDescTitle(reports);
                 }
-                else if (filter_ViolationReport == "ByInactiveStatus")
+                else if (order_by != null && order_by == "AscTitle")
                 {
-                    result = FilterByPendingStatus(report);
-                    return result.Count();
+                    reports = OrderByAscTitle(reports);
                 }
-                else if (filter_ViolationReport == "ByActiveStatus")
-                {
-                    result = FilterByCensoredStatus(report);
-                    return result.Count();
-                }
+                return reports.Count();
             }
             catch (Exception ex)
             {

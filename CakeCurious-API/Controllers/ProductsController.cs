@@ -22,33 +22,33 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<Product>> GetProducts(string? s, string? order_by, string? product_type, int? PageIndex, int? PageSize)
+        public ActionResult<IEnumerable<Product>> GetProducts(string? search, string? sort, string? filter, int? page, int? size)
         {
             int DefaultPageIndex = 0, DefaultPageSize = 0;
             var result = new StoreDashboardProductPage();
-            if (PageIndex == null && PageSize == null)
+            if (page == null && size == null)
             {
                 DefaultPageIndex = 1;
                 DefaultPageSize = 10;
-                result.Products = _productRepository.GetProducts(s, order_by, product_type, DefaultPageIndex, DefaultPageSize);
-                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s, order_by, product_type) / DefaultPageSize);
+                result.Products = _productRepository.GetProducts(search, sort, filter, DefaultPageIndex, DefaultPageSize);
+                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(search, sort, filter) / DefaultPageSize);
             }
-            else if (PageIndex != null && PageSize == null)
+            else if (page != null && size == null)
             {
                 DefaultPageSize = 10;
-                result.Products = _productRepository.GetProducts(s, order_by, product_type, PageIndex.Value, DefaultPageSize);
-                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s, order_by, product_type) / DefaultPageSize);
+                result.Products = _productRepository.GetProducts(search, sort, filter, page.Value, DefaultPageSize);
+                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(search, sort, filter) / DefaultPageSize);
             }
-            else if (PageIndex == null && PageSize != null)
+            else if (page == null && size != null)
             {
                 DefaultPageIndex = 1;
-                result.Products = _productRepository.GetProducts(s, order_by, product_type, DefaultPageIndex, PageSize.Value);
-                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s, order_by, product_type) / PageSize.Value);
+                result.Products = _productRepository.GetProducts(search, sort, filter, DefaultPageIndex, size.Value);
+                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(search, sort, filter) / size.Value);
             }
             else
             {
-                result.Products = _productRepository.GetProducts(s, order_by, product_type, PageIndex!.Value, PageSize!.Value);
-                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(s, order_by, product_type) / PageSize.Value);
+                result.Products = _productRepository.GetProducts(search, sort, filter, page!.Value, size!.Value);
+                result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(search, sort, filter) / size.Value);
             }
             return Ok(result);
         }
