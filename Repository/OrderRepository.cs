@@ -14,68 +14,57 @@ namespace Repository
 {
     public class OrderRepository : IOrderRepository
     {
-        public IEnumerable<StoreDashboardOrder> FilterByAscOrderDate(IEnumerable<StoreDashboardOrder> orders)
+        public IEnumerable<Order> OrderAscOrderDate(IEnumerable<Order> orders)
         {
             return orders.OrderBy(p => p.OrderDate).ToList();
         }
-        public IEnumerable<StoreDashboardOrder> FilterByDescOrderDate(IEnumerable<StoreDashboardOrder> orders)
+        public IEnumerable<Order> OrderDescOrderDate(IEnumerable<Order> orders)
         {
             return orders.OrderByDescending(p => p.OrderDate).ToList();
         }
-        public IEnumerable<StoreDashboardOrder> FilterByStatusComplelted(IEnumerable<StoreDashboardOrder> orders)
+        public IEnumerable<Order> FilterByStatusComplete(IEnumerable<Order> orders)
         {
             return orders.Where(p => p.Status == (int)OrderStatusEnum.Completed).ToList();
         }
 
-        public IEnumerable<StoreDashboardOrder> FilterByStatusPending(IEnumerable<StoreDashboardOrder> orders)
+        public IEnumerable<Order> FilterByStatusPending(IEnumerable<Order> orders)
         {
             return orders.Where(p => p.Status == (int)OrderStatusEnum.Pending).ToList();
         }
 
-        public IEnumerable<StoreDashboardOrder> SearchOrder(string? keyWord)
+        public IEnumerable<Order> SearchOrder(string? keyWord, IEnumerable<Order> orders)
         {
-            IEnumerable<StoreDashboardOrder>? orders;
-            var db = new CakeCuriousDbContext();
-            orders = keyWord != null
-                    ? db.Orders.Include(o => o.User).Where(p => p.User!.DisplayName!.Contains(keyWord!)).ProjectToType<StoreDashboardOrder>().ToList()
-                    : db.Orders.Include(o => o.User).ProjectToType<StoreDashboardOrder>().ToList();
-            return orders;
+            return orders.Where(p => p.User!.DisplayName!.Contains(keyWord!)).ToList();
         }
-        public IEnumerable<StoreDashboardOrder>? GetOrders(string? s, string? filter_Order, int pageSize, int pageIndex)
+        public IEnumerable<StoreDashboardOrder>? GetOrders(string? s, string? order_by, string? filter_Order, int pageSize, int pageIndex)
         {
-            IEnumerable<StoreDashboardOrder> result;
-            IEnumerable<StoreDashboardOrder> orders = SearchOrder(s);
+            var db = new CakeCuriousDbContext();
+            IEnumerable<Order> orders = db.Orders.Include(o => o.User).ToList();
             try
             {
-                if (filter_Order == null)
-                    return orders.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
-                else if (filter_Order == "ByStatusPending")
+                if (s != null)
                 {
-                    result = FilterByStatusPending(orders);
-                    Console.WriteLine("Ket qua filter co " + result.Count());
+                    orders = SearchOrder(s, orders);
+                }
 
-                    return result.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
-                }
-                else if (filter_Order == "ByStatusCompleted")
+                if (filter_Order != null && filter_Order == "StatusPending")
                 {
-                    result = FilterByStatusComplelted(orders);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
+                    orders = FilterByStatusPending(orders);
                 }
-                else if (filter_Order == "ByDescendingOrderDate")
+                else if (filter_Order != null && filter_Order == "StatusComplete")
                 {
-                    result = FilterByDescOrderDate(orders);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
+                    orders = FilterByStatusComplete(orders);
                 }
-                else if (filter_Order == "ByAcsendingOrderDate")
+                if (order_by != null && order_by == "DescOrderDate")
                 {
-                    result = FilterByAscOrderDate(orders);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
+                    orders = OrderDescOrderDate(orders);
                 }
+                else if (order_by != null && order_by == "AscOrerDate")
+                {
+                    orders = OrderAscOrderDate(orders);
+                }
+                return orders.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).Adapt<IEnumerable<StoreDashboardOrder>>().ToList();
             }
             catch (Exception ex)
             {
@@ -103,36 +92,34 @@ namespace Repository
             }
         }
 
-        public int CountDashboardOrders(string? s, string? filter_Order)
+        public int CountDashboardOrders(string? s, string? order_by, string? filter_Order)
         {
-            IEnumerable<StoreDashboardOrder> result;
-            IEnumerable<StoreDashboardOrder> orders = SearchOrder(s);
+            var db = new CakeCuriousDbContext();
+            IEnumerable<Order> orders = db.Orders.Include(o => o.User).ToList();
             try
             {
-                if (filter_Order == null)
-                    return orders.Count();
-                else if (filter_Order == "ByStatusPending")
+                if (s != null)
                 {
-                    result = FilterByStatusPending(orders);
-                    Console.WriteLine("Ket qua filter co " + result.Count());
+                    orders = SearchOrder(s, orders);
+                }
 
-                    return result.Count();
-                }
-                else if (filter_Order == "ByStatusCompleted")
+                if (filter_Order != null && filter_Order == "StatusPending")
                 {
-                    result = FilterByStatusComplelted(orders);
-                    return result.Count();
+                    orders = FilterByStatusPending(orders);
                 }
-                else if (filter_Order == "ByDescendingOrderDate")
+                else if (filter_Order != null && filter_Order == "StatusComplete")
                 {
-                    result = FilterByDescOrderDate(orders);
-                    return result.Count();
+                    orders = FilterByStatusComplete(orders);
                 }
-                else if (filter_Order == "ByAcsendingOrderDate")
+                if (order_by != null && order_by == "DescOrderDate")
                 {
-                    result = FilterByAscOrderDate(orders);
-                    return result.Count();
+                    orders = OrderDescOrderDate(orders);
                 }
+                else if (order_by != null && order_by == "AscOrerDate")
+                {
+                    orders = OrderAscOrderDate(orders);
+                }
+                return orders.Count();
             }
             catch (Exception ex)
             {

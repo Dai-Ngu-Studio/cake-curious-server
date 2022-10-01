@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Stores;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 
 namespace CakeCurious_API.Controllers
@@ -22,11 +23,11 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<AdminDashboardStore>> GetStores(string s, string fillter_Store, int PageSize, int PageIndex)
+        public ActionResult<IEnumerable<AdminDashboardStore>> GetStores(string? search, string? order_by, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int page = 1)
         {
             var result = new AdminDashboardStorePage();
-            result.Stores = _storeReposiotry.GetStores(s, fillter_Store, PageSize, PageIndex);
-            result.TotalPage = (int)Math.Ceiling((decimal)_storeReposiotry.CountDashboardStores(s!, fillter_Store!) / PageSize);
+            result.Stores = _storeReposiotry.GetStores(search, order_by, filter, size, page);
+            result.TotalPage = (int)Math.Ceiling((decimal)_storeReposiotry.CountDashboardStores(search, order_by, filter) / size);
             return Ok(result);
         }
 

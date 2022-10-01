@@ -21,67 +21,59 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
-        public IEnumerable<AdminDashboardStore> FilterByAscName(IEnumerable<AdminDashboardStore> stores)
+        public IEnumerable<Store> OrderByAscName(IEnumerable<Store> stores)
         {
             return stores.OrderBy(p => p.Name).ToList();
         }
-        public IEnumerable<AdminDashboardStore> FilterByDescName(IEnumerable<AdminDashboardStore> stores)
+        public IEnumerable<Store> OrderByDescName(IEnumerable<Store> stores)
         {
             return stores.OrderByDescending(p => p.Name).ToList();
         }
-        public IEnumerable<AdminDashboardStore> FilterByStatusActive(IEnumerable<AdminDashboardStore> stores)
+        public IEnumerable<Store> FilterByStatusActive(IEnumerable<Store> stores)
         {
             return stores.Where(p => p.Status == (int)StoreStatusEnum.Active).ToList();
         }
 
-        public IEnumerable<AdminDashboardStore> FilterByStatusInactive(IEnumerable<AdminDashboardStore> stores)
+        public IEnumerable<Store> FilterByStatusInactive(IEnumerable<Store> stores)
         {
             return stores.Where(p => p.Status == (int)StoreStatusEnum.Inactive).ToList();
         }
 
-        public IEnumerable<AdminDashboardStore> SearchStore(string? keyWord)
+        public IEnumerable<Store> SearchStore(string? keyWord, IEnumerable<Store> stores)
         {
-            IEnumerable<AdminDashboardStore> stores;
-            var db = new CakeCuriousDbContext();
-            stores = keyWord != null
-                ? db.Stores.Where(p => p.Name!.Contains(keyWord!)).ProjectToType<AdminDashboardStore>().ToList()
-                : db.Stores.ProjectToType<AdminDashboardStore>().ToList();
-            return stores;
+
+            return stores.Where(p => p.Name!.Contains(keyWord!)).ToList();
         }
 
-        public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? fillter_Store, int pageSize, int pageIndex)
+        public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int pageSize, int pageIndex)
         {
-            IEnumerable<AdminDashboardStore> result;
-            IEnumerable<AdminDashboardStore> store = SearchStore(s!);
+            var db = new CakeCuriousDbContext();
+            IEnumerable<Store> stores = db.Stores.ToList();
             try
             {
-                if (fillter_Store == null)
-                    return store.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
-                else if (fillter_Store == "ByDescendingName")
+                if (s != null)
                 {
-                    result = FilterByDescName(store);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
+                    stores = SearchStore(s, stores);
                 }
-                else if (fillter_Store == "ByAscendingName")
+
+                if (filter_Store != null && filter_Store == "StatusActive")
                 {
-                    result = FilterByAscName(store);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
+                    stores = FilterByStatusActive(stores);
                 }
-                else if (fillter_Store == "ByStatusActive")
+                else if (filter_Store != null && filter_Store == "StatusInActive")
                 {
-                    result = FilterByStatusActive(store);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).ToList();
+                    stores = FilterByStatusInactive(stores);
                 }
-                else if (fillter_Store == "ByStatusInactive")
+                if (order_by != null && order_by == "DescName")
                 {
-                    result = FilterByStatusInactive(store);
-                    return result.Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize).ToList();
+                    stores = OrderByDescName(stores);
                 }
+                else if (order_by != null && order_by == "AscName")
+                {
+                    stores = OrderByAscName(stores);
+                }
+                return stores.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).Adapt<IEnumerable<AdminDashboardStore>>().ToList();
             }
             catch (Exception ex)
             {
@@ -130,35 +122,36 @@ namespace Repository
             }
         }
 
-        public int CountDashboardStores(string? s, string? filter_Store)
+        public int CountDashboardStores(string? s, string? order_by, string? filter_Store)
         {
-            IEnumerable<AdminDashboardStore> result;
-            IEnumerable<AdminDashboardStore> store = SearchStore(s!);
+            var db = new CakeCuriousDbContext();
+            IEnumerable<Store> stores = db.Stores.ToList();
             try
             {
-                if (filter_Store == null)
-                    return store.Count();
-                else if (filter_Store == "ByDescendingName")
+                //search
+                if (s != null)
                 {
-                    result = FilterByDescName(store);
-                    return result.Count();
+                    stores = SearchStore(s, stores);
                 }
-                else if (filter_Store == "ByAscendingName")
+                //filter
+                if (filter_Store != null && filter_Store == "StatusActive")
                 {
-                    result = FilterByAscName(store);
-                    return result.Count();
+                    stores = FilterByStatusActive(stores);
                 }
-
-                else if (filter_Store == "ByStatusInactive")
+                else if (filter_Store != null && filter_Store == "StatusInActive")
                 {
-                    result = FilterByStatusInactive(store);
-                    return result.Count();
+                    stores = FilterByStatusInactive(stores);
                 }
-                else if (filter_Store == "ByStatusActive")
+                //Sort
+                if (order_by != null && order_by == "DescName")
                 {
-                    result = FilterByStatusActive(store);
-                    return result.Count();
+                    stores = OrderByDescName(stores);
                 }
+                else if (order_by != null && order_by == "AscName")
+                {
+                    stores = OrderByAscName(stores);
+                }
+                return stores.Count();
             }
             catch (Exception ex)
             {
