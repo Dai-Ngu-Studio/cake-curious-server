@@ -64,14 +64,15 @@ namespace Repository
                 else if (filter_Store != null && filter_Store == StoreStatusEnum.Inactive.ToString())
                 {
                     stores = FilterByStatusInactive(stores);
-              
-                if (order_by != null && order_by == StoreSortEnum.DescName.ToString())
-                {
-                    stores = OrderByDescName(stores);
-                }
-                else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
-                {
-                    stores = OrderByAscName(stores);
+
+                    if (order_by != null && order_by == StoreSortEnum.DescName.ToString())
+                    {
+                        stores = OrderByDescName(stores);
+                    }
+                    else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
+                    {
+                        stores = OrderByAscName(stores);
+                    }
                 }
                 return stores.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).Adapt<IEnumerable<AdminDashboardStore>>().ToList();
