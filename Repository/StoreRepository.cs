@@ -9,6 +9,7 @@ using Repository.Models.Stores;
 using Mapster;
 using Repository.Interfaces;
 using Repository.Constants.Products;
+using Repository.Constants.Stores;
 
 namespace Repository
 {
@@ -56,19 +57,19 @@ namespace Repository
                     stores = SearchStore(s, stores);
                 }
 
-                if (filter_Store != null && filter_Store == "StatusActive")
+                if (filter_Store != null && filter_Store == StoreStatusEnum.Active.ToString())
                 {
                     stores = FilterByStatusActive(stores);
                 }
-                else if (filter_Store != null && filter_Store == "StatusInActive")
+                else if (filter_Store != null && filter_Store == StoreStatusEnum.Inactive.ToString())
                 {
                     stores = FilterByStatusInactive(stores);
-                }
-                if (order_by != null && order_by == "DescName")
+              
+                if (order_by != null && order_by == StoreSortEnum.DescName.ToString())
                 {
                     stores = OrderByDescName(stores);
                 }
-                else if (order_by != null && order_by == "AscName")
+                else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
                 {
                     stores = OrderByAscName(stores);
                 }

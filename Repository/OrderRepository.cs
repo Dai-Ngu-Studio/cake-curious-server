@@ -47,19 +47,19 @@ namespace Repository
                     orders = SearchOrder(s, orders);
                 }
 
-                if (filter_Order != null && filter_Order == "StatusPending")
+                if (filter_Order != null && filter_Order == OrderStatusEnum.Pending.ToString())
                 {
                     orders = FilterByStatusPending(orders);
                 }
-                else if (filter_Order != null && filter_Order == "StatusComplete")
+                else if (filter_Order != null && filter_Order == OrderStatusEnum.Completed.ToString())
                 {
                     orders = FilterByStatusComplete(orders);
                 }
-                if (order_by != null && order_by == "DescOrderDate")
+                if (order_by != null && order_by == OrderSortEnum.DescOrderDate.ToString())
                 {
                     orders = OrderDescOrderDate(orders);
                 }
-                else if (order_by != null && order_by == "AscOrerDate")
+                else if (order_by != null && order_by == OrderSortEnum.AscOrderDate.ToString())
                 {
                     orders = OrderAscOrderDate(orders);
                 }

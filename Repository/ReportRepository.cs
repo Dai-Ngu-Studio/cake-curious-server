@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Repository.Constants.Products;
 using Repository.Constants.RecipeMaterials;
 using Repository.Constants.Reports;
 using Repository.Interfaces;
@@ -92,20 +93,20 @@ namespace Repository
                 {
                     reports = SearchViolationReport(s, reports);
                 }
-                if (report_type != null && report_type == "Comment")
+                if (report_type != null && report_type == ReportTypeEnum.Comment.ToString())
                 {
                     reports = FilterByComment(reports);
                 }
-                else if (report_type != null && report_type == "Recipe")
+                else if (report_type != null && report_type == ReportTypeEnum.Recipe.ToString())
                 {
                     reports = FilterByRecipe(reports);
 
                 }
-                if (order_by != null && order_by == "DescTitle")
+                if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
                 {
                     reports = OrderByDescTitle(reports);
                 }
-                else if (order_by != null && order_by == "AscTitle")
+                else if (order_by != null && order_by == ReportSortEnum.AscTitle.ToString())
                 {
                     reports = OrderByAscTitle(reports);
                 }
