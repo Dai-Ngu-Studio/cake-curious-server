@@ -1,5 +1,4 @@
 ﻿using BusinessObject;
-using CakeCurious_API.Utilities;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +17,51 @@ namespace CakeCurious_API.Controllers
     {
         private readonly IUserRepository userRepository;
         private readonly IUserDeviceRepository userDeviceRepository;
+        private readonly IUserFollowRepository userFollowRepository;
 
-        public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository)
+        public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository, IUserFollowRepository _userFollowRepository)
         {
             userRepository = _userRepository;
             userDeviceRepository = _userDeviceRepository;
+            userFollowRepository = _userFollowRepository;
+        }
+
+        [HttpPost("{id}/follow")]
+        [Authorize]
+        public async Task<ActionResult> FollowUser(string id)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (await userFollowRepository.IsUserFollowedByFollower(id, uid))
+                {
+                    // Remove follow
+                    try
+                    {
+                        await userFollowRepository.Remove(id, uid);
+                        return Ok();
+                    }
+                    catch (Exception)
+                    {
+                        return BadRequest();
+                    }
+                }
+                else
+                {
+                    // Add follow
+                    try
+                    {
+                        await userFollowRepository.Add(id, uid);
+                        return Ok();
+                    }
+                    catch (Exception)
+                    {
+                        return BadRequest();
+                    }
+                }
+            }
+            return Unauthorized();
         }
 
         /// <summary>
@@ -148,7 +187,7 @@ namespace CakeCurious_API.Controllers
                             DisplayName = isUserRecordExisted
                             ? userRecord!.DisplayName != null
                             ? userRecord!.DisplayName
-                            : userRecord!.Email
+                            : "Anonymous User"
                             : "Anonymous User",
                             Email = isUserRecordExisted ? userRecord!.Email : "Anonymous",
                             PhotoUrl = isUserRecordExisted ? userRecord!.PhotoUrl : "",
