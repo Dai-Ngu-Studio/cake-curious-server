@@ -1,6 +1,6 @@
 ﻿namespace Repository.Models.Users
 {
-    public class FollowUser
+    public class FollowingUser
     {
         public string? Id { get; set; }
         public string? DisplayName { get; set; }

@@ -14,7 +14,21 @@ namespace Repository
             return db.Users.ToList();
         }
 
-        public async Task<ICollection<FollowUser>> GetFollowersOfUser(string uid, string currentUserId)
+        public async Task<ICollection<FollowingUser>> GetFollowingOfUser(string uid, string currentUserId)
+        {
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("userId", currentUserId);
+
+                var db = new CakeCuriousDbContext();
+                return await db.UserFollows
+                    .Where(x => x.FollowerId == uid)
+                    .ProjectToType<FollowingUser>()
+                    .ToListAsync();
+            }
+        }
+
+        public async Task<ICollection<FollowerUser>> GetFollowersOfUser(string uid, string currentUserId)
         {
             using (var scope = new MapContextScope())
             {
@@ -23,7 +37,7 @@ namespace Repository
                 var db = new CakeCuriousDbContext();
                 return await db.UserFollows
                     .Where(x => x.UserId == uid)
-                    .ProjectToType<FollowUser>()
+                    .ProjectToType<FollowerUser>()
                     .ToListAsync();
             }
         }
