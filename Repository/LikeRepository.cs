@@ -26,11 +26,8 @@ namespace Repository.Interfaces
         {
             var db = new CakeCuriousDbContext();
             var like = await db.Likes.FirstOrDefaultAsync(x => x.UserId == userId && x.RecipeId == recipeId);
-            if (like != null)
-            {
-                db.Likes.Remove(like);
-                await db.SaveChangesAsync();
-            }
+            db.Likes.Remove(like!);
+            await db.SaveChangesAsync();
         }
     }
 }

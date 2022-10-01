@@ -61,8 +61,15 @@ namespace CakeCurious_API.Controllers
                 if (await bookmarkRepository.IsRecipeBookmarkedByUser(uid, id))
                 {
                     // Remove bookmark
-                    await bookmarkRepository.Remove(uid, id);
-                    return Ok();
+                    try
+                    {
+                        await bookmarkRepository.Remove(uid, id);
+                        return Ok();
+                    }
+                    catch (Exception)
+                    {
+                        return BadRequest();
+                    }
                 }
                 else
                 {
@@ -92,8 +99,15 @@ namespace CakeCurious_API.Controllers
                 if (await likeRepository.IsRecipeLikedByUser(uid, id))
                 {
                     // Remove like
-                    await likeRepository.Remove(uid, id);
-                    return Ok();
+                    try
+                    {
+                        await likeRepository.Remove(uid, id);
+                        return Ok();
+                    }
+                    catch (Exception)
+                    {
+                        return BadRequest();
+                    }
                 }
                 else
                 {

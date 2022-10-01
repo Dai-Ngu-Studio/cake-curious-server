@@ -27,11 +27,8 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             var bookmark = await db.Bookmarks.FirstOrDefaultAsync(x => x.UserId == userId && x.RecipeId == recipeId);
-            if (bookmark != null)
-            {
-                db.Bookmarks.Remove(bookmark);
-                await db.SaveChangesAsync();
-            }
+            db.Bookmarks.Remove(bookmark!);
+            await db.SaveChangesAsync();
         }
     }
 }
