@@ -16,13 +16,13 @@ namespace Repository.Configuration.Mappings
 
             TypeAdapterConfig<Recipe, DetailRecipe>
                 .NewConfig()
-                .Map(dest => dest.UserLike, src => src.Likes!
-                    .FirstOrDefault(x =>
+                .Map(dest => dest.IsLikedByCurrentUser, src => src.Likes!
+                    .Any(x =>
                     MapContext.Current!.Parameters["userId"] != null
                     ? x.UserId == (string)MapContext.Current.Parameters["userId"]!
                     : false))
-                .Map(dest => dest.UserBookmark, src => src.Bookmarks!
-                .FirstOrDefault(x =>
+                .Map(dest => dest.IsBookmarkedByCurrentUser, src => src.Bookmarks!
+                    .Any(x =>
                     MapContext.Current!.Parameters["userId"] != null
                     ? x.UserId == (string)MapContext.Current.Parameters["userId"]!
                     :false))
