@@ -17,15 +17,9 @@ namespace Repository.Configuration.Mappings
             TypeAdapterConfig<Recipe, DetailRecipe>
                 .NewConfig()
                 .Map(dest => dest.IsLikedByCurrentUser, src => src.Likes!
-                    .Any(x =>
-                    MapContext.Current!.Parameters["userId"] != null
-                    ? x.UserId == (string)MapContext.Current.Parameters["userId"]!
-                    : false))
+                    .Any(x => x.UserId == (string)MapContext.Current!.Parameters["userId"]))
                 .Map(dest => dest.IsBookmarkedByCurrentUser, src => src.Bookmarks!
-                    .Any(x =>
-                    MapContext.Current!.Parameters["userId"] != null
-                    ? x.UserId == (string)MapContext.Current.Parameters["userId"]!
-                    :false))
+                    .Any(x => x.UserId == (string)MapContext.Current!.Parameters["userId"]))
                 .Map(dest => dest.Likes, src => src.Likes!.Count)
                 .Map(dest => dest.Ingredients, src => src.RecipeMaterials!.Where(x => x.MaterialType == (int)RecipeMaterialTypeEnum.Ingredient))
                 .Map(dest => dest.Equipment, src => src.RecipeMaterials!.Where(x => x.MaterialType == (int)RecipeMaterialTypeEnum.Equipment))

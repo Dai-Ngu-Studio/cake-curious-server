@@ -10,5 +10,6 @@ namespace Repository.Interfaces
         public Task<DetachedUser?> GetDetached(string uid);
         public Task Add(User obj);
         public Task Update(User obj);
+        public Task<ICollection<FollowUser>> GetFollowersOfUser(string uid, string currentUserId);
     }
 }

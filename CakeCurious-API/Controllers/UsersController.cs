@@ -26,6 +26,19 @@ namespace CakeCurious_API.Controllers
             userFollowRepository = _userFollowRepository;
         }
 
+        [HttpGet("{id}/followers")]
+        [Authorize]
+        public async Task<ActionResult<ICollection<FollowUser>>> GetFollowersOfUser(string id)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                return Ok(await userRepository.GetFollowersOfUser(id, uid));
+            }
+            return Unauthorized();
+        }
+
         [HttpPost("{id}/follow")]
         [Authorize]
         public async Task<ActionResult> FollowUser(string id)

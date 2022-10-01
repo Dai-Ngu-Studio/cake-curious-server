@@ -14,6 +14,20 @@ namespace Repository
             return db.Users.ToList();
         }
 
+        public async Task<ICollection<FollowUser>> GetFollowersOfUser(string uid, string currentUserId)
+        {
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("userId", currentUserId);
+
+                var db = new CakeCuriousDbContext();
+                return await db.UserFollows
+                    .Where(x => x.UserId == uid)
+                    .ProjectToType<FollowUser>()
+                    .ToListAsync();
+            }
+        }
+
         public async Task<User?> Get(string uid)
         {
             var db = new CakeCuriousDbContext();
