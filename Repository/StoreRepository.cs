@@ -52,11 +52,12 @@ namespace Repository
             IEnumerable<Store> stores = db.Stores.ToList();
             try
             {
+                //search
                 if (s != null)
                 {
                     stores = SearchStore(s, stores);
                 }
-
+                //filter
                 if (filter_Store != null && filter_Store == StoreStatusEnum.Active.ToString())
                 {
                     stores = FilterByStatusActive(stores);
@@ -64,7 +65,8 @@ namespace Repository
                 else if (filter_Store != null && filter_Store == StoreStatusEnum.Inactive.ToString())
                 {
                     stores = FilterByStatusInactive(stores);
-              
+                }
+                //orderby
                 if (order_by != null && order_by == StoreSortEnum.DescName.ToString())
                 {
                     stores = OrderByDescName(stores);

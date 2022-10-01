@@ -73,19 +73,19 @@ namespace Repository
                     prods = FilterByTool(prods);
                 }
                 //Orderby
-                if (order_by == ProductOrderByEnum.AscName.ToString())
+                if (order_by != null && order_by == ProductOrderByEnum.AscName.ToString())
                 {
                     prods = OrderByAscName(prods);
                 }
-                else if (order_by == ProductOrderByEnum.DescName.ToString())
+                else if (order_by != null && order_by == ProductOrderByEnum.DescName.ToString())
                 {
                     prods = OrderByDescName(prods);
                 }
-                else if (order_by == ProductOrderByEnum.AscPrice.ToString())
+                else if (order_by != null && order_by == ProductOrderByEnum.AscPrice.ToString())
                 {
                     prods = OrderByAscPrice(prods);
                 }
-                else
+                else if (order_by != null && order_by == ProductOrderByEnum.DescName.ToString())
                 {
                     prods = OrderbyByDescPrice(prods);
                 }
@@ -159,19 +159,19 @@ namespace Repository
                     prods = FilterByTool(prods);
                 }
                 //Orderby
-                if (order_by == ProductOrderByEnum.AscName.ToString())
+                if (order_by != null && order_by == ProductOrderByEnum.AscName.ToString())
                 {
                     prods = OrderByAscName(prods);
                 }
-                else if (order_by == ProductOrderByEnum.DescName.ToString())
+                else if (order_by != null && order_by == ProductOrderByEnum.DescName.ToString())
                 {
-                    prods = OrderByAscName(prods);
+                    prods = OrderByDescName(prods);
                 }
-                else if (order_by == ProductOrderByEnum.AscPrice.ToString())
+                else if (order_by != null && order_by == ProductOrderByEnum.AscPrice.ToString())
                 {
                     prods = OrderByAscPrice(prods);
                 }
-                else
+                else if (order_by != null && order_by == ProductOrderByEnum.DescName.ToString())
                 {
                     prods = OrderbyByDescPrice(prods);
                 }

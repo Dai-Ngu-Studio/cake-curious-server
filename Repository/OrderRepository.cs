@@ -46,7 +46,7 @@ namespace Repository
                 {
                     orders = SearchOrder(s, orders);
                 }
-
+                //filter
                 if (filter_Order != null && filter_Order == OrderStatusEnum.Pending.ToString())
                 {
                     orders = FilterByStatusPending(orders);
@@ -55,6 +55,7 @@ namespace Repository
                 {
                     orders = FilterByStatusComplete(orders);
                 }
+                //sort
                 if (order_by != null && order_by == OrderSortEnum.DescOrderDate.ToString())
                 {
                     orders = OrderDescOrderDate(orders);
