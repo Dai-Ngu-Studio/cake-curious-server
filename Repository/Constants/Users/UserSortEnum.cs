@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repository.Models.Reports
+namespace Repository.Constants.Users
 {
-    public class CommentReportContent
+    public enum UserSortEnum
     {
+        AscDisplayName,
+        DescDisplayName,
     }
 }

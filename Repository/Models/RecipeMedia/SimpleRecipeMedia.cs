@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repository.Models.RecipeMedias
+namespace Repository.Models.RecipeMedia
 {
     public class SimpleRecipeMedia
     {

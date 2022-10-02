@@ -14,7 +14,7 @@ using Repository.Models;
 using Repository.Models.Comments;
 using Repository.Models.Product;
 using Repository.Models.RecipeMaterials;
-using Repository.Models.RecipeMedias;
+using Repository.Models.RecipeMedia;
 using Repository.Models.RecipeSteps;
 using Repository.Models.Users;
 
@@ -81,11 +81,10 @@ namespace Repository
         public async Task<IEnumerable<StaffDashboardReport>?> GetViolationReports(string? s, string? order_by, string? report_type, int pageIndex, int pageSize)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Include(r => r.Reporter).Adapt<IEnumerable<StaffDashboardReport>>().ToList();
+            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
             foreach (var report in reports)
             {
                 report.ReportedUser = await getReportedUser(report.ItemId);
-                report.Staff = await db.Users.ProjectToType<SimpleUser>().SingleOrDefaultAsync(u => u.Id == report.StaffId);
             }
             try
             {
@@ -100,7 +99,6 @@ namespace Repository
                 else if (report_type != null && report_type == ReportTypeEnum.Recipe.ToString())
                 {
                     reports = FilterByRecipe(reports);
-
                 }
                 if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
                 {

@@ -7,6 +7,7 @@ using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Roles;
 using Repository.Models.Users;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
@@ -26,6 +27,25 @@ namespace CakeCurious_API.Controllers
             userFollowRepository = _userFollowRepository;
         }
 
+        [HttpGet]
+        [Authorize]
+        public ActionResult<AdminDashboardUserPage> GetUsers(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        {
+            var result = new AdminDashboardUserPage();
+            result.Users = userRepository.GetList(search, sort, filter, page, size);
+            result.TotalPage = (int)Math.Ceiling((decimal)userRepository.CountDashboardUser(search, sort, filter) / size);
+            return Ok(result);
+        }
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<ActionResult<UserDetailForWeb?>> GetUser(string? id)
+        {
+            if (id == null)
+            {
+                return BadRequest("You need to input id");
+            }
+            return Ok(await userRepository.GetUserDetailForWeb(id!));
+        }
         [HttpGet("{id}/following")]
         [Authorize]
         public async Task<ActionResult<ICollection<FollowingUser>>> GetFollowingOfUser(string id)

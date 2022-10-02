@@ -26,7 +26,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<ViolationReport>>> GetProducts(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        public async Task<ActionResult<IEnumerable<StaffDashboardReportPage>>> GetReports(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             var result = new StaffDashboardReportPage();
             result.StaffDashboardReports = await _ReportRepository.GetViolationReports(search, sort, filter, page, size);

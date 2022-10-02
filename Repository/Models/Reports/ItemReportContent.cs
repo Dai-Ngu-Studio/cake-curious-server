@@ -2,7 +2,7 @@
 using Repository.Constants.Reports;
 using Repository.Models.Comments;
 using Repository.Models.RecipeMaterials;
-using Repository.Models.RecipeMedias;
+using Repository.Models.RecipeMedia;
 using Repository.Models.RecipeSteps;
 using System;
 using System.Collections.Generic;
