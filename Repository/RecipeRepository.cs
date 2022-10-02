@@ -1,5 +1,6 @@
 ﻿using BusinessObject;
 using Mapster;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Recipes;
 using Repository.Interfaces;
@@ -11,6 +12,39 @@ namespace Repository
 {
     public class RecipeRepository : IRecipeRepository
     {
+        public async Task<ICollection<ExploreRecipe>> Explore(int randSeed, int take, int key)
+        {
+            var result = new List<ExploreRecipe>();
+            var db = new CakeCuriousDbContext();
+            string query = $"select top {take} [Recipe].id, [Recipe].name, [Recipe].photo_url, abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Recipe] where abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed))) > @key order by abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed)))";
+            var cmd = db.Database.GetDbConnection().CreateCommand();
+            cmd.CommandText = query;
+            cmd.Parameters.Add(new SqlParameter("@randSeed", randSeed));
+            cmd.Parameters.Add(new SqlParameter("@key", key));
+            if (cmd.Connection!.State != System.Data.ConnectionState.Open)
+            {
+                await cmd.Connection.OpenAsync();
+            }
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (reader.Read())
+                {
+                    result.Add(new ExploreRecipe
+                    {
+                        Id = (Guid)reader["id"],
+                        Name = (string)reader["name"],
+                        PhotoUrl = (string)reader["photo_url"],
+                        Key = (int)reader["key"],
+                    });
+                }
+            }
+            if (cmd.Connection!.State == System.Data.ConnectionState.Open)
+            {
+                await cmd.Connection!.CloseAsync();
+            }
+            return result;
+        }
+
         public async Task AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials)
         {
             var db = new CakeCuriousDbContext();

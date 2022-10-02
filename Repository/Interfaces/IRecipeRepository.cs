@@ -13,5 +13,6 @@ namespace Repository.Interfaces
         public IEnumerable<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take);
         public HomeRecipes GetHomeRecipes();
         public Task AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials);
+        public Task<ICollection<ExploreRecipe>> Explore(int randSeed, int skip, int take);
     }
 }
