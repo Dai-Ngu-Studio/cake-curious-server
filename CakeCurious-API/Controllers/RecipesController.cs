@@ -33,6 +33,15 @@ namespace CakeCurious_API.Controllers
             bookmarkRepository = _bookmarkRepository;
         }
 
+        [HttpGet("explore")]
+        [Authorize]
+        public async Task<ICollection<ExploreRecipe>> Explore(int seed,
+            [Range(1, int.MaxValue)] int take = 10,
+            [Range(0, int.MaxValue)] int key = 0)
+        {
+            return await recipeRepository.Explore(seed, take, key);
+        }
+
         [HttpGet("following")]
         [Authorize]
         public async Task<ActionResult<HomeRecipePage>> GetRecipesFromFollowing(
