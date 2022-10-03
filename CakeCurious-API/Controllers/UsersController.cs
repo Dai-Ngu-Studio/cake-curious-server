@@ -2,6 +2,7 @@
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
@@ -45,6 +46,48 @@ namespace CakeCurious_API.Controllers
                 return BadRequest("You need to input id");
             }
             return Ok(await userRepository.GetUserDetailForWeb(id!));
+        }
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<ActionResult> UpdateUser(User user, string id)
+        {
+            try
+            {
+                if (id != user.Id) return BadRequest();
+                User? beforeUpdateObj = await userRepository.Get(user.Id);
+                if (beforeUpdateObj == null) throw new Exception("user that need to update does not exist");
+                User updateObj = new User()
+                {
+                    Address = user.Address == null ? beforeUpdateObj.Address : user.Address,
+                    CitizenshipDate = user.CitizenshipDate == null ? beforeUpdateObj.CitizenshipDate : user.CitizenshipDate,
+                    DateOfBirth = user.DateOfBirth == null ? beforeUpdateObj.DateOfBirth : user.DateOfBirth,
+                    Email = user.Email == null ? beforeUpdateObj.Email : user.Email,
+                    DisplayName = user.DisplayName == null ? beforeUpdateObj.DisplayName : user.DisplayName,
+                    Gender = user.Gender == null ? beforeUpdateObj.Gender : user.Gender,
+                    FullName = user.FullName == null ? beforeUpdateObj.FullName : user.FullName,
+                    PhotoUrl = user.PhotoUrl == null ? beforeUpdateObj.PhotoUrl : user.PhotoUrl,
+                    Status = user.Status == null ? beforeUpdateObj.Status : user.Status,
+                    Id = user.Id == null ? beforeUpdateObj.Id : user.Id,
+                    CitizenshipNumber = user.CitizenshipNumber == null ? beforeUpdateObj.CitizenshipNumber : user.CitizenshipNumber,
+                };
+                await userRepository.Update(updateObj);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (userRepository.Get(id) == null)
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+            return NoContent();
+        }
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<ActionResult<User?>> DeleteUser(string? id)
+        {
+            User? user = await userRepository.DeleteUser(id);
+            return Ok("Delete User " + user!.DisplayName + " success");
         }
         [HttpGet("{id}/following")]
         [Authorize]
@@ -111,12 +154,12 @@ namespace CakeCurious_API.Controllers
         }
 
         /// <summary>
-        /// Add store role to current user
+        /// Add user role to current user
         /// </summary>
         /// <returns></returns>
-        [HttpPost("current/to-store")]
+        [HttpPost("current/to-user")]
         [Authorize]
-        public async Task<ActionResult<DetachedUser>> AddStoreRoleToCurrentUser()
+        public async Task<ActionResult<DetachedUser>> AdduserRoleToCurrentUser()
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -126,7 +169,7 @@ namespace CakeCurious_API.Controllers
                 User? user = await userRepository.Get(uid);
                 if (user != null)
                 {
-                    // Check if user already has store role
+                    // Check if user already has user role
                     var roleExisted = user.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner);
                     if (!roleExisted)
                     {

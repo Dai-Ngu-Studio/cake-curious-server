@@ -43,6 +43,7 @@ namespace CakeCurious_API.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
         public ActionResult<Store> PostStore(Store Store)
         {
             Guid id = Guid.NewGuid();
@@ -78,6 +79,7 @@ namespace CakeCurious_API.Controllers
         }
 
         [HttpPut("{guid}")]
+        [Authorize]
         public async Task<ActionResult> PutStore(Guid guid, Store Store)
         {
             try

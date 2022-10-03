@@ -171,5 +171,25 @@ namespace Repository
             db.Users.Update(obj);
             await db.SaveChangesAsync();
         }
+
+        public async Task<User?> DeleteUser(string? id)
+        {
+            User? user = null;
+            try
+            {
+                user = await Get(id!);
+                if (user == null) throw new Exception("User that need to delete does not exist");
+                user.Status = (int)UserStatusEnum.Inactive;
+                var db = new CakeCuriousDbContext();
+                db.Entry<User>(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                await db.SaveChangesAsync();
+                return user;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return null;
+        }
     }
 }
