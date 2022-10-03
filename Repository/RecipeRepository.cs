@@ -12,6 +12,24 @@ namespace Repository
 {
     public class RecipeRepository : IRecipeRepository
     {
+        public async Task<Recipe?> GetRecipeReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<int> Delete(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                string query = $"update [Recipe] set [Recipe].status = {(int)RecipeStatusEnum.Inactive} where [Recipe].id = '{id}'";
+                var rows = await db.Database.ExecuteSqlRawAsync(query);
+                transaction.Commit();
+                return rows;
+            }
+        }
+
         public async Task<ICollection<ExploreRecipe>> Explore(int randSeed, int take, int key)
         {
             var result = new List<ExploreRecipe>();

@@ -14,5 +14,7 @@ namespace Repository.Interfaces
         public HomeRecipes GetHomeRecipes();
         public Task AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials);
         public Task<ICollection<ExploreRecipe>> Explore(int randSeed, int skip, int take);
+        public Task<int> Delete(Guid id);
+        public Task<Recipe?> GetRecipeReadonly(Guid id);
     }
 }

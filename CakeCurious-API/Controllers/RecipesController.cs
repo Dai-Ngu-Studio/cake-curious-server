@@ -1,8 +1,10 @@
 ﻿using BusinessObject;
+using CakeCurious_API.Utilities;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Constants.Recipes;
+using Repository.Constants.Roles;
 using Repository.Interfaces;
 using Repository.Models.Bookmarks;
 using Repository.Models.Comments;
@@ -23,23 +25,52 @@ namespace CakeCurious_API.Controllers
         private readonly ICommentRepository commentRepository;
         private readonly ILikeRepository likeRepository;
         private readonly IBookmarkRepository bookmarkRepository;
+        private readonly IUserRepository userRepository;
 
         public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
-            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository)
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
             likeRepository = _likeRepository;
             bookmarkRepository = _bookmarkRepository;
+            userRepository = _userRepository;
+        }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize]
+        public async Task<ActionResult> Delete(Guid id)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var recipe = await recipeRepository.GetRecipeReadonly(id);
+                if (recipe != null)
+                {
+                    if (recipe.UserId == uid
+                        || await UserRoleAuthorizer.AuthorizeUser(
+                            new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
+                    {
+                        var rows = await recipeRepository.Delete(id);
+                        return (rows > 0) ? Ok() : BadRequest();
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            return Unauthorized();
         }
 
         [HttpGet("explore")]
         [Authorize]
         public async Task<ICollection<ExploreRecipe>> Explore(int seed,
             [Range(1, int.MaxValue)] int take = 10,
-            [Range(0, int.MaxValue)] int key = 0)
+            [Range(0, int.MaxValue)] int lastKey = 0)
         {
-            return await recipeRepository.Explore(seed, take, key);
+            return await recipeRepository.Explore(seed, take, lastKey);
         }
 
         [HttpGet("following")]
