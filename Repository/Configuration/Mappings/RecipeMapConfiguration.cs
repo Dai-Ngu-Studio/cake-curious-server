@@ -33,6 +33,10 @@ namespace Repository.Configuration.Mappings
             TypeAdapterConfig<CreateRecipe, Recipe>
                 .NewConfig()
                 .Map(dest => dest.RecipeMaterials, src => src.Ingredients!.Concat(src.Equipment!));
+
+            TypeAdapterConfig<UpdateRecipe, Recipe>
+                .NewConfig()
+                .Map(dest => dest.RecipeMaterials, src => src.Ingredients!.Concat(src.Equipment!));
         }
     }
 }

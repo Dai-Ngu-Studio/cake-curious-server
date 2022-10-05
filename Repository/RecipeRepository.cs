@@ -12,6 +12,12 @@ namespace Repository
 {
     public class RecipeRepository : IRecipeRepository
     {
+        public async Task<Recipe?> GetRecipe(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<Recipe?> GetRecipeReadonly(Guid id)
         {
             var db = new CakeCuriousDbContext();
@@ -25,7 +31,7 @@ namespace Repository
             {
                 string query = $"update [Recipe] set [Recipe].status = {(int)RecipeStatusEnum.Inactive} where [Recipe].id = '{id}'";
                 var rows = await db.Database.ExecuteSqlRawAsync(query);
-                transaction.Commit();
+                await transaction.CommitAsync();
                 return rows;
             }
         }
@@ -34,7 +40,7 @@ namespace Repository
         {
             var result = new List<ExploreRecipe>();
             var db = new CakeCuriousDbContext();
-            string query = $"select top {take} [Recipe].id, [Recipe].name, [Recipe].photo_url, abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Recipe] where abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed))) > @key order by abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed)))";
+            string query = $"select top {take} [Recipe].id, [Recipe].name, [Recipe].photo_url, abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Recipe] where abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed))) > @key and [Recipe].status = {(int)RecipeStatusEnum.Active} order by abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed)))";
             var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = query;
             cmd.Parameters.Add(new SqlParameter("@randSeed", randSeed));
@@ -63,11 +69,86 @@ namespace Repository
             return result;
         }
 
-        public async Task AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials)
+        public async Task UpdateRecipe(Recipe recipe, Recipe updateRecipe, IEnumerable<CreateRecipeMaterial> recipeMaterials)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                // Set new information
+                recipe.Name = updateRecipe.Name;
+                recipe.Description = updateRecipe.Description;
+                recipe.ServingSize = updateRecipe.ServingSize;
+                recipe.PhotoUrl = updateRecipe.PhotoUrl;
+                recipe.CookTime = updateRecipe.CookTime;
+
+                db.Recipes.Update(recipe);
+
+                // Remove old step materials
+                string query = $"delete from [RecipeStepMaterial] where [RecipeStepMaterial].material_id in (select [RecipeMaterial].id from [RecipeMaterial] where [RecipeMaterial].recipe_id = '{recipe.Id}')";
+                await db.Database.ExecuteSqlRawAsync(query);
+
+                // Remove old steps/materials/categories/media
+                query = $"delete from [RecipeStep] where [RecipeStep].recipe_id = '{recipe.Id}'  delete from [RecipeMaterial] where [RecipeMaterial].recipe_id = '{recipe.Id}'  delete from [RecipeHasCategory] where [RecipeHasCategory].recipe_id = '{recipe.Id}'  delete from [RecipeMedia] where [RecipeMedia].recipe_id = '{recipe.Id}'";
+                await db.Database.ExecuteSqlRawAsync(query);
+
+                // Set new steps/materials/categories/media
+                foreach (var step in updateRecipe.RecipeSteps!)
+                {
+                    step.RecipeId = recipe.Id;
+                }
+
+                foreach (var material in updateRecipe.RecipeMaterials!)
+                {
+                    material.RecipeId = recipe.Id;
+                }
+
+                foreach (var category in updateRecipe.HasCategories!)
+                {
+                    category.RecipeId = recipe.Id;
+                }
+
+                foreach (var media in updateRecipe.RecipeMedia!)
+                {
+                    media.RecipeId = recipe.Id;
+                }
+
+                await db.RecipeSteps.AddRangeAsync(updateRecipe.RecipeSteps!);
+                await db.RecipeMaterials.AddRangeAsync(updateRecipe.RecipeMaterials!);
+                await db.RecipeHasCategories.AddRangeAsync(updateRecipe.HasCategories!);
+                await db.RecipeMedia.AddRangeAsync(updateRecipe.RecipeMedia!);
+
+                // Add relationship between material and step
+                var stepMaterials = new List<RecipeStepMaterial>();
+                foreach (var material in recipeMaterials)
+                {
+                    if (material.UsedInSteps != null)
+                    {
+                        foreach (var step in material.UsedInSteps)
+                        {
+                            var recipeStep = recipe.RecipeSteps!.FirstOrDefault(x => x.StepNumber == step);
+                            if (recipeStep != null)
+                            {
+                                stepMaterials.Add(new RecipeStepMaterial
+                                {
+                                    RecipeMaterialId = material.Id,
+                                    RecipeStepId = recipeStep.Id,
+                                });
+                            }
+                        }
+                    }
+                }
+                await db.RecipeStepMaterials.AddRangeAsync(stepMaterials);
+                await db.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+        }
+
+        public async Task AddRecipe(Recipe recipe, IEnumerable<CreateRecipeMaterial> recipeMaterials)
         {
             var db = new CakeCuriousDbContext();
             // Add recipe, materials and steps
-            await db.Recipes.AddAsync(obj);
+            await db.Recipes.AddAsync(recipe);
             // Add relationship between material and step
             var stepMaterials = new List<RecipeStepMaterial>();
             foreach (var material in recipeMaterials)
@@ -76,7 +157,7 @@ namespace Repository
                 {
                     foreach (var step in material.UsedInSteps)
                     {
-                        var recipeStep = obj.RecipeSteps!.FirstOrDefault(x => x.StepNumber == step);
+                        var recipeStep = recipe.RecipeSteps!.FirstOrDefault(x => x.StepNumber == step);
                         if (recipeStep != null)
                         {
                             stepMaterials.Add(new RecipeStepMaterial
@@ -96,6 +177,7 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return await db.RecipeSteps
+                .AsNoTracking()
                 .Where(x => x.RecipeId == recipeId && x.StepNumber == stepNumber)
                 .ProjectToType<DetailRecipeStep>()
                 .FirstOrDefaultAsync();
@@ -109,6 +191,7 @@ namespace Repository
 
                 var db = new CakeCuriousDbContext();
                 return await db.Recipes
+                    .AsNoTracking()
                     .Where(x => x.Id == recipeId)
                     .ProjectToType<DetailRecipe>()
                     .FirstOrDefaultAsync();
@@ -133,6 +216,7 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return db.Recipes
+                .AsNoTracking()
                 .OrderBy(x => x.Id)
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-2))
@@ -151,6 +235,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             var home = new HomeRecipes();
             var trending = db.Recipes
+                .AsNoTracking()
                 .OrderByDescending(x => x.Likes!.Count)
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-1))
