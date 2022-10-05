@@ -31,7 +31,7 @@ namespace Repository
             {
                 string query = $"update [Recipe] set [Recipe].status = {(int)RecipeStatusEnum.Inactive} where [Recipe].id = '{id}'";
                 var rows = await db.Database.ExecuteSqlRawAsync(query);
-                transaction.Commit();
+                await transaction.CommitAsync();
                 return rows;
             }
         }
@@ -140,7 +140,7 @@ namespace Repository
                 await db.RecipeStepMaterials.AddRangeAsync(stepMaterials);
                 await db.SaveChangesAsync();
 
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
         }
 
