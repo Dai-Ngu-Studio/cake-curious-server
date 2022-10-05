@@ -186,15 +186,16 @@ namespace CakeCurious_API.Controllers
                         {
                             material.Id = Guid.NewGuid();
                         }
-                        //try
-                        //{
+                        try
+                        {
                             var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
-                        await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe, materials);
-                        //}
-                        //catch (Exception)
-                        //{
-                        //    return StatusCode(500);
-                        //}
+                            await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe, materials);
+                            return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
+                        }
+                        catch (Exception)
+                        {
+                            return StatusCode(500);
+                        }
                     }
                 }
                 return BadRequest();
