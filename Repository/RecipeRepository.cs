@@ -177,6 +177,7 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return await db.RecipeSteps
+                .AsNoTracking()
                 .Where(x => x.RecipeId == recipeId && x.StepNumber == stepNumber)
                 .ProjectToType<DetailRecipeStep>()
                 .FirstOrDefaultAsync();
@@ -190,6 +191,7 @@ namespace Repository
 
                 var db = new CakeCuriousDbContext();
                 return await db.Recipes
+                    .AsNoTracking()
                     .Where(x => x.Id == recipeId)
                     .ProjectToType<DetailRecipe>()
                     .FirstOrDefaultAsync();
@@ -214,6 +216,7 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return db.Recipes
+                .AsNoTracking()
                 .OrderBy(x => x.Id)
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-2))
@@ -232,6 +235,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             var home = new HomeRecipes();
             var trending = db.Recipes
+                .AsNoTracking()
                 .OrderByDescending(x => x.Likes!.Count)
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
                 && x.PublishedDate!.Value >= DateTime.Now.AddDays(-1))
