@@ -56,10 +56,7 @@ namespace CakeCurious_API.Controllers
                         return (rows > 0) ? Ok() : BadRequest();
                     }
                 }
-                else
-                {
-                    return BadRequest();
-                }
+                return BadRequest();
             }
             return Unauthorized();
         }
@@ -163,6 +160,44 @@ namespace CakeCurious_API.Controllers
                         return BadRequest();
                     }
                 }
+            }
+            return Unauthorized();
+        }
+
+        [HttpPut("{id:guid}")]
+        [Authorize]
+        public async Task<ActionResult<DetailRecipe>> UpdateRecipe(Guid id, UpdateRecipe updateRecipe)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var recipe = await recipeRepository.GetRecipe(id);
+                if (recipe != null)
+                {
+                    if (recipe.UserId == uid
+                        || await UserRoleAuthorizer.AuthorizeUser(
+                            new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
+                    {
+                        // New materials
+                        var materials = new List<CreateRecipeMaterial>();
+                        materials.AddRange(updateRecipe.Ingredients);
+                        materials.AddRange(updateRecipe.Equipment);
+                        foreach (var material in materials)
+                        {
+                            material.Id = Guid.NewGuid();
+                        }
+                        //try
+                        //{
+                            var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
+                        await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe, materials);
+                        //}
+                        //catch (Exception)
+                        //{
+                        //    return StatusCode(500);
+                        //}
+                    }
+                }
+                return BadRequest();
             }
             return Unauthorized();
         }
