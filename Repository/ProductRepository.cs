@@ -50,7 +50,7 @@ namespace Repository
 
         public IEnumerable<Product> SearchProduct(string? keyWord, IEnumerable<Product> prods)
         {
-            prods = prods.Where(p => p.Name == keyWord).ToList();
+            prods = prods.Where(p => p!.Name!.Contains(keyWord!)).ToList();
             return prods;
         }
         public IEnumerable<StoreDashboardProduct>? GetProducts(string? s, string? order_by, string? product_type, int pageIndex, int pageSize)
@@ -85,7 +85,7 @@ namespace Repository
                 {
                     prods = OrderByAscPrice(prods);
                 }
-                else if (order_by != null && order_by == ProductOrderByEnum.DescName.ToString())
+                else if (order_by != null && order_by == ProductOrderByEnum.DescPrice.ToString())
                 {
                     prods = OrderbyByDescPrice(prods);
                 }
