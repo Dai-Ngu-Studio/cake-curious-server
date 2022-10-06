@@ -8,7 +8,7 @@ namespace Repository.Models.Reports
 {
     public class StaffDashboardReportPage
     {
-        public IEnumerable<StaffDashboardReport>? StaffDashboardReports { get; set;}
+        public IEnumerable<StaffDashboardReport>? Reports { get; set;}
         public int TotalPage { get; set;}
     }
 }
