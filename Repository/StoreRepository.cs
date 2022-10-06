@@ -49,7 +49,7 @@ namespace Repository
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int pageSize, int pageIndex)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Store> stores = db.Stores.ToList();
+            IEnumerable<Store> stores = db.Stores.Include(s => s.User).ToList();
             try
             {
                 //search
