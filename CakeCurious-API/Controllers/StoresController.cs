@@ -26,7 +26,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<AdminDashboardStore>> GetStores(string? search, string? order_by, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int page = 1)
+        public ActionResult<IEnumerable<AdminDashboardStorePage>> GetStores(string? search, string? order_by, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int page = 1)
         {
             var result = new AdminDashboardStorePage();
             result.Stores = _storeReposiotry.GetStores(search, order_by, filter, size, page);

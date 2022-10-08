@@ -49,7 +49,7 @@ namespace Repository
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int pageSize, int pageIndex)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Store> stores = db.Stores.ToList();
+            IEnumerable<Store> stores = db.Stores.Include(s => s.User).ToList();
             try
             {
                 //search
@@ -145,20 +145,20 @@ namespace Repository
                     stores = SearchStore(s, stores);
                 }
                 //filter
-                if (filter_Store != null && filter_Store == "StatusActive")
+                if (filter_Store != null && filter_Store == StoreStatusEnum.Active.ToString())
                 {
                     stores = FilterByStatusActive(stores);
                 }
-                else if (filter_Store != null && filter_Store == "StatusInActive")
+                else if (filter_Store != null && filter_Store == StoreStatusEnum.Inactive.ToString())
                 {
                     stores = FilterByStatusInactive(stores);
                 }
                 //Sort
-                if (order_by != null && order_by == "DescName")
+                if (order_by != null && order_by == StoreSortEnum.DescName.ToString())
                 {
                     stores = OrderByDescName(stores);
                 }
-                else if (order_by != null && order_by == "AscName")
+                else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
                 {
                     stores = OrderByAscName(stores);
                 }

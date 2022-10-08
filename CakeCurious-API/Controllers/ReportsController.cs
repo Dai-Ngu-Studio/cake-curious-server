@@ -29,7 +29,7 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult<IEnumerable<StaffDashboardReportPage>>> GetReports(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             var result = new StaffDashboardReportPage();
-            result.StaffDashboardReports = await _ReportRepository.GetViolationReports(search, sort, filter, page, size);
+            result.Reports = await _ReportRepository.GetViolationReports(search, sort, filter, page, size);
             result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(search, sort, filter) / size);
             return Ok(result);
         }

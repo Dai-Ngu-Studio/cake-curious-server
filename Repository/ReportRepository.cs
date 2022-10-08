@@ -148,20 +148,19 @@ namespace Repository
                 {
                     reports = SearchViolationReport(s, reports);
                 }
-                if (report_type != null && report_type == "ByComment")
+                if (report_type != null && report_type == ReportTypeEnum.Comment.ToString())
                 {
                     reports = FilterByComment(reports);
                 }
-                else if (report_type != null && report_type == "ByRecipe")
+                else if (report_type != null && report_type == ReportTypeEnum.Recipe.ToString())
                 {
                     reports = FilterByRecipe(reports);
-
                 }
-                if (order_by != null && order_by == "DescTitle")
+                if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
                 {
                     reports = OrderByDescTitle(reports);
                 }
-                else if (order_by != null && order_by == "AscTitle")
+                else if (order_by != null && order_by == ReportSortEnum.AscTitle.ToString())
                 {
                     reports = OrderByAscTitle(reports);
                 }
