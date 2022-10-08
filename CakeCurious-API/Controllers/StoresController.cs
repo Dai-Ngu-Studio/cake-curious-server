@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
+using Repository.Models.Coupons;
 using Repository.Models.Stores;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
@@ -15,10 +16,12 @@ namespace CakeCurious_API.Controllers
     public class StoresController : ControllerBase
     {
         private readonly IStoreRepository _storeReposiotry;
+        private readonly ICouponRepository couponRepository;
 
-        public StoresController(IStoreRepository storeReposiotry)
+        public StoresController(IStoreRepository storeReposiotry, ICouponRepository _couponRepository)
         {
             _storeReposiotry = storeReposiotry;
+            couponRepository = _couponRepository;
         }
 
         [HttpGet]
@@ -109,6 +112,22 @@ namespace CakeCurious_API.Controllers
                 throw;
             }
             return NoContent();
+        }
+
+        [HttpGet("{id:guid}/coupons/code/{code:length(1,24)}")]
+        [Authorize]
+        public async Task<ActionResult<SimpleCoupon>> GetSimpleCouponOfStoreByCode(Guid id, string code)
+        {
+            var coupon = await couponRepository.GetSimpleCouponOfStoreByCode(id, code);
+            if (coupon != null)
+            {
+                if (coupon.UsedCount < coupon.MaxUses)
+                {
+                    return Ok(coupon);
+                }
+                return NotFound();
+            }
+            return NotFound();
         }
     }
 }
