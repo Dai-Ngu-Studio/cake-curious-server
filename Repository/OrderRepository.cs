@@ -2,11 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Orders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Mapster;
 using Repository.Constants.Orders;
 
@@ -129,15 +124,19 @@ namespace Repository
             return 0;
         }
 
-        public async Task AddOrder(Order order)
+        public async Task AddOrder(Order order, string query)
         {
             var db = new CakeCuriousDbContext();
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
                 await db.Orders.AddAsync(order);
-                // delete quantity oh shit
-                // update product set quantity = {} where product.id = {}
+                if (!string.IsNullOrWhiteSpace(query))
+                {
+                    await db.Database.ExecuteSqlRawAsync(query);
+                }
+                await db.SaveChangesAsync();
                 await transaction.CommitAsync();
+                Console.WriteLine();
             }
         }
 
@@ -148,10 +147,10 @@ namespace Repository
         public async Task<bool> IsCouponInUserOrders(Guid couponId, string userId)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Orders.AnyAsync(x => x.UserId == userId 
-                && x.CouponId == couponId 
-                && (x.Status == (int)OrderStatusEnum.Pending 
-                    || x.Status == (int)OrderStatusEnum.Processing 
+            return await db.Orders.AnyAsync(x => x.UserId == userId
+                && x.CouponId == couponId
+                && (x.Status == (int)OrderStatusEnum.Pending
+                    || x.Status == (int)OrderStatusEnum.Processing
                     || x.Status == (int)OrderStatusEnum.Completed));
         }
     }

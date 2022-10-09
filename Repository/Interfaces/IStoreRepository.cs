@@ -1,10 +1,5 @@
 ﻿using BusinessObject;
 using Repository.Models.Stores;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository.Interfaces
 {
@@ -16,5 +11,6 @@ namespace Repository.Interfaces
         public Task<Store?> GetById(Guid id);
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int PageSize, int PageIndex);
         public int CountDashboardStores(string? s, string? order_by, string? filter_Store);
+        public Task<bool> IsStoreExisted(Guid id);
     }
 }

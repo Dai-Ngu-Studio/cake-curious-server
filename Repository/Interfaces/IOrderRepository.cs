@@ -1,10 +1,5 @@
 ﻿using BusinessObject;
 using Repository.Models.Orders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository.Interfaces
 {
@@ -15,5 +10,6 @@ namespace Repository.Interfaces
         public Task<Order?> GetById(Guid guid);
         public int CountDashboardOrders(string? s,string? order_by,string? filter_Order);
         public Task<bool> IsCouponInUserOrders(Guid couponId, string userId);
+        public Task AddOrder(Order order, string query);
     }
 }

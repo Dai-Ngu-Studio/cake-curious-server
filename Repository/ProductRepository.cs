@@ -1,13 +1,9 @@
-
 using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Products;
 using Repository.Interfaces;
 using Repository.Models.Product;
-using Repository.Models.Recipes;
-using Repository.Models.Users;
-using Repository.Utilites;
 
 namespace Repository
 {
@@ -183,6 +179,18 @@ namespace Repository
                 Console.WriteLine(ex.Message);
             }
             return 0;
+        }
+
+        public async Task<Product?> GetProductReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<Product?> GetActiveProductReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == (int)ProductStatusEnum.Active);
         }
     }
 }
