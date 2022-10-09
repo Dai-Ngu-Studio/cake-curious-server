@@ -128,5 +128,31 @@ namespace Repository
             }
             return 0;
         }
+
+        public async Task AddOrder(Order order)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                await db.Orders.AddAsync(order);
+                // delete quantity oh shit
+                // update product set quantity = {} where product.id = {}
+                await transaction.CommitAsync();
+            }
+        }
+
+        /// <summary>
+        /// Find if coupon were used by user in pending or processing or finished order.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> IsCouponInUserOrders(Guid couponId, string userId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Orders.AnyAsync(x => x.UserId == userId 
+                && x.CouponId == couponId 
+                && (x.Status == (int)OrderStatusEnum.Pending 
+                    || x.Status == (int)OrderStatusEnum.Processing 
+                    || x.Status == (int)OrderStatusEnum.Completed));
+        }
     }
 }

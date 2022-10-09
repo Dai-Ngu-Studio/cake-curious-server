@@ -14,5 +14,6 @@ namespace Repository.Interfaces
         public Task UpdateOrder(Order order);
         public Task<Order?> GetById(Guid guid);
         public int CountDashboardOrders(string? s,string? order_by,string? filter_Order);
+        public Task<bool> IsCouponInUserOrders(Guid couponId, string userId);
     }
 }
