@@ -11,5 +11,6 @@ namespace Repository.Constants.Orders
         Pending,
         Completed,
         Inactive,
+        Processing,
     }
 }
