@@ -31,6 +31,9 @@ namespace BusinessObject
         [Column("total", TypeName = "decimal(20,4)")]
         public decimal? Total { get; set; }
 
+        [Column("discounted_total", TypeName = "decimal(20,4)")]
+        public decimal? DiscountedTotal { get; set; }
+
         [Column("address", TypeName = "nvarchar(512)")]
         public string? Address { get; set; }
 
