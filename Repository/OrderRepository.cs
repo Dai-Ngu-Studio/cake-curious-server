@@ -36,10 +36,10 @@ namespace Repository
         {
             return orders.Where(p => p.User!.DisplayName!.Contains(keyWord!)).ToList();
         }
-        public IEnumerable<StoreDashboardOrder>? GetOrders(string? s, string? order_by, string? filter_Order, int pageSize, int pageIndex)
+        public IEnumerable<StoreDashboardOrder>? GetOrdersOfAStore(string uid, string? s, string? order_by, string? filter_Order, int pageSize, int pageIndex)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Order> orders = db.Orders.Include(o => o.User).ToList();
+            IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid).ToList();
             try
             {
                 if (s != null)
@@ -73,10 +73,10 @@ namespace Repository
             }
             return null;
         }
-        public async Task<Order?> GetById(Guid id)
+        public async Task<StoreDashboardOrderDetail?> GetOrderDetailForStore(Guid id)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Orders.FirstOrDefaultAsync(x => x.Id == id);
+            return await db.Orders.Include(o => o.OrderDetails).Include(o => o.User).Include(o => o.Coupon).ProjectToType<StoreDashboardOrderDetail>().FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task UpdateOrder(Order updateObj)
@@ -93,30 +93,31 @@ namespace Repository
             }
         }
 
-        public int CountDashboardOrders(string? s, string? order_by, string? filter_Order)
+        public int CountDashboardOrders(string uid, string? s, string? order_by, string? filter_Order)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Order> orders = db.Orders.Include(o => o.User).ToList();
+            IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid).ToList();
             try
             {
                 if (s != null)
                 {
                     orders = SearchOrder(s, orders);
                 }
-
-                if (filter_Order != null && filter_Order == "StatusPending")
+                //filter
+                if (filter_Order != null && filter_Order == OrderStatusEnum.Pending.ToString())
                 {
                     orders = FilterByStatusPending(orders);
                 }
-                else if (filter_Order != null && filter_Order == "StatusComplete")
+                else if (filter_Order != null && filter_Order == OrderStatusEnum.Completed.ToString())
                 {
                     orders = FilterByStatusComplete(orders);
                 }
-                if (order_by != null && order_by == "DescOrderDate")
+                //sort
+                if (order_by != null && order_by == OrderSortEnum.DescOrderDate.ToString())
                 {
                     orders = OrderDescOrderDate(orders);
                 }
-                else if (order_by != null && order_by == "AscOrerDate")
+                else if (order_by != null && order_by == OrderSortEnum.AscOrderDate.ToString())
                 {
                     orders = OrderAscOrderDate(orders);
                 }
@@ -127,6 +128,12 @@ namespace Repository
                 Console.WriteLine(ex.Message);
             }
             return 0;
+        }
+
+        public async Task<Order?> GetById(Guid guid)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Orders.FirstOrDefaultAsync(x => x.Id == guid);
         }
     }
 }

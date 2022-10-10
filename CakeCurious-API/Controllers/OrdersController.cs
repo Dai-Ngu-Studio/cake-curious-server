@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Orders;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
 {
@@ -22,15 +23,31 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<StoreDashboardOrder>> GetOrders(string? search, string? order_by, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int index = 1)
+        public ActionResult<IEnumerable<StoreDashboardOrder>> GetOrders(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int index = 1)
         {
             var result = new StoreDashboardOrderPage();
-            result.Orders = _orderRepository.GetOrders(search, order_by, filter, size, index);
-            result.TotalPage = (int)Math.Ceiling((decimal)_orderRepository.CountDashboardOrders(search!, order_by!, filter!) / size);
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            result.Orders = _orderRepository.GetOrdersOfAStore(uid!, search, sort, filter, size, index);
+            result.TotalPage = (int)Math.Ceiling((decimal)_orderRepository.CountDashboardOrders(uid!, search!, sort!, filter!) / size);
             return Ok(result);
         }
 
+        [HttpGet("{guid}")]
+        [Authorize]
+        public async Task<ActionResult<Order>> GetOrderById(Guid guid)
+        {
+            return Ok(await _orderRepository.GetById(guid));
+        }
+
+        [HttpGet("store-order-detail/{guid}")]
+        [Authorize]
+        public async Task<ActionResult<StoreDashboardOrderDetail>> GetStoreOrderDetail(Guid guid)
+        {
+            return Ok(await _orderRepository.GetOrderDetailForStore(guid));
+        }
+
         [HttpPut("{guid}")]
+        [Authorize]
         public async Task<ActionResult> PutOrder(Guid guid, Order order)
         {
             try

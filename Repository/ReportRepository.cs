@@ -88,10 +88,12 @@ namespace Repository
             }
             try
             {
+                //search
                 if (s != null)
                 {
                     reports = SearchViolationReport(s, reports);
                 }
+                //filter
                 if (report_type != null && report_type == ReportTypeEnum.Comment.ToString())
                 {
                     reports = FilterByComment(reports);
@@ -100,6 +102,16 @@ namespace Repository
                 {
                     reports = FilterByRecipe(reports);
                 }
+                else if (report_type != null && report_type == ReportStatusEnum.Censored.ToString())
+
+                {
+                    reports = FilterByCensoredStatus(reports);
+                }
+                else if (report_type != null && report_type == ReportStatusEnum.Pending.ToString())
+                {
+                    reports = FilterByPendingStatus(reports);
+                }
+                //sort
                 if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
                 {
                     reports = OrderByDescTitle(reports);
