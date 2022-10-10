@@ -8,6 +8,7 @@ using Repository.Models.Coupons;
 using Repository.Models.Stores;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
+using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
 {
@@ -15,13 +16,15 @@ namespace CakeCurious_API.Controllers
     [ApiController]
     public class StoresController : ControllerBase
     {
-        private readonly IStoreRepository _storeReposiotry;
+        private readonly IStoreRepository storeRepository;
         private readonly ICouponRepository couponRepository;
+        private readonly IOrderRepository orderRepository;
 
-        public StoresController(IStoreRepository storeReposiotry, ICouponRepository _couponRepository)
+        public StoresController(IStoreRepository _storeRepository, ICouponRepository _couponRepository, IOrderRepository _orderRepository)
         {
-            _storeReposiotry = storeReposiotry;
+            storeRepository = _storeRepository;
             couponRepository = _couponRepository;
+            orderRepository = _orderRepository;
         }
 
         [HttpGet]
@@ -29,8 +32,8 @@ namespace CakeCurious_API.Controllers
         public ActionResult<IEnumerable<AdminDashboardStorePage>> GetStores(string? search, string? order_by, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int page = 1)
         {
             var result = new AdminDashboardStorePage();
-            result.Stores = _storeReposiotry.GetStores(search, order_by, filter, size, page);
-            result.TotalPage = (int)Math.Ceiling((decimal)_storeReposiotry.CountDashboardStores(search, order_by, filter) / size);
+            result.Stores = storeRepository.GetStores(search, order_by, filter, size, page);
+            result.TotalPage = (int)Math.Ceiling((decimal)storeRepository.CountDashboardStores(search, order_by, filter) / size);
             return Ok(result);
         }
 
@@ -38,7 +41,7 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult<Store>> GetStoresById(Guid guid)
         {
-            var result = await _storeReposiotry.GetById(guid);
+            var result = await storeRepository.GetById(guid);
             return Ok(result);
         }
 
@@ -63,11 +66,11 @@ namespace CakeCurious_API.Controllers
             };
             try
             {
-                _storeReposiotry.Add(prod);
+                storeRepository.Add(prod);
             }
             catch (DbUpdateException)
             {
-                if (_storeReposiotry.GetById(prod.Id!.Value) != null)
+                if (storeRepository.GetById(prod.Id!.Value) != null)
                     return Conflict();
             }
             return Ok(prod);
@@ -77,7 +80,7 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult> DeleteStore(Guid? guid)
         {
-            Store? store = await _storeReposiotry.Delete(guid);
+            Store? store = await storeRepository.Delete(guid);
             return Ok("Delete Store " + store!.Name + " success");
         }
 
@@ -88,7 +91,7 @@ namespace CakeCurious_API.Controllers
             try
             {
                 if (guid != Store.Id) return BadRequest();
-                Store? beforeUpdateObj = await _storeReposiotry.GetById(Store.Id.Value);
+                Store? beforeUpdateObj = await storeRepository.GetById(Store.Id.Value);
                 if (beforeUpdateObj == null) throw new Exception("Store that need to update does not exist");
                 Store updateObj = new Store()
                 {
@@ -101,11 +104,11 @@ namespace CakeCurious_API.Controllers
                     Rating = Store.Rating == null ? beforeUpdateObj.Rating : Store.Rating,
                     Status = Store.Status == null ? beforeUpdateObj.Status : Store.Status,
                 };
-                await _storeReposiotry.Update(updateObj);
+                await storeRepository.Update(updateObj);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (_storeReposiotry.GetById(guid) == null)
+                if (storeRepository.GetById(guid) == null)
                 {
                     return NotFound();
                 }
@@ -114,20 +117,41 @@ namespace CakeCurious_API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Returns coupon information if all of the following conditions are met: the coupon existed, the coupon didn't expire, the coupon hadn't reached max uses, the coupon hadn't been used by the user.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="code"></param>
+        /// <returns></returns>
         [HttpGet("{id:guid}/coupons/code/{code:length(1,24)}")]
         [Authorize]
         public async Task<ActionResult<SimpleCoupon>> GetSimpleCouponOfStoreByCode(Guid id, string code)
         {
-            var coupon = await couponRepository.GetSimpleCouponOfStoreByCode(id, code);
-            if (coupon != null)
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                if (coupon.UsedCount < coupon.MaxUses)
+                // Check if coupon existed, didn't expire
+                var coupon = await couponRepository.GetSimpleCouponOfStoreByCode(id, code);
+                if (coupon != null)
                 {
-                    return Ok(coupon);
+                    // Check if coupon had reached max uses
+                    if (coupon.UsedCount < coupon.MaxUses)
+                    {
+                        // Check if coupon had been used by the user
+                        var isUsed = await orderRepository.IsCouponInUserOrders((Guid)coupon.Id!, uid);
+                        if (!isUsed)
+                        {
+                            // Coupon weren't used by the user
+                            return Ok(coupon);
+                        }
+                        // Coupon had been used by the user
+                        return BadRequest();
+                    }
+                    return NotFound();
                 }
                 return NotFound();
             }
-            return NotFound();
+            return Unauthorized();
         }
     }
 }

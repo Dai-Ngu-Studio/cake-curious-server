@@ -2,11 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Orders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Mapster;
 using Repository.Constants.Orders;
 
@@ -134,6 +129,36 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return await db.Orders.FirstOrDefaultAsync(x => x.Id == guid);
+        }
+
+        public async Task AddOrder(Order order, string query)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                await db.Orders.AddAsync(order);
+                if (!string.IsNullOrWhiteSpace(query))
+                {
+                    await db.Database.ExecuteSqlRawAsync(query);
+                }
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                Console.WriteLine();
+            }
+        }
+
+        /// <summary>
+        /// Find if coupon were used by user in pending or processing or finished order.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> IsCouponInUserOrders(Guid couponId, string userId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Orders.AnyAsync(x => x.UserId == userId
+                && x.CouponId == couponId
+                && (x.Status == (int)OrderStatusEnum.Pending
+                    || x.Status == (int)OrderStatusEnum.Processing
+                    || x.Status == (int)OrderStatusEnum.Completed));
         }
     }
 }

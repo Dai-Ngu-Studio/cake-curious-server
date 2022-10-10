@@ -1,9 +1,4 @@
 ﻿using BusinessObject;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Repository.Models.Stores;
 using Mapster;
@@ -169,6 +164,12 @@ namespace Repository
                 Console.WriteLine(ex.Message);
             }
             return 0;
+        }
+
+        public async Task<bool> IsStoreExisted(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Stores.AsNoTracking().AnyAsync(x => x.Id == id && x.Status == (int)StoreStatusEnum.Active);
         }
     }
 }
