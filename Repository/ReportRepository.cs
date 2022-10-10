@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObject;
+﻿using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
-using Repository.Constants.Products;
 using Repository.Constants.RecipeMaterials;
 using Repository.Constants.Reports;
 using Repository.Interfaces;
@@ -88,10 +82,12 @@ namespace Repository
             }
             try
             {
+                //search
                 if (s != null)
                 {
                     reports = SearchViolationReport(s, reports);
                 }
+                //filter
                 if (report_type != null && report_type == ReportTypeEnum.Comment.ToString())
                 {
                     reports = FilterByComment(reports);
@@ -100,6 +96,16 @@ namespace Repository
                 {
                     reports = FilterByRecipe(reports);
                 }
+                else if (report_type != null && report_type == ReportStatusEnum.Censored.ToString())
+
+                {
+                    reports = FilterByCensoredStatus(reports);
+                }
+                else if (report_type != null && report_type == ReportStatusEnum.Pending.ToString())
+                {
+                    reports = FilterByPendingStatus(reports);
+                }
+                //sort
                 if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
                 {
                     reports = OrderByDescTitle(reports);
