@@ -13,6 +13,5 @@ namespace Repository.Interfaces
         public IEnumerable<StoreDashboardCoupon>? GetCouponsOfAStore(string uid, string? s, string? order_by, string? filter_Coupon, int pageSize, int pageIndex);
         public int? CountCouponPage(string uid, string? s, string? order_by, string? filter_Coupon);
         public Task<SimpleCoupon?> GetSimpleCouponOfStoreById(Guid id);
-
     }
 }
