@@ -59,11 +59,13 @@ namespace CakeCurious_API.Controllers
                 {
                     Id = order.Id == null ? beforeUpdateObj.Id : order.Id,
                     CompletedDate = order.CompletedDate == null ? beforeUpdateObj.CompletedDate : order.CompletedDate,
+                    OrderDate = order.OrderDate == null ? beforeUpdateObj.OrderDate : order.OrderDate,
+                    ProcessedDate = !order.ProcessedDate.HasValue ? beforeUpdateObj.ProcessedDate : order.ProcessedDate,
                     CouponId = order.CouponId == null ? beforeUpdateObj.CouponId : order.CouponId,
                     Status = order.Status == null ? beforeUpdateObj.Status : order.Status,
-                    ProcessedDate = order.ProcessedDate == null ? beforeUpdateObj.ProcessedDate : order.ProcessedDate,
+                    DiscountedTotal = order.DiscountedTotal == null ? beforeUpdateObj.DiscountedTotal : order.DiscountedTotal,
+                    Address = order.Address == null ? beforeUpdateObj.Address : order.Address,
                     StoreId = order.StoreId == null ? beforeUpdateObj.StoreId : order.StoreId,
-                    OrderDate = order.OrderDate == null ? beforeUpdateObj.OrderDate : order.OrderDate,
                     Total = order.Total == null ? beforeUpdateObj.Total : order.Total,
                     UserId = order.UserId ?? beforeUpdateObj.UserId,
                 };
