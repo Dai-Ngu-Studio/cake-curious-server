@@ -270,20 +270,20 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/steps")]
         [Authorize]
-        public async Task<ActionResult<Queue<DetailRecipeStep>>> GetAllRecipeStepDetails(Guid id)
+        public async Task<ActionResult<DetailRecipeSteps>> GetAllRecipeStepDetails(Guid id)
         {
             try
             {
                 var recipe = await recipeRepository.GetRecipeWithStepsReadonly(id);
                 if (recipe != null)
                 {
-                    var steps = new Queue<DetailRecipeStep>();
+                    var steps = new DetailRecipeSteps();
                     for (int i = 1; i <= recipe.RecipeSteps!.Count; i++)
                     {
                         var step = await recipeRepository.GetRecipeStepDetails(id, i);
                         if (step != null)
                         {
-                            steps.Enqueue(step);
+                            steps.RecipeSteps!.Enqueue(step);
                         }
                     }
                     return Ok(steps);
