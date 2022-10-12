@@ -40,8 +40,8 @@ namespace BusinessObject
         [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
 
-        [Column("cook_time", TypeName = "decimal(9,4)")]
-        public decimal? CookTime { get; set; }
+        [Column("cook_time")]
+        public int? CookTime { get; set; }
 
         [Column("published_date", TypeName = "datetime2(7)")]
         public DateTime? PublishedDate { get; set; }

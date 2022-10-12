@@ -13,7 +13,7 @@ namespace Repository.Models.Recipes
         public int? ServingSize { get; set; }
         public string? PhotoUrl { get; set; }
         public string? VideoUrl { get; set; }
-        public decimal? CookTime { get; set; }
+        public int? CookTime { get; set; }
         public DateTime? PublishedDate { get; set; }
         public int? Likes { get; set; }
         public bool? IsLikedByCurrentUser { get; set; }

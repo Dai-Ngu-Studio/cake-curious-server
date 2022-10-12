@@ -18,6 +18,12 @@ namespace Repository
             return await db.Recipes.FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<Recipe?> GetRecipeWithStepsReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes.AsNoTracking().Include(x => x.RecipeSteps).FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<Recipe?> GetRecipeReadonly(Guid id)
         {
             var db = new CakeCuriousDbContext();

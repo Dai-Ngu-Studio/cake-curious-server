@@ -16,6 +16,7 @@ namespace Repository.Interfaces
         public Task<ICollection<ExploreRecipe>> Explore(int randSeed, int skip, int take);
         public Task<int> Delete(Guid id);
         public Task<Recipe?> GetRecipeReadonly(Guid id);
+        public Task<Recipe?> GetRecipeWithStepsReadonly(Guid id);
         public Task<Recipe?> GetRecipe(Guid id);
         public Task UpdateRecipe(Recipe recipe, Recipe updateRecipe, IEnumerable<CreateRecipeMaterial> recipeMaterials);
     }

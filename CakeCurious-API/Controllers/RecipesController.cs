@@ -268,16 +268,44 @@ namespace CakeCurious_API.Controllers
             }
         }
 
-        [HttpGet("{id:guid}/{step:int}")]
+        [HttpGet("{id:guid}/steps")]
+        [Authorize]
+        public async Task<ActionResult<DetailRecipeSteps>> GetAllRecipeStepDetails(Guid id)
+        {
+            try
+            {
+                var recipe = await recipeRepository.GetRecipeWithStepsReadonly(id);
+                if (recipe != null)
+                {
+                    var steps = new DetailRecipeSteps();
+                    for (int i = 1; i <= recipe.RecipeSteps!.Count; i++)
+                    {
+                        var step = await recipeRepository.GetRecipeStepDetails(id, i);
+                        if (step != null)
+                        {
+                            steps.RecipeSteps!.Enqueue(step);
+                        }
+                    }
+                    return Ok(steps);
+                }
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{id:guid}/steps/{step:int}")]
         [Authorize]
         public async Task<ActionResult<DetailRecipeStep>> GetRecipeStepDetails(Guid id, [Range(1, int.MaxValue)] int step)
         {
             try
             {
-                var recipe = await recipeRepository.GetRecipeStepDetails(id, step);
-                if (recipe != null)
+                var recipeStep = await recipeRepository.GetRecipeStepDetails(id, step);
+                if (recipeStep != null)
                 {
-                    return Ok(recipe);
+                    return Ok(recipeStep);
                 }
                 return NotFound();
             }
