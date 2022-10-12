@@ -21,7 +21,14 @@ namespace Repository
         {
             return orders.Where(p => p.Status == (int)OrderStatusEnum.Completed).ToList();
         }
-
+        public IEnumerable<Order> FilterByStatusProcessing(IEnumerable<Order> orders)
+        {
+            return orders.Where(p => p.Status == (int)OrderStatusEnum.Processing).ToList();
+        }
+        public IEnumerable<Order> FilterByStatusCancelled(IEnumerable<Order> orders)
+        {
+            return orders.Where(p => p.Status == (int)OrderStatusEnum.Cancelled).ToList();
+        }
         public IEnumerable<Order> FilterByStatusPending(IEnumerable<Order> orders)
         {
             return orders.Where(p => p.Status == (int)OrderStatusEnum.Pending).ToList();
@@ -49,6 +56,14 @@ namespace Repository
                 else if (filter_Order != null && filter_Order == OrderStatusEnum.Completed.ToString())
                 {
                     orders = FilterByStatusComplete(orders);
+                }
+                else if (filter_Order != null && filter_Order == OrderStatusEnum.Processing.ToString())
+                {
+                    orders = FilterByStatusProcessing(orders);
+                }
+                else if (filter_Order != null && filter_Order == OrderStatusEnum.Cancelled.ToString())
+                {
+                    orders = FilterByStatusCancelled(orders);
                 }
                 //sort
                 if (order_by != null && order_by == OrderSortEnum.DescOrderDate.ToString())
