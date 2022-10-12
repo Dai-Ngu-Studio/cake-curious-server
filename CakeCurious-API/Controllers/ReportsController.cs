@@ -26,11 +26,11 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<StaffDashboardReportPage>>> GetReports(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        public async Task<ActionResult<IEnumerable<StaffDashboardReportPage>>> GetReports(string? search, string? sort, string? type, string? status, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             var result = new StaffDashboardReportPage();
-            result.Reports = await _ReportRepository.GetViolationReports(search, sort, filter, page, size);
-            result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(search, sort, filter) / size);
+            result.Reports = await _ReportRepository.GetViolationReports(search, sort, type, status, page, size);
+            result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(search, sort, type, status) / size);
             return Ok(result);
         }
 
