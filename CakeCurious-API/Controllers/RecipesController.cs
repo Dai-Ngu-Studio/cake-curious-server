@@ -63,11 +63,13 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("explore")]
         [Authorize]
-        public async Task<ICollection<ExploreRecipe>> Explore(int seed,
+        public async Task<ExploreRecipes> Explore(int seed,
             [Range(1, int.MaxValue)] int take = 10,
             [Range(0, int.MaxValue)] int lastKey = 0)
         {
-            return await recipeRepository.Explore(seed, take, lastKey);
+            var explore = new ExploreRecipes();
+            explore.Explore = await recipeRepository.Explore(seed, take, lastKey);
+            return explore;
         }
 
         [HttpGet("following")]
