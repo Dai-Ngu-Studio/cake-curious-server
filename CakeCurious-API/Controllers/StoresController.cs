@@ -37,6 +37,15 @@ namespace CakeCurious_API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("Of-A-User")]
+        [Authorize]
+        public async Task<ActionResult<Store>> GetStoresByUserId()
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await storeRepository.GetByUserId(uid);
+            return Ok(result);
+        }
+
         [HttpGet("{guid}")]
         [Authorize]
         public async Task<ActionResult<Store>> GetStoresById(Guid guid)

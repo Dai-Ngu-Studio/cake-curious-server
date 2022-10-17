@@ -171,5 +171,11 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Stores.AsNoTracking().AnyAsync(x => x.Id == id && x.Status == (int)StoreStatusEnum.Active);
         }
+
+        public Task<Store?> GetByUserId(string? uid)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Stores.FirstOrDefaultAsync(x => x.UserId == uid);
+        }
     }
 }
