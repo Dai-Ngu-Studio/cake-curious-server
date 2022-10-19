@@ -275,6 +275,29 @@ namespace Repository
                 .ProjectToType<HomeRecipe>();
         }
 
+        public async Task<int> CountLikedOfUser(string userId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Likes
+                .AsNoTracking()
+                .Where(x => x.UserId == userId)
+                .Where(x => x.Recipe!.Status == (int)RecipeStatusEnum.Active)
+                .CountAsync();
+        }
+
+        public IEnumerable<HomeRecipe> GetLikedOfUser(string userId, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Likes
+                .AsNoTracking()
+                .OrderByDescending(x => x.CreatedDate)
+                .Where(x => x.UserId == userId)
+                .Where(x => x.Recipe!.Status == (int)RecipeStatusEnum.Active)
+                .Skip(skip)
+                .Take(take)
+                .ProjectToType<HomeRecipe>();
+        }
+
         public async Task<int> CountRecipesOfUser(string userId)
         {
             var db = new CakeCuriousDbContext();
