@@ -33,9 +33,9 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{guid}")]
         [Authorize]
-        public async Task<ActionResult<Product>> GetProductsById(Guid guid)
+        public async Task<ActionResult<StoreProductDetail>> GetProductsById(Guid guid)
         {
-            var result = await _productRepository.GetById(guid);
+            var result = await _productRepository.GetByIdForStore(guid);
             return Ok(result);
         }
 

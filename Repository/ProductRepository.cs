@@ -95,12 +95,16 @@ namespace Repository
             return null;
         }
 
+        public async Task<StoreProductDetail?> GetByIdForStore(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Products.Include(p => p.ProductCategory).ProjectToType<StoreProductDetail>().FirstOrDefaultAsync(x => x.Id == id);
+        }
         public async Task<Product?> GetById(Guid id)
         {
             var db = new CakeCuriousDbContext();
             return await db.Products.FirstOrDefaultAsync(x => x.Id == id);
         }
-
         public async Task<Product?> Delete(Guid id)
         {
             Product? prod;
