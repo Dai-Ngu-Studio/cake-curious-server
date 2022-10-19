@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
+using Repository.Models.Recipes;
 using Repository.Models.Roles;
 using Repository.Models.Users;
 using System.ComponentModel.DataAnnotations;
@@ -20,12 +21,14 @@ namespace CakeCurious_API.Controllers
         private readonly IUserRepository userRepository;
         private readonly IUserDeviceRepository userDeviceRepository;
         private readonly IUserFollowRepository userFollowRepository;
+        private readonly IRecipeRepository recipeRepository;
 
-        public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository, IUserFollowRepository _userFollowRepository)
+        public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository, IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository)
         {
             userRepository = _userRepository;
             userDeviceRepository = _userDeviceRepository;
             userFollowRepository = _userFollowRepository;
+            recipeRepository = _recipeRepository;
         }
 
         [HttpGet]
@@ -296,6 +299,24 @@ namespace CakeCurious_API.Controllers
                         return BadRequest(e.Message);
                     }
                 }
+            }
+            return Unauthorized();
+        }
+
+        [HttpGet("current/bookmarks")]
+        [Authorize]
+        public async Task<ActionResult<HomeRecipePage>> GetBookmarksOfCurrentUser(
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var recipePage = new HomeRecipePage();
+                recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountBookmarksOfUser(uid));
+                recipePage.Recipes = recipeRepository.GetBookmarksOfUser(uid, (page - 1) * take, take);
+                return Ok(recipePage);
             }
             return Unauthorized();
         }

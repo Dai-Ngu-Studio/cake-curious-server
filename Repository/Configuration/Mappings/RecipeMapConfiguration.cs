@@ -37,6 +37,16 @@ namespace Repository.Configuration.Mappings
             TypeAdapterConfig<UpdateRecipe, Recipe>
                 .NewConfig()
                 .Map(dest => dest.RecipeMaterials, src => src.Ingredients!.Concat(src.Equipment!));
+
+            TypeAdapterConfig<Bookmark, HomeRecipe>
+                .NewConfig()
+                .Map(dest => dest.Id, src => src.RecipeId)
+                .Map(dest => dest.Likes, src => src.Recipe!.Likes!.Count)
+                .Map(dest => dest.Name, src => src.Recipe!.Name!)
+                .Map(dest => dest.ServingSize, src => src.Recipe!.ServingSize!)
+                .Map(dest => dest.CookTime, src => src.Recipe!.CookTime!)
+                .Map(dest => dest.PhotoUrl, src => src.Recipe!.PhotoUrl!)
+                .Map(dest => dest.User, src => src.Recipe!.User!);
         }
     }
 }

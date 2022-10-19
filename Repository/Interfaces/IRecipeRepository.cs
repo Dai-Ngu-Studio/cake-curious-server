@@ -19,5 +19,7 @@ namespace Repository.Interfaces
         public Task<Recipe?> GetRecipeWithStepsReadonly(Guid id);
         public Task<Recipe?> GetRecipe(Guid id);
         public Task UpdateRecipe(Recipe recipe, Recipe updateRecipe, IEnumerable<CreateRecipeMaterial> recipeMaterials);
+        public Task<int> CountBookmarksOfUser(string userId);
+        public IEnumerable<HomeRecipe> GetBookmarksOfUser(string userId, int skip, int take);
     }
 }

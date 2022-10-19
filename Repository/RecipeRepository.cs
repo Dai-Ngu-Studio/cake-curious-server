@@ -251,5 +251,29 @@ namespace Repository
             home.Trending = trending;
             return home;
         }
+
+        public async Task<int> CountBookmarksOfUser(string userId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Bookmarks
+                .AsNoTracking()
+                .OrderByDescending(x => x.CreatedDate)
+                .Where(x => x.UserId == userId)
+                .Where(x => x.Recipe!.Status == (int)RecipeStatusEnum.Active)
+                .CountAsync();
+        }
+
+        public IEnumerable<HomeRecipe> GetBookmarksOfUser(string userId, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Bookmarks
+                .AsNoTracking()
+                .OrderByDescending(x => x.CreatedDate)
+                .Where(x => x.UserId == userId)
+                .Where(x => x.Recipe!.Status == (int)RecipeStatusEnum.Active)
+                .Skip(skip)
+                .Take(take)
+                .ProjectToType<HomeRecipe>();
+        }
     }
 }
