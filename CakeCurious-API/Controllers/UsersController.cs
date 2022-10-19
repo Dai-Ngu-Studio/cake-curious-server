@@ -325,7 +325,26 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
-        [HttpGet("")]
+        [HttpGet("{id:length(1,128)}/profile")]
+        [Authorize]
+        public async Task<ActionResult<ProfileUser>> GetProfileUser(string id)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            { 
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    if (id == "current")
+                    {
+                        id = uid;
+                    }
+                    return Ok(await userRepository.GetProfileUser(id));
+                }
+                return BadRequest();
+            }
+            return Unauthorized();
+        }
 
         private async Task CheckAndAddDevice(string? FcmToken, string uid)
         {
