@@ -19,6 +19,7 @@ namespace CakeCurious_API.Utilities
             services.AddScoped<IBookmarkRepository, BookmarkRepository>();
             services.AddScoped<IUserFollowRepository, UserFollowRepository>();
             services.AddScoped<ICouponRepository, CouponRepository>();
+            services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         }
     }
 }
