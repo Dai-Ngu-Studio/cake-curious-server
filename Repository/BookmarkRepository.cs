@@ -19,6 +19,7 @@ namespace Repository
             {
                 UserId = userId,
                 RecipeId = recipeId,
+                CreatedDate = DateTime.Now,
             });
             await db.SaveChangesAsync();
         }
