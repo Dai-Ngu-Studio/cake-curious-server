@@ -94,26 +94,30 @@ namespace CakeCurious_API.Controllers
         }
         [HttpGet("{id}/following")]
         [Authorize]
-        public async Task<ActionResult<ICollection<FollowingUser>>> GetFollowingOfUser(string id)
+        public async Task<ActionResult<FollowUserPage>> GetFollowingOfUser(string id)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                return Ok(await userRepository.GetFollowingOfUser(id, uid));
+                var followUserPage = new FollowUserPage();
+                followUserPage.Followings = await userRepository.GetFollowingOfUser(id, uid);
+                return Ok(followUserPage);
             }
             return Unauthorized();
         }
 
         [HttpGet("{id}/followers")]
         [Authorize]
-        public async Task<ActionResult<ICollection<FollowerUser>>> GetFollowersOfUser(string id)
+        public async Task<ActionResult<FollowUserPage>> GetFollowersOfUser(string id)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                return Ok(await userRepository.GetFollowersOfUser(id, uid));
+                var followUserPage = new FollowUserPage();
+                followUserPage.Followers = await userRepository.GetFollowersOfUser(id, uid);
+                return Ok(followUserPage);
             }
             return Unauthorized();
         }
@@ -320,6 +324,8 @@ namespace CakeCurious_API.Controllers
             }
             return Unauthorized();
         }
+
+        [HttpGet("")]
 
         private async Task CheckAndAddDevice(string? FcmToken, string uid)
         {
