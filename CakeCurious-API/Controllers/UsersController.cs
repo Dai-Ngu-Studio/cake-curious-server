@@ -318,7 +318,7 @@ namespace CakeCurious_API.Controllers
             if (!string.IsNullOrWhiteSpace(uid))
             {
                 var recipePage = new HomeRecipePage();
-                recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountBookmarksOfUser(uid));
+                recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountBookmarksOfUser(uid) / take);
                 recipePage.Recipes = recipeRepository.GetBookmarksOfUser(uid, (page - 1) * take, take);
                 return Ok(recipePage);
             }
@@ -332,7 +332,7 @@ namespace CakeCurious_API.Controllers
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
-            { 
+            {
                 if (!string.IsNullOrWhiteSpace(id))
                 {
                     if (id == "current")
@@ -340,6 +340,33 @@ namespace CakeCurious_API.Controllers
                         id = uid;
                     }
                     return Ok(await userRepository.GetProfileUser(id));
+                }
+                return BadRequest();
+            }
+            return Unauthorized();
+        }
+
+        [HttpGet("{id:length(1,128)}/recipes")]
+        [Authorize]
+        public async Task<ActionResult<HomeRecipePage>> GetRecipesOfUser(
+            string id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    if (id == "current")
+                    {
+                        id = uid;
+                    }
+                    var recipePage = new HomeRecipePage();
+                    recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountRecipesOfUser(id) / take);
+                    recipePage.Recipes = recipeRepository.GetRecipesOfUser(id, (page - 1) * take, take);
+                    return Ok(recipePage);
                 }
                 return BadRequest();
             }
