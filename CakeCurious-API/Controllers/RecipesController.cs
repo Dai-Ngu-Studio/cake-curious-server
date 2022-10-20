@@ -199,6 +199,25 @@ namespace CakeCurious_API.Controllers
                         {
                             var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
                             await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe, materials);
+
+                            var elastisearchMaterials = updateRecipe.Ingredients
+                                .Select(x => x.MaterialName);
+                            var elastisearchCategories = updateRecipe.HasCategories!
+                                .Where(x => x.RecipeCategoryId.HasValue)
+                                .Select(x => x.RecipeCategoryId!.Value);
+
+                            var elastisearchRecipe = new ElastisearchRecipe
+                            {
+                                Id = recipe.Id,
+                                Name = new string[] { updateRecipe.Name! },
+                                Materials = elastisearchMaterials.ToArray()!,
+                                Categories = elastisearchCategories.ToArray(),
+                            };
+
+                            var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
+                                    .Doc(elastisearchRecipe)
+                                );
+
                             return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
                         }
                         catch (Exception)
