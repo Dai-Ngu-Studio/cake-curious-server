@@ -45,6 +45,7 @@ var elasticUri = new Uri(Environment.GetEnvironmentVariable("ES_SECRET")!);
 var elasticPool = new SingleNodeConnectionPool(elasticUri);
 var elasticSettings = new ConnectionSettings(elasticPool)
     .DefaultIndex("recipes")
+    //.EnableDebugMode()
     .EnableApiVersioningHeader();
 var elasticClient = new ElasticClient(elasticSettings);
 builder.Services.AddSingleton<IElasticClient>(elasticClient);

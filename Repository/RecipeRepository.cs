@@ -320,5 +320,16 @@ namespace Repository
                 .Take(take)
                 .ProjectToType<HomeRecipe>();
         }
+
+        public async Task<ICollection<HomeRecipe>> GetSuggestedRecipes(List<Guid> recipeIds)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes
+                .AsNoTracking()
+                .Where(x => recipeIds.Any(y => y == (Guid)x.Id!))
+                .Where(x => x.Status == (int)RecipeStatusEnum.Active)
+                .ProjectToType<HomeRecipe>()
+                .ToListAsync();
+        }
     }
 }

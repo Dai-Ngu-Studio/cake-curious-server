@@ -240,7 +240,7 @@ namespace CakeCurious_API.Controllers
 
                     var elastisearchRecipe = new ElastisearchRecipe
                     {
-                        Id = Guid.NewGuid(),
+                        Id = recipe.Id,
                         Name = new string[] { createRecipe.Name! },
                         Materials = elastisearchMaterials.ToArray()!,
                         Likes = 0,
@@ -351,6 +351,83 @@ namespace CakeCurious_API.Controllers
             {
                 return BadRequest();
             }
+        }
+
+        [HttpGet("suggest")]
+        [Authorize]
+        public async Task<ActionResult> SuggestRecipes(
+            [FromQuery] string[]? ingredients,
+            [FromQuery] int[]? categories,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            var searchDescriptor = new SearchDescriptor<ElastisearchRecipe>();
+            var descriptor = new QueryContainerDescriptor<ElastisearchRecipe>();
+            var shouldContainer = new List<QueryContainer>();
+            var filterContainer = new List<QueryContainer>();
+
+            if (ingredients != null)
+            {
+                foreach (var ingredient in ingredients)
+                {
+                    if (!string.IsNullOrWhiteSpace(ingredient))
+                    {
+                        shouldContainer.Add(descriptor
+                            .Match(m => m
+                                .Field(f => f.Materials)
+                                .Query(ingredient)
+                                .Fuzziness(Fuzziness.EditDistance(2))
+                            )
+                        );
+                    }
+                }
+            }
+
+            if (categories != null)
+            {
+                filterContainer.Add(descriptor
+                    .Terms(x => x
+                        .Field(f => f.Categories)
+                        .Terms(categories)
+                    )
+                );
+            }
+
+            var searchResponse = await elasticClient.SearchAsync<ElastisearchRecipe>(s => s
+                .From((page - 1) * take)
+                .Size(take)
+                .MinScore(0.01D)
+                .Sort(ss => ss
+                    .Descending(f => f.Likes)
+                    .Descending(SortSpecialField.Score)
+                )
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
+                    )
+                )
+            );
+
+            var recipeIds = new List<Guid>();
+            var recipes = new List<HomeRecipe>();
+
+            foreach (var doc in searchResponse.Documents)
+            {
+                recipeIds.Add((Guid)doc.Id!);
+            }
+
+            var suggestedRecipes = await recipeRepository.GetSuggestedRecipes(recipeIds);
+
+            foreach (var recipeId in recipeIds)
+            {
+                recipes.Add(suggestedRecipes.FirstOrDefault(x => x.Id == recipeId)!);
+            }
+
+            var recipePage = new HomeRecipePage();
+            recipePage.Recipes = recipes;
+
+            return Ok(recipePage);
         }
     }
 }

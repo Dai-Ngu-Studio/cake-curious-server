@@ -25,5 +25,6 @@ namespace Repository.Interfaces
         public IEnumerable<HomeRecipe> GetLikedOfUser(string userId, int skip, int take);
         public Task<int> CountRecipesOfUser(string userId);
         public IEnumerable<HomeRecipe> GetRecipesOfUser(string userId, int skip, int take);
+        public Task<ICollection<HomeRecipe>> GetSuggestedRecipes(List<Guid> recipeIds);
     }
 }
