@@ -3,6 +3,7 @@ using CakeCurious_API.Utilities;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nest;
 using Repository.Constants.Recipes;
 using Repository.Constants.Roles;
 using Repository.Interfaces;
@@ -26,15 +27,17 @@ namespace CakeCurious_API.Controllers
         private readonly ILikeRepository likeRepository;
         private readonly IBookmarkRepository bookmarkRepository;
         private readonly IUserRepository userRepository;
+        private readonly IElasticClient elasticClient;
 
         public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
-            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository)
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
             likeRepository = _likeRepository;
             bookmarkRepository = _bookmarkRepository;
             userRepository = _userRepository;
+            elasticClient = _elasticClient;
         }
 
         [HttpDelete("{id:guid}")]
@@ -228,6 +231,24 @@ namespace CakeCurious_API.Controllers
                     recipe.UserId = uid;
 
                     await recipeRepository.AddRecipe(recipe, materials);
+
+                    var elastisearchMaterials = createRecipe.Ingredients
+                        .Select(x => x.MaterialName);
+                    var elastisearchCategories = createRecipe.HasCategories!
+                        .Where(x => x.RecipeCategoryId.HasValue)
+                        .Select(x => x.RecipeCategoryId!.Value);
+
+                    var elastisearchRecipe = new ElastisearchRecipe
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = new string[] { createRecipe.Name! },
+                        Materials = elastisearchMaterials.ToArray()!,
+                        Likes = 0,
+                        Categories = elastisearchCategories.ToArray(),
+                    };
+
+                    var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
+
                     return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
                 }
                 catch (Exception)
