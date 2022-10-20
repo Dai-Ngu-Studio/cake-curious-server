@@ -56,6 +56,10 @@ namespace CakeCurious_API.Controllers
                             new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
                     {
                         var rows = await recipeRepository.Delete(id);
+                        if (rows > 0)
+                        {
+                            await elasticClient.DeleteAsync<ElastisearchRecipe>(id);
+                        }
                         return (rows > 0) ? Ok() : BadRequest();
                     }
                 }
