@@ -10,7 +10,7 @@ namespace Repository.Interfaces
         public Task<Product?> Delete(Guid id);
         public Task<StoreProductDetail?> GetByIdForStore(Guid id);
         public Task<Product?> GetById(Guid id);
-        public IEnumerable<StoreDashboardProduct>? GetProducts(string? s, string? order_by, string? product_type, int pageIndex, int pageSize);
+        public IEnumerable<StoreProductDetail>? GetProducts(string? s, string? order_by, string? product_type, int pageIndex, int pageSize);
         public int CountDashboardProducts(string? s, string? order_by, string? product_type);
         public Task<Product?> GetProductReadonly(Guid id);
         public Task<Product?> GetActiveProductReadonly(Guid id);
