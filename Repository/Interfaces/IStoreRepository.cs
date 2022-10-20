@@ -13,5 +13,6 @@ namespace Repository.Interfaces
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int PageSize, int PageIndex);
         public int CountDashboardStores(string? s, string? order_by, string? filter_Store);
         public Task<bool> IsStoreExisted(Guid id);
+        public Task<Guid> getStoreIdByUid(string uid);
     }
 }
