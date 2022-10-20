@@ -23,5 +23,7 @@ namespace BusinessObject
         [ForeignKey("RecipeId")]
         public Recipe? Recipe { get; set; }
 
+        [Column("created_date", TypeName = "datetime2(7)")]
+        public DateTime? CreatedDate { get; set; }
     }
 }

@@ -23,6 +23,12 @@ namespace Repository.Configuration.Mappings
                 .Map(dest => dest.DisplayName, src => src.Follower!.DisplayName)
                 .Map(dest => dest.IsFollowedByCurrentUser, src => src.Follower!.Followers!
                     .Any(x => x.FollowerId == (string)MapContext.Current!.Parameters["userId"]));
+
+            TypeAdapterConfig<User, ProfileUser>
+                .NewConfig()
+                .Map(dest => dest.Followers, src => src.Followers!.Count)
+                .Map(dest => dest.Following, src => src.Followings!.Count)
+                .Map(dest => dest.Recipes, src => src.Recipes!.Count);
         }
     }
 }

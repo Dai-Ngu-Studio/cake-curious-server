@@ -21,5 +21,9 @@ namespace Repository.Interfaces
         public Task UpdateRecipe(Recipe recipe, Recipe updateRecipe, IEnumerable<CreateRecipeMaterial> recipeMaterials);
         public Task<int> CountBookmarksOfUser(string userId);
         public IEnumerable<HomeRecipe> GetBookmarksOfUser(string userId, int skip, int take);
+        public Task<int> CountLikedOfUser(string userId);
+        public IEnumerable<HomeRecipe> GetLikedOfUser(string userId, int skip, int take);
+        public Task<int> CountRecipesOfUser(string userId);
+        public IEnumerable<HomeRecipe> GetRecipesOfUser(string userId, int skip, int take);
     }
 }

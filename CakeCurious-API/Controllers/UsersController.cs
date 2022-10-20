@@ -94,26 +94,30 @@ namespace CakeCurious_API.Controllers
         }
         [HttpGet("{id}/following")]
         [Authorize]
-        public async Task<ActionResult<ICollection<FollowingUser>>> GetFollowingOfUser(string id)
+        public async Task<ActionResult<FollowUserPage>> GetFollowingOfUser(string id)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                return Ok(await userRepository.GetFollowingOfUser(id, uid));
+                var followUserPage = new FollowUserPage();
+                followUserPage.Followings = await userRepository.GetFollowingOfUser(id, uid);
+                return Ok(followUserPage);
             }
             return Unauthorized();
         }
 
         [HttpGet("{id}/followers")]
         [Authorize]
-        public async Task<ActionResult<ICollection<FollowerUser>>> GetFollowersOfUser(string id)
+        public async Task<ActionResult<FollowUserPage>> GetFollowersOfUser(string id)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                return Ok(await userRepository.GetFollowersOfUser(id, uid));
+                var followUserPage = new FollowUserPage();
+                followUserPage.Followers = await userRepository.GetFollowersOfUser(id, uid);
+                return Ok(followUserPage);
             }
             return Unauthorized();
         }
@@ -314,9 +318,84 @@ namespace CakeCurious_API.Controllers
             if (!string.IsNullOrWhiteSpace(uid))
             {
                 var recipePage = new HomeRecipePage();
-                recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountBookmarksOfUser(uid));
+                recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountBookmarksOfUser(uid) / take);
                 recipePage.Recipes = recipeRepository.GetBookmarksOfUser(uid, (page - 1) * take, take);
                 return Ok(recipePage);
+            }
+            return Unauthorized();
+        }
+
+        [HttpGet("{id:length(1,128)}/likes")]
+        [Authorize]
+        public async Task<ActionResult<HomeRecipePage>> GetLikesOfUser(
+            string id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    if (id == "current")
+                    {
+                        id = uid;
+                    }
+                    var recipePage = new HomeRecipePage();
+                    recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountLikedOfUser(id) / take);
+                    recipePage.Recipes = recipeRepository.GetLikedOfUser(id, (page - 1) * take, take);
+                    return Ok(recipePage);
+                }
+                return BadRequest();
+            }
+            return Unauthorized();
+        }
+
+        [HttpGet("{id:length(1,128)}/profile")]
+        [Authorize]
+        public async Task<ActionResult<ProfileUser>> GetProfileUser(string id)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    if (id == "current")
+                    {
+                        id = uid;
+                    }
+                    return Ok(await userRepository.GetProfileUser(id));
+                }
+                return BadRequest();
+            }
+            return Unauthorized();
+        }
+
+        [HttpGet("{id:length(1,128)}/recipes")]
+        [Authorize]
+        public async Task<ActionResult<HomeRecipePage>> GetRecipesOfUser(
+            string id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    if (id == "current")
+                    {
+                        id = uid;
+                    }
+                    var recipePage = new HomeRecipePage();
+                    recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountRecipesOfUser(id) / take);
+                    recipePage.Recipes = recipeRepository.GetRecipesOfUser(id, (page - 1) * take, take);
+                    return Ok(recipePage);
+                }
+                return BadRequest();
             }
             return Unauthorized();
         }

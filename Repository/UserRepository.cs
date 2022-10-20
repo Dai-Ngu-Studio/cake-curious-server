@@ -108,7 +108,6 @@ namespace Repository
             using (var scope = new MapContextScope())
             {
                 scope.Context.Parameters.Add("userId", currentUserId);
-
                 var db = new CakeCuriousDbContext();
                 return await db.UserFollows
                     .Where(x => x.FollowerId == uid)
@@ -190,6 +189,12 @@ namespace Repository
                 Console.WriteLine(ex.Message);
             }
             return null;
+        }
+
+        public async Task<ProfileUser?> GetProfileUser(string? id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Users.Where(x => x.Id == id).ProjectToType<ProfileUser>().FirstOrDefaultAsync();
         }
     }
 }
