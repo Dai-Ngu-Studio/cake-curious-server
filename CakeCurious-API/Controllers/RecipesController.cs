@@ -148,6 +148,13 @@ namespace CakeCurious_API.Controllers
                     try
                     {
                         await likeRepository.Remove(uid, id);
+                        await elasticClient.UpdateAsync<ElastisearchRecipe>(id, x => x
+                            .Script(s => s
+                                .Source("ctx._source.likes += params.increment_value")
+                                .Lang(ScriptLang.Painless)
+                                .Params(new Dictionary<string, object> { { "increment_value", -1 } })
+                            )
+                        );
                         return Ok();
                     }
                     catch (Exception)
@@ -161,6 +168,13 @@ namespace CakeCurious_API.Controllers
                     try
                     {
                         await likeRepository.Add(uid, id);
+                        await elasticClient.UpdateAsync<ElastisearchRecipe>(id, x => x
+                            .Script(s => s
+                                .Source("ctx._source.likes += params.increment_value")
+                                .Lang(ScriptLang.Painless)
+                                .Params(new Dictionary<string, object> { { "increment_value", 1 } })
+                            )
+                        );
                         return Ok();
                     }
                     catch (Exception)
