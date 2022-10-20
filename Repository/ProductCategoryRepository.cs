@@ -1,6 +1,7 @@
 ﻿using BusinessObject;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
+using Repository.Models.ProductCategories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,12 @@ namespace Repository
 {
     public class ProductCategoryRepository : IProductCategoryRepository
     {
-        public async Task<IEnumerable<ProductCategory>> GetProductCategories()
+        public async Task<ProductCategoryResponse> GetProductCategories()
         {
             var db = new CakeCuriousDbContext();
-            return await db.ProductCategories.ToListAsync();
+            ProductCategoryResponse pcs = new ProductCategoryResponse();
+            pcs.ProductCategories = await db.ProductCategories.ToListAsync();
+            return pcs;
         }
     }
 }
