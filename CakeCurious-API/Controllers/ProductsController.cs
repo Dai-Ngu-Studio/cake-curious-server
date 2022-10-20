@@ -7,6 +7,7 @@ using System.Net.Mime;
 using Microsoft.EntityFrameworkCore;
 using Repository.Models.Product;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
 {
@@ -15,10 +16,12 @@ namespace CakeCurious_API.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
+        private readonly IStoreRepository _storeRepository;
 
-        public ProductsController(IProductRepository productRepository)
+        public ProductsController(IProductRepository productRepository, IStoreRepository storeRepository)
         {
             _productRepository = productRepository;
+            _storeRepository = storeRepository;
         }
 
         [HttpGet]
@@ -43,8 +46,11 @@ namespace CakeCurious_API.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<Product> PostProduct(Product product)
+        public async Task<ActionResult<Product>> PostProduct(Product product)
         {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Guid storeId = await _storeRepository.getStoreIdByUid(uid!);
+            if (storeId.ToString() == "00000000-0000-0000-0000-000000000000") return BadRequest("Invalid store id.You need to create a store to create a product");
             Guid id = Guid.NewGuid();
             Product prod = new Product()
             {
@@ -54,16 +60,15 @@ namespace CakeCurious_API.Controllers
                 Discount = product.Discount,
                 PhotoUrl = product.PhotoUrl,
                 Quantity = product.Quantity,
-                StoreId = product.StoreId,
+                StoreId = storeId,
                 ProductCategoryId = product.ProductCategoryId,
                 Price = product.Price,
                 Status = product.Status,
                 ProductType = product.ProductType,
-
             };
             try
             {
-                _productRepository.Add(prod);
+                await _productRepository.Add(prod);
             }
             catch (DbUpdateException)
             {

@@ -87,7 +87,21 @@ namespace Repository
             }
             return null;
         }
-
+        public async Task<Guid> getStoreIdByUid(string uid)
+        {        
+            try
+            {
+                var db = new CakeCuriousDbContext();
+                Store? result = await db.Stores.FirstOrDefaultAsync(s => s.UserId == uid);
+                if (result == null) throw new Exception("Invalid store id.You need to create a store to create a product");
+                return result!.Id!.Value;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return Guid.Empty;
+        }
         public async Task<Store?> GetById(Guid id)
         {
             var db = new CakeCuriousDbContext();
