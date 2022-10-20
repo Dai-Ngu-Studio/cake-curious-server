@@ -12,6 +12,7 @@ services:
     environment:
       CCDB_CNS: "server=db,1433;database=CakeCuriousDb;uid=sa;pwd=QWEasd123;"
       FIREBASE_SECRET: ${FIREBASE_SECRET}
+      ES_SECRET: ${ES_SECRET}
       GOOGLE_APPLICATION_CREDENTIALS: "./cake-curious-firebase-adminsdk-if0lw-7fa994f0ac.json"
   db:
     image: "mcr.microsoft.com/mssql/server:2019-CU15-ubuntu-20.04"

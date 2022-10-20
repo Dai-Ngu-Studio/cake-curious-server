@@ -8,7 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repository.Configuration;
 using System.Text.Json.Serialization;
-using Newtonsoft.Json;  
+using Newtonsoft.Json;
+using Nest;
+using Elasticsearch.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,15 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
 
 ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
+
+// Configure Elastisearch Client
+var elasticUri = new Uri(Environment.GetEnvironmentVariable("ES_SECRET")!);
+var elasticPool = new SingleNodeConnectionPool(elasticUri);
+var elasticSettings = new ConnectionSettings(elasticPool)
+    .DefaultIndex("recipes")
+    .EnableApiVersioningHeader();
+var elasticClient = new ElasticClient(elasticSettings);
+builder.Services.AddSingleton<IElasticClient>(elasticClient);
 
 builder.Services.RegisterMapsterConfiguration();
 
