@@ -9,6 +9,6 @@ namespace Repository.Models.Product
     public class StoreDashboardProductPage
     {
         public int? TotalPage { get; set; }
-        public IEnumerable<StoreDashboardProduct>? Products { get; set; }
+        public IEnumerable<StoreProductDetail>? Products { get; set; }
     }
 }

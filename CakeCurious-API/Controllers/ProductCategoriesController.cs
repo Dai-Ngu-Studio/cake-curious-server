@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
+using Repository.Models.ProductCategories;
 
 namespace CakeCurious_API.Controllers
 {
@@ -19,7 +20,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<ProductCategory>>> GetProductCategories()
+        public async Task<ActionResult<ProductCategoryResponse>> GetProductCategories()
         {
             return Ok(await _productCategoryRepository.GetProductCategories());
         }

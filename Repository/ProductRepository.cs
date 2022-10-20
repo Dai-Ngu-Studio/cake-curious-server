@@ -49,10 +49,10 @@ namespace Repository
             prods = prods.Where(p => p!.Name!.Contains(keyWord!)).ToList();
             return prods;
         }
-        public IEnumerable<StoreDashboardProduct>? GetProducts(string? s, string? order_by, string? product_type, int pageIndex, int pageSize)
+        public IEnumerable<StoreProductDetail>? GetProducts(string? s, string? order_by, string? product_type, int pageIndex, int pageSize)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Product> prods = db.Products.ToList();
+            IEnumerable<Product> prods = db.Products.Include(p => p.ProductCategory).ToList();
             try
             {   //Search
                 if (s != null)
@@ -85,7 +85,7 @@ namespace Repository
                 {
                     prods = OrderbyByDescPrice(prods);
                 }
-                return prods.Adapt<IEnumerable<StoreDashboardProduct>>().Skip((pageIndex - 1) * pageSize)
+                return prods.Adapt<IEnumerable<StoreProductDetail>>().Skip((pageIndex - 1) * pageSize)
                             .Take(pageSize).ToList();
             }
             catch (Exception ex)

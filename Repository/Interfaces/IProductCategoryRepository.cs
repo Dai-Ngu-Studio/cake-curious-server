@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using Repository.Models.ProductCategories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace Repository.Interfaces
 {
     public interface IProductCategoryRepository
     {
-        public Task<IEnumerable<ProductCategory>> GetProductCategories();
+        public Task<ProductCategoryResponse> GetProductCategories();
     }
 }
