@@ -88,7 +88,7 @@ namespace Repository
             return null;
         }
         public async Task<Guid> getStoreIdByUid(string uid)
-        {        
+        {
             try
             {
                 var db = new CakeCuriousDbContext();
