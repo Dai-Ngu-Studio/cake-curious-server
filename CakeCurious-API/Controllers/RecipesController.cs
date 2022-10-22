@@ -148,13 +148,6 @@ namespace CakeCurious_API.Controllers
                     try
                     {
                         await likeRepository.Remove(uid, id);
-                        await elasticClient.UpdateAsync<ElastisearchRecipe>(id, x => x
-                            .Script(s => s
-                                .Source("ctx._source.likes += params.increment_value")
-                                .Lang(ScriptLang.Painless)
-                                .Params(new Dictionary<string, object> { { "increment_value", -1 } })
-                            )
-                        );
                         return Ok();
                     }
                     catch (Exception)
@@ -168,13 +161,6 @@ namespace CakeCurious_API.Controllers
                     try
                     {
                         await likeRepository.Add(uid, id);
-                        await elasticClient.UpdateAsync<ElastisearchRecipe>(id, x => x
-                            .Script(s => s
-                                .Source("ctx._source.likes += params.increment_value")
-                                .Lang(ScriptLang.Painless)
-                                .Params(new Dictionary<string, object> { { "increment_value", 1 } })
-                            )
-                        );
                         return Ok();
                     }
                     catch (Exception)
@@ -280,7 +266,6 @@ namespace CakeCurious_API.Controllers
                         Id = recipe.Id,
                         Name = new string[] { createRecipe.Name! },
                         Materials = elastisearchMaterials.ToArray()!,
-                        Likes = 0,
                         Categories = elastisearchCategories.ToArray(),
                     };
 
@@ -435,7 +420,6 @@ namespace CakeCurious_API.Controllers
                 .Size(take)
                 .MinScore(0.01D)
                 .Sort(ss => ss
-                    .Descending(f => f.Likes)
                     .Descending(SortSpecialField.Score)
                 )
                 .Query(q => q
