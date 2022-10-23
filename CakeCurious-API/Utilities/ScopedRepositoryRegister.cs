@@ -20,6 +20,7 @@ namespace CakeCurious_API.Utilities
             services.AddScoped<IUserFollowRepository, UserFollowRepository>();
             services.AddScoped<ICouponRepository, CouponRepository>();
             services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
+            services.AddScoped<IRecipeCategoryRepository, RecipeCategoryRepository>();
         }
     }
 }
