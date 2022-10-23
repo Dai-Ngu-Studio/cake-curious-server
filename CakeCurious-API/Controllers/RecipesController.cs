@@ -375,9 +375,10 @@ namespace CakeCurious_API.Controllers
             }
         }
 
-        [HttpGet("suggest")]
+        [HttpGet("search")]
         [Authorize]
-        public async Task<ActionResult> SuggestRecipes(
+        public async Task<ActionResult> SearchRecipes(
+            [FromQuery] string? query,
             [FromQuery] string[]? ingredients,
             [FromQuery] int[]? categories,
             [Range(1, int.MaxValue)] int page = 1,
@@ -405,6 +406,17 @@ namespace CakeCurious_API.Controllers
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                shouldContainer.Add(descriptor
+                    .Match(m => m
+                        .Field(f => f.Name)
+                        .Query(query)
+                        .Fuzziness(Fuzziness.EditDistance(2))
+                    )
+                );
+            }
+
             if (categories != null)
             {
                 filterContainer.Add(descriptor
@@ -414,6 +426,15 @@ namespace CakeCurious_API.Controllers
                     )
                 );
             }
+
+            var countResponse = await elasticClient.CountAsync<ElastisearchRecipe>(s => s
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
+                    )
+                )
+            );
 
             var searchResponse = await elasticClient.SearchAsync<ElastisearchRecipe>(s => s
                 .From((page - 1) * take)
@@ -446,6 +467,7 @@ namespace CakeCurious_API.Controllers
             }
 
             var recipePage = new HomeRecipePage();
+            recipePage.TotalPages = (int)Math.Ceiling((decimal)countResponse.Count / take);
             recipePage.Recipes = recipes;
 
             return Ok(recipePage);
