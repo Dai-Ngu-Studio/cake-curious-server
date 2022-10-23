@@ -5,6 +5,7 @@ using Mapster;
 using Repository.Interfaces;
 using Repository.Constants.Products;
 using Repository.Constants.Stores;
+using Repository.Models.Users;
 
 namespace Repository
 {
@@ -186,10 +187,10 @@ namespace Repository
             return await db.Stores.AsNoTracking().AnyAsync(x => x.Id == id && x.Status == (int)StoreStatusEnum.Active);
         }
 
-        public Task<Store?> GetByUserId(string? uid)
+        public Task<StoreDetail?> GetByUserId(string? uid)
         {
             var db = new CakeCuriousDbContext();
-            return db.Stores.FirstOrDefaultAsync(x => x.UserId == uid);
+            return db.Stores.Include(s => s.User!).ProjectToType<StoreDetail>().FirstOrDefaultAsync(x => x.UserId == uid);
         }
     }
 }
