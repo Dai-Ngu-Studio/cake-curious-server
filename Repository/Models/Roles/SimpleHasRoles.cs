@@ -13,6 +13,6 @@ namespace Repository.Models.Roles
  
         public int? RoleId { get; set; }
 
-        public Role? Role { get; set; }
+        public SimpleRole? Role { get; set; }
     }
 }
