@@ -65,7 +65,7 @@ namespace Repository
                 foreach (var r in result)
                 {
                     foreach (var hasRole in users!.FirstOrDefault(u => u.Id == r.Id)!.HasRoles!)
-                    {     
+                    {
                         r!.Roles!.Add(hasRole!.Role!.Name!);
                     }
                 }
