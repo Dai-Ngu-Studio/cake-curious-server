@@ -19,5 +19,6 @@ namespace Repository.Models.Users
         public string? Gender { get; set; } 
 
         public List<string>? Roles { get; set; }
+        public int Status { get; set; }
     }
 }
