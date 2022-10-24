@@ -74,8 +74,8 @@ namespace Repository
                 {
                     orders = OrderAscOrderDate(orders);
                 }
-                return orders.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).Adapt<IEnumerable<StoreDashboardOrder>>().ToList();
+                return orders.Adapt<IEnumerable<StoreDashboardOrder>>().Skip((pageIndex - 1) * pageSize)
+                            .Take(pageSize).ToList();
             }
             catch (Exception ex)
             {

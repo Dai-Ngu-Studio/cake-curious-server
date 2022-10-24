@@ -31,11 +31,11 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<StoreDashboardOrder>> GetOrders(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int index = 1)
+        public ActionResult<IEnumerable<StoreDashboardOrder>> GetOrders(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int page = 1)
         {
             var result = new StoreDashboardOrderPage();
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            result.Orders = orderRepository.GetOrdersOfAStore(uid!, search, sort, filter, size, index);
+            result.Orders = orderRepository.GetOrdersOfAStore(uid!, search, sort, filter, size, page);
             result.TotalPage = (int)Math.Ceiling((decimal)orderRepository.CountDashboardOrders(uid!, search!, sort!, filter!) / size);
             return Ok(result);
         }
