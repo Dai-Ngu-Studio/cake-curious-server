@@ -5,5 +5,6 @@
         public int? Id { get; set; }
         public string? Name { get; set; }
         public int? RecipeCategoryGroupId { get; set; }
+        public int? RecipeCategoryGroupType { get; set; }
     }
 }

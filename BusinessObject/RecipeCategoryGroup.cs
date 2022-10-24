@@ -19,6 +19,9 @@ namespace BusinessObject
         [Column("name", TypeName = "nvarchar(32)")]
         public string? Name { get; set; }
 
+        [Column("group_type")]
+        public int? GroupType { get; set; }
+
         [InverseProperty("RecipeCategoryGroup")]
         public ICollection<RecipeCategory>? RecipeCategories { get; set; }
     }
