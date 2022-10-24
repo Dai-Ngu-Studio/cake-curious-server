@@ -9,7 +9,7 @@ namespace Repository.Interfaces
         public Task Add(Store obj);
         public Task<Store?> Delete(Guid? id);
         public Task<Store?> GetById(Guid id);
-        public Task<Store?> GetByUserId(string? id);
+        public Task<StoreDetail?> GetByUserId(string? id);
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int PageSize, int PageIndex);
         public int CountDashboardStores(string? s, string? order_by, string? filter_Store);
         public Task<bool> IsStoreExisted(Guid id);
