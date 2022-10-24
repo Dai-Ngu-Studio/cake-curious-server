@@ -2,6 +2,7 @@
 using Mapster;
 using Repository.Constants.RecipeMaterials;
 using Repository.Constants.RecipeMedia;
+using Repository.Models.RecipeCategories;
 using Repository.Models.Recipes;
 
 namespace Repository.Configuration.Mappings
@@ -57,6 +58,10 @@ namespace Repository.Configuration.Mappings
                 .Map(dest => dest.CookTime, src => src.Recipe!.CookTime!)
                 .Map(dest => dest.PhotoUrl, src => src.Recipe!.PhotoUrl!)
                 .Map(dest => dest.User, src => src.Recipe!.User!);
+
+            TypeAdapterConfig<RecipeCategory, DetachedRecipeCategory>
+                .NewConfig()
+                .Map(dest => dest.RecipeCategoryGroupType, src => src.RecipeCategoryGroup!.GroupType);
         }
     }
 }
