@@ -12,8 +12,8 @@ namespace Repository.Models.Users
         public string? Email { get; set; }    
         public string? DisplayName { get; set; }       
         public string? PhotoUrl { get; set; }     
-        public string? Gender { get; set; } 
-        public List<string>? Roles { get; set; }
+        public string? Gender { get; set; }
+        public List<string>? Roles { get; set; } = new List<string>();
         public int Status { get; set; }
     }
 }

@@ -36,6 +36,7 @@ namespace Repository
             {
                 var db = new CakeCuriousDbContext();
                 IEnumerable<User> users = await db.Users!.Include(u => u.HasRoles)!.ThenInclude(hr => hr.Role).ToListAsync();
+                IEnumerable<AdminDashboardUser> result;
                 //Search
                 if (search != null)
                 {
@@ -59,8 +60,16 @@ namespace Repository
                 {
                     users = orderByDescDisplayName(users);
                 }
-                return users.Adapt<IEnumerable<AdminDashboardUser>>().Skip((page - 1) * size)
+                result = users.Adapt<IEnumerable<AdminDashboardUser>>().Skip((page - 1) * size)
                             .Take(size).ToList();
+                foreach (var r in result)
+                {
+                    foreach (var hasRole in users!.FirstOrDefault(u => u.Id == r.Id)!.HasRoles!)
+                    {     
+                        r!.Roles!.Add(hasRole!.Role!.Name!);
+                    }
+                }
+                return result;
             }
             catch (Exception ex)
             {
