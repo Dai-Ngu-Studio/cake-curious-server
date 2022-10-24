@@ -41,7 +41,7 @@ namespace Repository
         public IEnumerable<StoreDashboardOrder>? GetOrdersOfAStore(string uid, string? s, string? order_by, string? filter_Order, int pageSize, int pageIndex)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid).ToList();
+            IEnumerable<Order> orders = db.Orders.Include(o => o.OrderDetails).Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid).ToList();
             try
             {
                 if (s != null)
