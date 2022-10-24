@@ -33,10 +33,10 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<AdminDashboardUserPage> GetUsers(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        public async Task<ActionResult<AdminDashboardUserPage>> GetUsers(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             var result = new AdminDashboardUserPage();
-            result.Users = userRepository.GetList(search, sort, filter, page, size);
+            result.Users = await userRepository.GetList(search, sort, filter, page, size);
             result.TotalPage = (int)Math.Ceiling((decimal)userRepository.CountDashboardUser(search, sort, filter) / size);
             return Ok(result);
         }

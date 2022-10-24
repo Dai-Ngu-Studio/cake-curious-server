@@ -30,12 +30,25 @@ namespace Repository
         {
             return users.OrderBy(u => u.DisplayName).ToList();
         }
-        public IEnumerable<AdminDashboardUser>? GetList(string? search, string? order_by, string? filter, int page, int size)
+        public async Task<IEnumerable<AdminDashboardUser>?> GetList(string? search, string? order_by, string? filter, int page, int size)
         {
-            var db = new CakeCuriousDbContext();
-            IEnumerable<User> users = db.Users.ToList();
+           
+            /*List<string> rolestring = new List<string>();
+            IEnumerable<UserHasRole> roles =  db.UserHasRoles.Include(ur => ur.Role).ToList();
+            foreach (var role in roles)
+            {
+                if (role.UserId == user!.Id)
+                {
+                    rolestring.Add(role!.Role!.Name!);
+                }
+            }
+            user!.Roles = rolestring;
+            return user;*/
             try
-            {   //Search
+            {
+                var db = new CakeCuriousDbContext();
+                IEnumerable<User> users = await db.Users!.Include(u => u.HasRoles)!.ThenInclude(hr => hr.Role).ToListAsync();
+                //Search
                 if (search != null)
                 {
                     users = searchUserByDisplayName(search, users);
