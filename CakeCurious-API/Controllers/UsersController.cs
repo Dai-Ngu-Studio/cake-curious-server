@@ -56,7 +56,7 @@ namespace CakeCurious_API.Controllers
         {
             try
             {
-                if (id != user.Id) return BadRequest();
+                if (id != user.Id) return BadRequest("Input id must match with id of input user obj");
                 User? beforeUpdateObj = await userRepository.Get(user.Id);
                 if (beforeUpdateObj == null) throw new Exception("user that need to update does not exist");
                 User updateObj = new User()
