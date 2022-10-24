@@ -58,17 +58,43 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult> PutOrder(Guid guid, Order order)
         {
+            string msg = "";
             try
             {
                 if (guid != order.Id) return BadRequest();
                 Order? beforeUpdateObj = await orderRepository.GetById(order.Id.Value);
                 if (beforeUpdateObj == null) throw new Exception("Order that need to update does not exist");
+                if (beforeUpdateObj.Status != null
+                   && beforeUpdateObj.Status == (int)OrderStatusEnum.Completed)
+                {
+                    if (order.Status == (int)OrderStatusEnum.Processing
+                    || order.Status == (int)OrderStatusEnum.Cancelled
+                    || order.Status == (int)OrderStatusEnum.Pending)
+                        return BadRequest("Current order status is complete .Can not change to others status");
+                }
+                else if (beforeUpdateObj.Status != null
+                   && beforeUpdateObj.Status == (int)OrderStatusEnum.Cancelled)
+                {
+                    if (order.Status == (int)OrderStatusEnum.Processing
+                    || order.Status == (int)OrderStatusEnum.Completed
+                    || order.Status == (int)OrderStatusEnum.Pending) return BadRequest("Current order status is cancelled .Can not change to others status");
+                }
+                else if (beforeUpdateObj.Status != null
+                   && beforeUpdateObj.Status == (int)OrderStatusEnum.Processing)
+                {
+                    if (order.Status == (int)OrderStatusEnum.Pending) return BadRequest("Current order status is processing .Can not change to others status except completed or cancelled");
+                }
+                else if (beforeUpdateObj.Status != null
+                   && beforeUpdateObj.Status == (int)OrderStatusEnum.Pending)
+                {
+                    if (order.Status == (int)OrderStatusEnum.Completed) BadRequest("Current order status is Pending .Can not change to others status except processing or cancelled");
+                }
                 Order updateOrder = new Order()
                 {
                     Id = order.Id == null ? beforeUpdateObj.Id : order.Id,
-                    CompletedDate = order.CompletedDate == null ? beforeUpdateObj.CompletedDate : order.CompletedDate,
+                    CompletedDate = (order.Status == (int)OrderStatusEnum.Completed && !beforeUpdateObj.CompletedDate.HasValue) ? DateTime.Now : beforeUpdateObj.CompletedDate,
                     OrderDate = order.OrderDate == null ? beforeUpdateObj.OrderDate : order.OrderDate,
-                    ProcessedDate = !order.ProcessedDate.HasValue ? beforeUpdateObj.ProcessedDate : order.ProcessedDate,
+                    ProcessedDate = (order.Status == (int)OrderStatusEnum.Processing && !beforeUpdateObj.ProcessedDate.HasValue) ? DateTime.Now : beforeUpdateObj.ProcessedDate,
                     CouponId = order.CouponId == null ? beforeUpdateObj.CouponId : order.CouponId,
                     Status = order.Status == null ? beforeUpdateObj.Status : order.Status,
                     DiscountedTotal = order.DiscountedTotal == null ? beforeUpdateObj.DiscountedTotal : order.DiscountedTotal,
@@ -88,7 +114,7 @@ namespace CakeCurious_API.Controllers
 
                 throw;
             }
-            return NoContent();
+            return Ok("Update order success");
         }
 
         [HttpPost]

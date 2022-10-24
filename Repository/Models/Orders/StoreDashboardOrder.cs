@@ -12,6 +12,7 @@ namespace Repository.Models.Orders
         public decimal? DiscountedTotal { get; set; }
         public int? Status { get; set; }
         public DateTime? OrderDate { get; set; }
-
+        public DateTime? ProcessedDate { get; set; }
+        public DateTime? CompletedDate { get; set; }
     }
 }
