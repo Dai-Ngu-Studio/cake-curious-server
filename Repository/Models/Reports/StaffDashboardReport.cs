@@ -1,4 +1,6 @@
 ﻿using BusinessObject;
+using Repository.Models.Comments;
+using Repository.Models.Recipes;
 using Repository.Models.ReportCategories;
 using Repository.Models.Users;
 using System;
@@ -15,6 +17,8 @@ namespace Repository.Models
         public DateTime? SubmittedDate { get; set; }
         public Guid? ItemId { get; set; }
         public int? ItemType { get; set; }
+        public SimpleCommentForReportList? Comment { get; set; }
+        public SimpleRecipeForReportList? Recipe { get; set; }
         public SimpleUser? Reporter { get; set; }
         public string? Title { get; set; }
         public SimpleUser? Staff { get; set; }   

@@ -9,6 +9,7 @@ using Repository.Models.Comments;
 using Repository.Models.Product;
 using Repository.Models.RecipeMaterials;
 using Repository.Models.RecipeMedia;
+using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 using Repository.Models.Users;
 
@@ -114,8 +115,21 @@ namespace Repository
                 {
                     reports = OrderByAscTitle(reports);
                 }
-                return reports.Skip((pageIndex - 1) * pageSize)
+                
+                reports = reports.Skip((pageIndex - 1) * pageSize)
                             .Take(pageSize).ToList();
+                foreach (var report in reports)
+                {
+                    if(report.ItemType == (int)ItemTypeEnum.Recipe)
+                    {
+                        report.Recipe = await db.Recipes.Include(r => r.User).ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
+                    }
+                    else
+                    {
+                        report.Comment = await db.Comments.Include(r => r.User).ProjectToType<SimpleCommentForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
+                    }
+                }
+                return reports;
             }
             catch (Exception ex)
             {
