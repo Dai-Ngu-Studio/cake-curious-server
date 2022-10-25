@@ -110,7 +110,7 @@ namespace Repository
                 {
                     orderDetail!.OrderDetails = OrderByDescPrice(orderDetail!.OrderDetails!);
                 }
-                orderDetail!.OrderDetails =  orderDetail!.OrderDetails!.Skip((pageIndex! - 1) * pageSize)
+                orderDetail!.OrderDetails = orderDetail!.OrderDetails!.Skip((pageIndex! - 1) * pageSize)
                             .Take(pageSize).ToList();
                 return orderDetail;
             }

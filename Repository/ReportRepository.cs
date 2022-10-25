@@ -115,12 +115,12 @@ namespace Repository
                 {
                     reports = OrderByAscTitle(reports);
                 }
-                
+
                 reports = reports.Skip((pageIndex - 1) * pageSize)
                             .Take(pageSize).ToList();
                 foreach (var report in reports)
                 {
-                    if(report.ItemType == (int)ItemTypeEnum.Recipe)
+                    if (report.ItemType == (int)ItemTypeEnum.Recipe)
                     {
                         report.Recipe = await db.Recipes.Include(r => r.User).ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
                     }
