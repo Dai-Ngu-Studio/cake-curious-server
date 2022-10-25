@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Coupons;
 using Repository.Constants.Orders;
 using Repository.Interfaces;
+using Repository.Models.OrderDetails;
 using Repository.Models.Orders;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
@@ -49,16 +50,18 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("store-order-detail/{guid}")]
         [Authorize]
-        public async Task<ActionResult<StoreDashboardOrderDetail>> GetStoreOrderDetail(Guid guid)
+        public async Task<ActionResult<StoreDashboardOrderDetailPage>> GetStoreOrderDetail(string? sort, string? filter, Guid guid, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
-            return Ok(await orderRepository.GetOrderDetailForStore(guid));
+            StoreDashboardOrderDetailPage orderDetailPage = new StoreDashboardOrderDetailPage();
+            orderDetailPage.orderDetail = await orderRepository.GetOrderDetailForStore(guid, sort, page, size);
+            orderDetailPage.TotalPage = (int)Math.Ceiling((decimal)await orderRepository.OrderDetailCount(guid, sort) / size);
+            return Ok(orderDetailPage);
         }
 
         [HttpPut("{guid}")]
         [Authorize]
         public async Task<ActionResult> PutOrder(Guid guid, Order order)
         {
-            string msg = "";
             try
             {
                 if (guid != order.Id) return BadRequest();
@@ -77,22 +80,25 @@ namespace CakeCurious_API.Controllers
                 {
                     if (order.Status == (int)OrderStatusEnum.Processing
                     || order.Status == (int)OrderStatusEnum.Completed
-                    || order.Status == (int)OrderStatusEnum.Pending) return BadRequest("Current order status is cancelled .Can not change to others status");
+                    || order.Status == (int)OrderStatusEnum.Pending)
+                        return BadRequest("Current order status is cancelled .Can not change to others status");
                 }
                 else if (beforeUpdateObj.Status != null
                    && beforeUpdateObj.Status == (int)OrderStatusEnum.Processing)
                 {
-                    if (order.Status == (int)OrderStatusEnum.Pending) return BadRequest("Current order status is processing .Can not change to others status except completed or cancelled");
+                    if (order.Status == (int)OrderStatusEnum.Pending)
+                        return BadRequest("Current order status is processing .Can not change to others status except completed or cancelled");
                 }
                 else if (beforeUpdateObj.Status != null
                    && beforeUpdateObj.Status == (int)OrderStatusEnum.Pending)
                 {
-                    if (order.Status == (int)OrderStatusEnum.Completed) BadRequest("Current order status is Pending .Can not change to others status except processing or cancelled");
+                    if (order.Status == (int)OrderStatusEnum.Completed)
+                        return BadRequest("Current order status is Pending .Can not change to others status except processing or cancelled");
                 }
                 Order updateOrder = new Order()
                 {
                     Id = order.Id == null ? beforeUpdateObj.Id : order.Id,
-                    CompletedDate = (order.Status == (int)OrderStatusEnum.Completed && !beforeUpdateObj.CompletedDate.HasValue) ? DateTime.Now : beforeUpdateObj.CompletedDate,
+                    CompletedDate = ((order.Status == (int)OrderStatusEnum.Cancelled) || (order.Status == (int)OrderStatusEnum.Completed && !beforeUpdateObj.CompletedDate.HasValue)) ? DateTime.Now : beforeUpdateObj.CompletedDate,
                     OrderDate = order.OrderDate == null ? beforeUpdateObj.OrderDate : order.OrderDate,
                     ProcessedDate = (order.Status == (int)OrderStatusEnum.Processing && !beforeUpdateObj.ProcessedDate.HasValue) ? DateTime.Now : beforeUpdateObj.ProcessedDate,
                     CouponId = order.CouponId == null ? beforeUpdateObj.CouponId : order.CouponId,
