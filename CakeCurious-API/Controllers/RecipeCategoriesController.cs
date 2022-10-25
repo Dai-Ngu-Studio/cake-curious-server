@@ -28,7 +28,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("grouped")]
         [Authorize]
-        public ActionResult<DetachedRecipeCategories> GetCategoriesGrouped()
+        public ActionResult<DetachedRecipeCategoryGroups> GetCategoriesGrouped()
         {
             var recipeCategoriesGrouped = new DetachedRecipeCategoryGroups();
             recipeCategoriesGrouped.RecipeCategoryGroups = recipeCategoryRepository.GetRecipeCategoriesGrouped();
