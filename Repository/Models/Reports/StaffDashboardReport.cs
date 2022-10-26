@@ -15,6 +15,7 @@ namespace Repository.Models
     {
         public Guid Id { get; set; }
         public DateTime? SubmittedDate { get; set; }
+        public ReportCategory? ReportCategory { get; set; }
         public Guid? ItemId { get; set; }
         public int? ItemType { get; set; }
         public SimpleCommentForReportList? Comment { get; set; }

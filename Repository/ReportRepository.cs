@@ -76,7 +76,7 @@ namespace Repository
         public async Task<IEnumerable<StaffDashboardReport>?> GetViolationReports(string? s, string? order_by, string? filter_type, string? filter_status, int pageIndex, int pageSize)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
+            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Include(r=> r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
             foreach (var report in reports)
             {
                 report.ReportedUser = await getReportedUser(report.ItemId);
