@@ -9,6 +9,7 @@ namespace Repository.Constants.Reports
     public enum ReportStatusEnum
     {
         Pending,
+        Rejected,
         Censored
     }
 }
