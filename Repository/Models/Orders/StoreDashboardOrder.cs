@@ -7,7 +7,6 @@ namespace Repository.Models.Orders
     {
         public Guid? Id { get; set; }
         public SimpleUser? User { get; set; }
-        public IEnumerable<SimpleOrderDetail>? OrderDetails { get; set; }
         public string? Address { get; set; }
         public decimal? DiscountedTotal { get; set; }
         public int? Status { get; set; }

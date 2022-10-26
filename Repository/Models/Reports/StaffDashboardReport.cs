@@ -23,7 +23,6 @@ namespace Repository.Models
         public SimpleUser? Reporter { get; set; }
         public string? Title { get; set; }
         public SimpleUser? Staff { get; set; }   
-        public string? StaffId { get; set; }
         public SimpleUser? ReportedUser { get; set; }
         public int Status { get; set; }
     }
