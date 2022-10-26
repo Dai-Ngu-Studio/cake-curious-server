@@ -102,9 +102,9 @@ namespace CakeCurious_API.Controllers
                     ReporterId = beforeUpdateObj.ReporterId,
                     SubmittedDate = beforeUpdateObj.SubmittedDate,
                     ItemType = inputReport.ItemType,
-                    Id = inputReport.Id,
-                    ItemId = inputReport.Id,
-                    ReportCategoryId = inputReport.ReportCategoryId,
+                    Id = beforeUpdateObj.Id,
+                    ItemId = beforeUpdateObj.Id,
+                    ReportCategoryId = beforeUpdateObj.ReportCategoryId,
                 };
                 await _ReportRepository.Update(updateObj);
             }
