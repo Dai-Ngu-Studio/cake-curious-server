@@ -86,33 +86,32 @@ namespace Repository
             }
             return null;
         }
-        public IEnumerable<SimpleOrderDetail> OrderByAscPrice(IEnumerable<SimpleOrderDetail> orderdetail)
+        public IEnumerable<OrderDetail> OrderByAscPrice(IEnumerable<OrderDetail> orderdetail)
         {
             return orderdetail.OrderBy(p => p.Price).ToList();
         }
 
-        public IEnumerable<SimpleOrderDetail> OrderByDescPrice(IEnumerable<SimpleOrderDetail> orderdetail)
+        public IEnumerable<OrderDetail> OrderByDescPrice(IEnumerable<OrderDetail> orderdetail)
         {
 
             return orderdetail.OrderByDescending(p => p.Price).ToList();
         }
-        public async Task<StoreDashboardOrderDetail?> GetOrderDetailForStore(Guid id, string? sort, int pageIndex, int pageSize)
+        public async Task<IEnumerable<SimpleOrderDetail>?> GetOrderDetailForStore(Guid id, string? sort, int pageIndex, int pageSize)
         {
             try
             {
                 var db = new CakeCuriousDbContext();
-                StoreDashboardOrderDetail? orderDetail = await db.Orders.Include(o => o.OrderDetails).Include(o => o.User).Include(o => o.Coupon).ProjectToType<StoreDashboardOrderDetail>().FirstOrDefaultAsync(x => x.Id == id);
+                IEnumerable<OrderDetail>? orderDetails = await db.OrderDetails.Where(x => x!.Order!.Id == id).ToListAsync();
                 if (sort != null && sort == OrderByEnum.ByAscPrice.ToString())
                 {
-                    orderDetail!.OrderDetails = OrderByAscPrice(orderDetail!.OrderDetails!);
+                    orderDetails = OrderByAscPrice(orderDetails);
                 }
                 else if (sort != null && sort == OrderByEnum.ByDescPrice.ToString())
                 {
-                    orderDetail!.OrderDetails = OrderByDescPrice(orderDetail!.OrderDetails!);
+                    orderDetails = OrderByDescPrice(orderDetails);
                 }
-                orderDetail!.OrderDetails = orderDetail!.OrderDetails!.Skip((pageIndex! - 1) * pageSize)
-                            .Take(pageSize).ToList();
-                return orderDetail;
+                return orderDetails.Skip((pageIndex! - 1) * pageSize)
+                            .Take(pageSize).ToList().Adapt<IEnumerable<SimpleOrderDetail>>();
             }
             catch (Exception ex)
             {
@@ -124,16 +123,16 @@ namespace Repository
             try
             {
                 var db = new CakeCuriousDbContext();
-                StoreDashboardOrderDetail? orderDetail = await db.Orders.Include(o => o.OrderDetails).Include(o => o.User).Include(o => o.Coupon).ProjectToType<StoreDashboardOrderDetail>().FirstOrDefaultAsync(x => x.Id == id);
+                IEnumerable<OrderDetail>? orderDetails = await db.OrderDetails.Where(x => x!.Order!.Id == id).ToListAsync();
                 if (sort != null && sort == OrderByEnum.ByAscPrice.ToString())
                 {
-                    orderDetail!.OrderDetails = OrderByAscPrice(orderDetail!.OrderDetails!);
+                    orderDetails = OrderByAscPrice(orderDetails);
                 }
                 else if (sort != null && sort == OrderByEnum.ByDescPrice.ToString())
                 {
-                    orderDetail!.OrderDetails = OrderByDescPrice(orderDetail!.OrderDetails!);
+                    orderDetails = OrderByDescPrice(orderDetails);
                 }
-                return orderDetail!.OrderDetails!.Count();
+                return orderDetails.Count();
             }
             catch (Exception ex)
             {

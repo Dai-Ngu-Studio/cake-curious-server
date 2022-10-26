@@ -53,7 +53,7 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult<StoreDashboardOrderDetailPage>> GetStoreOrderDetail(string? sort, string? filter, Guid guid, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             StoreDashboardOrderDetailPage orderDetailPage = new StoreDashboardOrderDetailPage();
-            orderDetailPage.orderDetail = await orderRepository.GetOrderDetailForStore(guid, sort, page, size);
+            orderDetailPage.orderDetails = await orderRepository.GetOrderDetailForStore(guid, sort, page, size);
             orderDetailPage.TotalPage = (int)Math.Ceiling((decimal)await orderRepository.OrderDetailCount(guid, sort) / size);
             return Ok(orderDetailPage);
         }
