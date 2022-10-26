@@ -91,7 +91,10 @@ namespace CakeCurious_API.Controllers
                 if (guid != inputReport.Id) return BadRequest();
                 ViolationReport? beforeUpdateObj = await _ReportRepository.GetById(inputReport.Id.Value);
                 if (beforeUpdateObj == null) throw new Exception("Product that need to update does not exist");
-                if (beforeUpdateObj.Status != null && (beforeUpdateObj.Status == (int)ReportStatusEnum.Rejected || beforeUpdateObj.Status == (int)ReportStatusEnum.Censored))
+                if (beforeUpdateObj.Status != null
+                    &&
+                    (beforeUpdateObj.Status == (int)ReportStatusEnum.Rejected
+                    || beforeUpdateObj.Status == (int)ReportStatusEnum.Censored))
                     return BadRequest("This report is done.Can not change to other status");
                 ViolationReport updateObj = new ViolationReport()
                 {
@@ -101,7 +104,7 @@ namespace CakeCurious_API.Controllers
                     Status = inputReport.Status == null ? beforeUpdateObj.Status : inputReport.Status,
                     ReporterId = beforeUpdateObj.ReporterId,
                     SubmittedDate = beforeUpdateObj.SubmittedDate,
-                    ItemType = inputReport.ItemType,
+                    ItemType = beforeUpdateObj.ItemType,
                     Id = beforeUpdateObj.Id,
                     ItemId = beforeUpdateObj.Id,
                     ReportCategoryId = beforeUpdateObj.ReportCategoryId,

@@ -49,6 +49,10 @@ namespace Repository
         {
             return reports.Where(p => p.Status == (int)ReportStatusEnum.Pending).ToList();
         }
+        public IEnumerable<StaffDashboardReport> FilterByRejectedStatus(IEnumerable<StaffDashboardReport> reports)
+        {
+            return reports.Where(p => p.Status == (int)ReportStatusEnum.Rejected).ToList();
+        }
         public IEnumerable<StaffDashboardReport> FilterByCensoredStatus(IEnumerable<StaffDashboardReport> reports)
         {
             return reports.Where(p => p.Status == (int)ReportStatusEnum.Censored).ToList();
@@ -105,6 +109,10 @@ namespace Repository
                 else if (filter_status != null && filter_status == ReportStatusEnum.Pending.ToString())
                 {
                     reports = FilterByPendingStatus(reports);
+                }
+                else if (filter_status != null && filter_status == ReportStatusEnum.Rejected.ToString())
+                {
+                    reports = FilterByRejectedStatus(reports);
                 }
                 //sort
                 if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
