@@ -223,9 +223,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return db.Recipes
                 .AsNoTracking()
-                .OrderBy(x => x.Id)
-                .Where(x => x.PublishedDate!.Value <= DateTime.Now
-                && x.PublishedDate!.Value >= DateTime.Now.AddDays(-2))
+                .OrderByDescending(x => x.PublishedDate)
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
                 .Skip(skip)
@@ -235,7 +233,7 @@ namespace Repository
 
         // 10 recipes for each collection
         // Collections:
-        // Trending - Most liked within 1 day
+        // Trending - Most liked within 3 days
         public HomeRecipes GetHomeRecipes()
         {
             var db = new CakeCuriousDbContext();
@@ -244,7 +242,7 @@ namespace Repository
                 .AsNoTracking()
                 .OrderByDescending(x => x.Likes!.Count)
                 .Where(x => x.PublishedDate!.Value <= DateTime.Now
-                && x.PublishedDate!.Value >= DateTime.Now.AddDays(-1))
+                && x.PublishedDate!.Value >= DateTime.Now.AddDays(-3))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
                 .Take(10)
                 .ProjectToType<HomeRecipe>();
