@@ -22,8 +22,7 @@ namespace Repository.Models.Comments
 
         public int? Status { get; set; }
 
-        public ICollection<CommentMedia>? Images { get; set; }
+        public ICollection<SimpleCommentMedia>? Images { get; set; }
 
-        public ICollection<Comment>? Replies { get; set; }
     }
 }

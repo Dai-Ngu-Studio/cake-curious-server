@@ -1,4 +1,8 @@
 ﻿using BusinessObject;
+using Repository.Models.RecipeHasCategories;
+using Repository.Models.RecipeMaterials;
+using Repository.Models.RecipeMedia;
+using Repository.Models.RecipeSteps;
 using Repository.Models.Users;
 using System;
 using System.Collections.Generic;
@@ -30,12 +34,12 @@ namespace Repository.Models.Recipes
 
         public int? Status { get; set; }
 
-        public ICollection<RecipeHasCategory>? HasCategories { get; set; }
+        public ICollection<SimpleRecipeHasCategory>? HasCategories { get; set; }
 
-        public ICollection<RecipeMaterial>? RecipeMaterials { get; set; }
+        public ICollection<SimpleRecipeMaterial>? RecipeMaterials { get; set; }
 
-        public ICollection<BusinessObject.RecipeMedia>? RecipeMedia { get; set; }
+        public ICollection<SimpleRecipeMedia>? RecipeMedia { get; set; }
 
-        public ICollection<RecipeStep>? RecipeSteps { get; set; }
+        public ICollection<SimpleRecipeStep>? RecipeSteps { get; set; }
     }
 }

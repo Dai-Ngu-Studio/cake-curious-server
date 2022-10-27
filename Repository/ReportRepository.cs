@@ -80,7 +80,7 @@ namespace Repository
         public async Task<IEnumerable<StaffDashboardReport>?> GetViolationReports(string? s, string? order_by, string? filter_type, string? filter_status, int pageIndex, int pageSize)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Include(r=> r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
+            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
             foreach (var report in reports)
             {
                 report.ReportedUser = await getReportedUser(report.ItemId);
@@ -130,11 +130,11 @@ namespace Repository
                 {
                     if (report.ItemType == (int)ItemTypeEnum.Recipe)
                     {
-                        report.Recipe = await db.Recipes.Include(r => r.User).ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
+                        report.Recipe = await db.Recipes.Include(r => r.User).Include(r => r.HasCategories)!.ThenInclude(r => r.RecipeCategory).Include(r => r.RecipeMaterials).Include(r => r.RecipeMedia).Include(r => r.RecipeSteps).ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
                     }
                     else
                     {
-                        report.Comment = await db.Comments.Include(r => r.User).ProjectToType<SimpleCommentForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
+                        report.Comment = await db.Comments.Include(r => r.User).Include(c => c.Images).ProjectToType<SimpleCommentForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
                     }
                 }
                 return reports;
