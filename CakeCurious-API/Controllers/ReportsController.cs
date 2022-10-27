@@ -44,7 +44,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{guid}")]
         [Authorize]
-        public async Task<ActionResult<Product>> GetReporsById(Guid guid)
+        public async Task<ActionResult<Product>> GetReportById(Guid guid)
         {
             var result = await _ReportRepository.GetById(guid);
             return Ok(result);
