@@ -149,7 +149,7 @@ namespace Repository
         public async Task<ViolationReport?> GetById(Guid id)
         {
             var db = new CakeCuriousDbContext();
-            return await db.ViolationReports.FirstOrDefaultAsync(x => x.Id == id);
+            return await db.ViolationReports.Include(r => r.Staff).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task Update(ViolationReport updateObj)
