@@ -9,6 +9,7 @@ namespace Repository.Models.Orders
         public SimpleUser? User { get; set; }
         public string? Address { get; set; }
         public decimal? DiscountedTotal { get; set; }
+        public decimal? Total { get; set; }
         public int? Status { get; set; }
         public DateTime? OrderDate { get; set; }
         public DateTime? ProcessedDate { get; set; }
