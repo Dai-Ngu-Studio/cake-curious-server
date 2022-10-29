@@ -176,5 +176,18 @@ namespace Repository
                 Console.WriteLine(ex.Message);
             }
         }
+
+        public async Task<IEnumerable<Coupon>> GetAllActiveCoupon()
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Coupons.Where(c => c.Status == (int)CouponStatusEnum.Active).ToListAsync();
+        }
+
+        public async Task UpdateRange(Coupon[] coupons)
+        {
+            var db = new CakeCuriousDbContext();
+            db.Coupons.UpdateRange(coupons);
+            await db.SaveChangesAsync();
+        }
     }
 }
