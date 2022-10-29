@@ -6,6 +6,7 @@ using Repository.Interfaces;
 using Repository.Constants.Products;
 using Repository.Constants.Stores;
 using Repository.Models.Users;
+using Repository.Constants.Orders;
 
 namespace Repository
 {
@@ -108,7 +109,43 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Stores.FirstOrDefaultAsync(x => x.Id == id);
         }
+        public async Task<int> DeleteAllOrderOfInActiveStore(Guid guid)
+        {
 
+            if (guid == Guid.Empty) { return -1; }
+            else
+            {
+                var db = new CakeCuriousDbContext();
+                IEnumerable<Order> orders = await db.Orders.Where(o => o.StoreId == guid).ToListAsync();
+                foreach (var order in orders)
+                {
+                    if (order.Status == (int)OrderStatusEnum.Pending || order.Status == (int)OrderStatusEnum.Processing)
+                    {
+                        order.Status = (int)OrderStatusEnum.Cancelled;
+                        order.CompletedDate = DateTime.Now;
+                        db.Entry<Order>(order).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                        await db.SaveChangesAsync();
+                    }
+                }
+            }
+            return 1;
+        }
+        public async Task<int> DeleteAllProductOfInActiveStore(Guid guid)
+        {
+            if (guid == Guid.Empty) { return -1; }
+            else
+            {
+                var db = new CakeCuriousDbContext();
+                IEnumerable<Product> products = await db.Products.Where(p => p.StoreId == guid).ToListAsync();
+                foreach (var product in products)
+                {
+                    product.Status = (int)ProductStatusEnum.Inactive;
+                    db.Entry<Product>(product).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    await db.SaveChangesAsync();
+                }
+            }
+            return 1;
+        }
         public async Task<Store?> Delete(Guid? id)
         {
             Store? store = null;
@@ -120,6 +157,10 @@ namespace Repository
                 var db = new CakeCuriousDbContext();
                 db.Entry<Store>(store).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 await db.SaveChangesAsync();
+                int deleteOrderStatus = await DeleteAllOrderOfInActiveStore(id.Value);
+                if (deleteOrderStatus < 0) throw new Exception("Delete Store Success .But Delete Store's orders fail");
+                int deleteProductStatus = await DeleteAllProductOfInActiveStore(id.Value);
+                if (deleteProductStatus < 0) throw new Exception("Delete Store Success .But Delete Product's orders fail");
                 return store;
             }
             catch (Exception ex)

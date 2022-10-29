@@ -146,12 +146,11 @@ namespace Repository
             {
                 var db = new CakeCuriousDbContext();
                 //Add Product Back To DB
-                if(updateObj.Status == (int)OrderStatusEnum.Cancelled)
+                if (updateObj.Status == (int)OrderStatusEnum.Cancelled)
                 {
                     IEnumerable<OrderDetail> orderDetails = await db.OrderDetails.Include(od => od.Product).Where(od => od.OrderId == updateObj.Id).ToListAsync();
                     foreach (var orderDetail in orderDetails)
                     {
-                        Console.WriteLine(orderDetail.ProductId + "Current quantity: "+ orderDetail!.Product!.Quantity + "+ Return quantity: " + orderDetail.Quantity);
                         orderDetail!.Product!.Quantity = orderDetail!.Product!.Quantity + orderDetail.Quantity;
                         db.Entry<Product>(orderDetail.Product).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                         await db.SaveChangesAsync();
