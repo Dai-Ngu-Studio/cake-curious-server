@@ -387,7 +387,17 @@ namespace CakeCurious_API.Controllers
             var searchDescriptor = new SearchDescriptor<ElastisearchRecipe>();
             var descriptor = new QueryContainerDescriptor<ElastisearchRecipe>();
             var shouldContainer = new List<QueryContainer>();
-            var filterContainer = new List<QueryContainer>();
+
+            if ((query == null || string.IsNullOrWhiteSpace(query)) 
+                && (ingredients == null || ingredients.Length == 0) 
+                && (categories == null || categories.Length == 0))
+            {
+                var emptyPage = new HomeRecipePage();
+                emptyPage.TotalPages = 0;
+                emptyPage.Recipes = new List<HomeRecipe>();
+
+                return Ok(emptyPage);
+            }
 
             if (ingredients != null)
             {
@@ -419,7 +429,7 @@ namespace CakeCurious_API.Controllers
 
             if (categories != null)
             {
-                filterContainer.Add(descriptor
+                shouldContainer.Add(descriptor
                     .Terms(x => x
                         .Field(f => f.Categories)
                         .Terms(categories)
@@ -431,7 +441,6 @@ namespace CakeCurious_API.Controllers
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
-                        .Filter(filterContainer.ToArray())
                     )
                 )
             );
@@ -446,7 +455,6 @@ namespace CakeCurious_API.Controllers
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
-                        .Filter(filterContainer.ToArray())
                     )
                 )
             );
