@@ -113,7 +113,16 @@ namespace Repository
             }
             return 0;
         }
-        public async Task<ICollection<FollowingUser>> GetFollowingOfUser(string uid, string currentUserId)
+
+        public async Task<int> CountFollowingOfUser(string uid)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.UserFollows
+                .Where(x => x.FollowerId == uid)
+                .CountAsync();
+        }
+
+        public async Task<ICollection<FollowingUser>> GetFollowingOfUser(string uid, string currentUserId, int skip, int take)
         {
             using (var scope = new MapContextScope())
             {
@@ -121,12 +130,22 @@ namespace Repository
                 var db = new CakeCuriousDbContext();
                 return await db.UserFollows
                     .Where(x => x.FollowerId == uid)
+                    .Skip(skip)
+                    .Take(take)
                     .ProjectToType<FollowingUser>()
                     .ToListAsync();
             }
         }
 
-        public async Task<ICollection<FollowerUser>> GetFollowersOfUser(string uid, string currentUserId)
+        public async Task<int> CountFollowersOfUser(string uid)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.UserFollows
+                .Where(x => x.UserId == uid)
+                .CountAsync();
+        }
+
+        public async Task<ICollection<FollowerUser>> GetFollowersOfUser(string uid, string currentUserId, int skip, int take)
         {
             using (var scope = new MapContextScope())
             {
@@ -134,6 +153,8 @@ namespace Repository
                 var db = new CakeCuriousDbContext();
                 return await db.UserFollows
                     .Where(x => x.UserId == uid)
+                    .Skip(skip)
+                    .Take(take)
                     .ProjectToType<FollowerUser>()
                     .ToListAsync();
             }

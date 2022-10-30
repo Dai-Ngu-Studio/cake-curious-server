@@ -94,14 +94,17 @@ namespace CakeCurious_API.Controllers
         }
         [HttpGet("{id}/following")]
         [Authorize]
-        public async Task<ActionResult<FollowUserPage>> GetFollowingOfUser(string id)
+        public async Task<ActionResult<FollowUserPage>> GetFollowingOfUser(string id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
                 var followUserPage = new FollowUserPage();
-                followUserPage.Followings = await userRepository.GetFollowingOfUser(id, uid);
+                followUserPage.TotalPages = (int)Math.Ceiling((decimal)await userRepository.CountFollowingOfUser(id) / take);
+                followUserPage.Followings = await userRepository.GetFollowingOfUser(id, uid, (page - 1) * take, take);
                 return Ok(followUserPage);
             }
             return Unauthorized();
@@ -109,14 +112,17 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id}/followers")]
         [Authorize]
-        public async Task<ActionResult<FollowUserPage>> GetFollowersOfUser(string id)
+        public async Task<ActionResult<FollowUserPage>> GetFollowersOfUser(string id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
                 var followUserPage = new FollowUserPage();
-                followUserPage.Followers = await userRepository.GetFollowersOfUser(id, uid);
+                followUserPage.TotalPages = (int)Math.Ceiling((decimal)await userRepository.CountFollowersOfUser(id) / take);
+                followUserPage.Followers = await userRepository.GetFollowersOfUser(id, uid, (page - 1) * take, take);
                 return Ok(followUserPage);
             }
             return Unauthorized();
