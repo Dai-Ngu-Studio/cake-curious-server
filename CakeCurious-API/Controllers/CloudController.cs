@@ -1,7 +1,9 @@
-﻿using Google.Cloud.Storage.V1;
+﻿using Google.Analytics.Data.V1Beta;
+using Google.Cloud.Storage.V1;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text;
 
 namespace CakeCurious_API.Controllers
 {
@@ -12,6 +14,7 @@ namespace CakeCurious_API.Controllers
         private const string GoogleStorage = "https://storage.googleapis.com/";
         private const string BucketName = "cake-curious.appspot.com";
         private const string BaseUrl = $"{GoogleStorage}{BucketName}";
+        private const string AnalyticsPropertyId = "331411032";
 
         /// <summary>
         /// <para>Returns an URL which could then be put in a request to the upload endpoint.</para>
@@ -84,6 +87,36 @@ namespace CakeCurious_API.Controllers
             {
                 return BadRequest();
             }
+        }
+
+        // Example from documentation
+        [HttpGet("temporary/analytics")]
+        public ActionResult TemporaryAnalytics()
+        {
+            BetaAnalyticsDataClient client = new BetaAnalyticsDataClientBuilder
+            {
+                CredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS"),
+            }.Build();
+
+            // Initialize request argument(s)
+            RunReportRequest request = new RunReportRequest
+            {
+                Property = "properties/" + AnalyticsPropertyId,
+                Dimensions = { new Dimension { Name = "city" }, },
+                Metrics = { new Metric { Name = "totalUsers" }, },
+                DateRanges = { new DateRange { StartDate = "2022-09-05", EndDate = "today" }, },
+            };
+
+            // Make the request
+            var response = client.RunReport(request);
+
+            var stringBuilder = new StringBuilder();
+            foreach (Row row in response.Rows)
+            {
+                stringBuilder.AppendLine($"{row.DimensionValues[0].Value} {row.MetricValues[0].Value}");
+            }
+
+            return Ok(stringBuilder.ToString());
         }
     }
 }
