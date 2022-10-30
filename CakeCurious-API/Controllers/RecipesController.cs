@@ -387,6 +387,7 @@ namespace CakeCurious_API.Controllers
             var searchDescriptor = new SearchDescriptor<ElastisearchRecipe>();
             var descriptor = new QueryContainerDescriptor<ElastisearchRecipe>();
             var shouldContainer = new List<QueryContainer>();
+            var filterContainer = new List<QueryContainer>();
 
             if ((query == null || string.IsNullOrWhiteSpace(query)) 
                 && (ingredients == null || ingredients.Length == 0) 
@@ -435,12 +436,20 @@ namespace CakeCurious_API.Controllers
                         .Terms(categories)
                     )
                 );
+
+                filterContainer.Add(descriptor
+                    .Terms(x => x
+                        .Field(f => f.Categories)
+                        .Terms(categories)
+                    )
+                );
             }
 
             var countResponse = await elasticClient.CountAsync<ElastisearchRecipe>(s => s
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
                     )
                 )
             );
@@ -455,6 +464,7 @@ namespace CakeCurious_API.Controllers
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
                     )
                 )
             );
