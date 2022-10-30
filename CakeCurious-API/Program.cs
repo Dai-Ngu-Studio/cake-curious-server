@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repository.Configuration;
 using System.Text.Json.Serialization;
-using Newtonsoft.Json;
 using Nest;
 using Elasticsearch.Net;
 using CakeCurious_API.Services;
@@ -44,7 +43,7 @@ builder.Services.AddCors();
 ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
 
 // Configure Elastisearch Client
-var elasticUri = new Uri("http://es01:9200");
+var elasticUri = new Uri(Environment.GetEnvironmentVariable("ES_SECRET")!);
 var elasticPool = new SingleNodeConnectionPool(elasticUri);
 var elasticSettings = new ConnectionSettings(elasticPool)
     .DefaultIndex("recipes")
