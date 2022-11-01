@@ -25,12 +25,10 @@ namespace BusinessObject
         }
 
         public DbSet<Bookmark> Bookmarks { get; set; } = null!;
-        public DbSet<Color> Colors { get; set; } = null!;
         public DbSet<Comment> Comments { get; set; } = null!;
         public DbSet<CommentMedia> CommentMedia { get; set; } = null!;
         public DbSet<Coupon> Coupons { get; set; } = null!;
         public DbSet<Like> Likes { get; set; } = null!;
-        public DbSet<Measurement> Measurements { get; set; } = null!;
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
         public DbSet<Product> Products { get; set; } = null!;

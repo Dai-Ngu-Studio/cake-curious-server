@@ -39,6 +39,9 @@ namespace BusinessObject
         [Column("rating", TypeName = "decimal(5,2)")]
         public decimal? Rating { get; set; }
 
+        [Column("created_date", TypeName = "datetime2(7)")]
+        public DateTime? CreatedDate { get; set; }
+
         [Column("status")]
         public int? Status { get; set; }
 

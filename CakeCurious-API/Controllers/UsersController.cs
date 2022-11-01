@@ -294,6 +294,7 @@ namespace CakeCurious_API.Controllers
                             Email = isUserRecordExisted ? userRecord!.Email : "Anonymous",
                             PhotoUrl = isUserRecordExisted ? userRecord!.PhotoUrl : "",
                             HasRoles = hasRoles,
+                            CreatedDate = DateTime.Now,
                             Status = (int)UserStatusEnum.Active,
                         };
                         await userRepository.Add(newUser);

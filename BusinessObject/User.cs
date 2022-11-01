@@ -59,6 +59,9 @@ namespace BusinessObject
         [ForeignKey("StoreId")]
         public Store? Store { get; set; }
 
+        [Column("created_date", TypeName = "datetime2(7)")]
+        public DateTime? CreatedDate { get; set; }
+
         [Column("status")]
         public int? Status { get; set; }
 
