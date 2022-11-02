@@ -9,5 +9,6 @@
         public int? Followers { get; set; }
         public int? Following { get; set; }
         public int? Recipes { get; set; }
+        public bool? IsFollowedByCurrentUser { get; set; }
     }
 }
