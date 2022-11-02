@@ -208,9 +208,7 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return await db.Recipes
-                .OrderBy(x => x.Id)
-                .Where(x => x.PublishedDate!.Value <= DateTime.Now
-                && x.PublishedDate!.Value >= DateTime.Now.AddDays(-2))
+                .AsNoTracking()
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
                 .CountAsync();
