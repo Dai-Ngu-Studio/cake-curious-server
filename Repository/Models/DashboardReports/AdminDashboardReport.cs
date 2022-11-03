@@ -12,7 +12,7 @@ namespace Repository.Models.DashboardReports
         public AdminDashboardBarChart? BarChart { get; set; }
         public AdminDashboardLineChart? LineChart { get; set; }
         public List<TableRowStoreVisit>? TableStoreVisit { get; set; } = new List<TableRowStoreVisit>();
-        public IEnumerable<TableRowUserVisit>? TableUserVisits { get; set; }
+        public List<TableRowFamousRecipes>? TableFamousRecipe { get; set; } = new List<TableRowFamousRecipes>();
 
     }
 }

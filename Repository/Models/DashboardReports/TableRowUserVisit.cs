@@ -1,9 +1,11 @@
 ﻿namespace Repository.Models.DashboardReports
 {
-    public class TableRowUserVisit
+    public class TableRowFamousRecipes
     {
-        public string? Week { get; set; }
-        public decimal? Visitors { get; set; }
+        public string? Recipe { get; set; }
+        public string? User { get; set; }
+        public int? Likes { get; set; }
+        public int? Comments { get; set; }
 
     }
 }

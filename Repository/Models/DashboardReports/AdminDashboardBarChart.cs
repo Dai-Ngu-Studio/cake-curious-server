@@ -8,7 +8,7 @@ namespace Repository.Models.DashboardReports
 {
     public class AdminDashboardBarChart
     {
-        public IEnumerable<int>? CurrentYearUserReport { get; set; }
-        public IEnumerable<int>? LastYearnUserReport { get; set; }
+        public List<int>? CurrentYearUserReport { get; set; } = new List<int>();
+        public List<int>? LastYearUserReport { get; set; } = new List<int>();
     }
 }
