@@ -25,9 +25,9 @@ namespace Repository
             cs.SinceLastWeekReport = sinceLastWeekReport;
 
             //new baker by month
-            cs.CurrentWeekNewBaker = await db.Users.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.Month).CountAsync();
+            cs.CurrentMonthNewBaker = await db.Users.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.Month).CountAsync();
             decimal LastMonthNewUser = await db.Users.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month).CountAsync();
-            double sinceLastMonthNewUser = LastMonthNewUser > 0 && cs.CurrentWeekNewBaker > 0 ? (double)((cs.CurrentWeekNewBaker - LastMonthNewUser) / (cs.CurrentWeekNewBaker > LastMonthNewUser ? cs.CurrentWeekNewBaker : LastMonthNewUser)) : -1;
+            double sinceLastMonthNewUser = LastMonthNewUser > 0 && cs.CurrentMonthNewBaker > 0 ? (double)((cs.CurrentMonthNewBaker - LastMonthNewUser) / (cs.CurrentMonthNewBaker > LastMonthNewUser ? cs.CurrentMonthNewBaker : LastMonthNewUser)) : -1;
             cs.SinceLastMonthNewBaker = sinceLastMonthNewUser;
 
             //new store by month

@@ -10,7 +10,7 @@ namespace Repository.Models.DashboardReports
     {
         public decimal CurrentWeekReport { get; set; }
         public double SinceLastWeekReport { get; set; }
-        public decimal CurrentWeekNewBaker { get; set; }
+        public decimal CurrentMonthNewBaker { get; set; }
         public double SinceLastMonthNewBaker   { get; set; } 
         public decimal CurrentWeekActiveUser { get; set; }
         public double SinceLastWeekActiveUser { get; set; }
