@@ -222,10 +222,14 @@ namespace Repository
             return null;
         }
 
-        public async Task<ProfileUser?> GetProfileUser(string? id)
+        public async Task<ProfileUser?> GetProfileUser(string? id, string currentUserId)
         {
-            var db = new CakeCuriousDbContext();
-            return await db.Users.Where(x => x.Id == id).ProjectToType<ProfileUser>().FirstOrDefaultAsync();
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("userId", currentUserId);
+                var db = new CakeCuriousDbContext();
+                return await db.Users.Where(x => x.Id == id).ProjectToType<ProfileUser>().FirstOrDefaultAsync();
+            }
         }
     }
 }

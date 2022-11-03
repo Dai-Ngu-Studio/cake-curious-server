@@ -28,7 +28,9 @@ namespace Repository.Configuration.Mappings
                 .NewConfig()
                 .Map(dest => dest.Followers, src => src.Followers!.Count)
                 .Map(dest => dest.Following, src => src.Followings!.Count)
-                .Map(dest => dest.Recipes, src => src.Recipes!.Count);
+                .Map(dest => dest.Recipes, src => src.Recipes!.Count)
+                .Map(dest => dest.IsFollowedByCurrentUser, src => src.Followers!
+                    .Any(x => x.FollowerId == (string)MapContext.Current!.Parameters["userId"]));
         }
     }
 }

@@ -373,7 +373,7 @@ namespace CakeCurious_API.Controllers
                     {
                         id = uid;
                     }
-                    return Ok(await userRepository.GetProfileUser(id));
+                    return Ok(await userRepository.GetProfileUser(id, uid));
                 }
                 return BadRequest();
             }
