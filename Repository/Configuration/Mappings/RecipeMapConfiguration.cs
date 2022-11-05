@@ -4,6 +4,7 @@ using Repository.Constants.RecipeMaterials;
 using Repository.Constants.RecipeMedia;
 using Repository.Models.RecipeCategories;
 using Repository.Models.Recipes;
+using Repository.Models.RecipeStepMaterials;
 
 namespace Repository.Configuration.Mappings
 {
@@ -38,6 +39,11 @@ namespace Repository.Configuration.Mappings
             TypeAdapterConfig<UpdateRecipe, Recipe>
                 .NewConfig()
                 .Map(dest => dest.RecipeMaterials, src => src.Ingredients!.Concat(src.Equipment!));
+
+            TypeAdapterConfig<CreateRecipeStepMaterial, RecipeStepMaterial>
+                .NewConfig()
+                .Map(dest => dest.RecipeMaterialId, src => src.RecipeMaterial!.Id)
+                .AfterMapping(dest => { dest.RecipeMaterial = null; });
 
             TypeAdapterConfig<Bookmark, HomeRecipe>
                 .NewConfig()

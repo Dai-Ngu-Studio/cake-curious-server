@@ -75,7 +75,7 @@ namespace Repository
             return result;
         }
 
-        public async Task UpdateRecipe(Recipe recipe, Recipe updateRecipe, IEnumerable<CreateRecipeMaterial> recipeMaterials)
+        public async Task UpdateRecipe(Recipe recipe, Recipe updateRecipe)
         {
             var db = new CakeCuriousDbContext();
             using (var transaction = await db.Database.BeginTransactionAsync())
@@ -122,60 +122,16 @@ namespace Repository
                 await db.RecipeMaterials.AddRangeAsync(updateRecipe.RecipeMaterials!);
                 await db.RecipeHasCategories.AddRangeAsync(updateRecipe.HasCategories!);
                 await db.RecipeMedia.AddRangeAsync(updateRecipe.RecipeMedia!);
-
-                // Add relationship between material and step
-                var stepMaterials = new List<RecipeStepMaterial>();
-                foreach (var material in recipeMaterials)
-                {
-                    if (material.UsedInSteps != null)
-                    {
-                        foreach (var step in material.UsedInSteps)
-                        {
-                            var recipeStep = recipe.RecipeSteps!.FirstOrDefault(x => x.StepNumber == step);
-                            if (recipeStep != null)
-                            {
-                                stepMaterials.Add(new RecipeStepMaterial
-                                {
-                                    RecipeMaterialId = material.Id,
-                                    RecipeStepId = recipeStep.Id,
-                                });
-                            }
-                        }
-                    }
-                }
-                await db.RecipeStepMaterials.AddRangeAsync(stepMaterials);
                 await db.SaveChangesAsync();
 
                 await transaction.CommitAsync();
             }
         }
 
-        public async Task AddRecipe(Recipe recipe, IEnumerable<CreateRecipeMaterial> recipeMaterials)
+        public async Task AddRecipe(Recipe recipe)
         {
             var db = new CakeCuriousDbContext();
-            // Add recipe, materials and steps
             await db.Recipes.AddAsync(recipe);
-            // Add relationship between material and step
-            var stepMaterials = new List<RecipeStepMaterial>();
-            foreach (var material in recipeMaterials)
-            {
-                if (material.UsedInSteps != null)
-                {
-                    foreach (var step in material.UsedInSteps)
-                    {
-                        var recipeStep = recipe.RecipeSteps!.FirstOrDefault(x => x.StepNumber == step);
-                        if (recipeStep != null)
-                        {
-                            stepMaterials.Add(new RecipeStepMaterial
-                            {
-                                RecipeMaterialId = material.Id,
-                                RecipeStepId = recipeStep.Id,
-                            });
-                        }
-                    }
-                }
-            }
-            await db.RecipeStepMaterials.AddRangeAsync(stepMaterials);
             await db.SaveChangesAsync();
         }
 
