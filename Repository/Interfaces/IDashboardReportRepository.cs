@@ -10,5 +10,7 @@ namespace Repository.Interfaces
     public interface IDashboardReportRepository
     {
         public Task<AdminDashboardReport> generateAdminReport();
+        public Task<StoreDashboardReport> generateStoreReport(Guid storeId);
+
     }
 }

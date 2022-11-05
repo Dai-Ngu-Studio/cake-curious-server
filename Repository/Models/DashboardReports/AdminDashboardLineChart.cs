@@ -8,7 +8,7 @@ namespace Repository.Models.DashboardReports
 {
     public class AdminDashboardLineChart
     {
-        public List<int>? CurrentYearUserVisit { get; set; } = new List<int>();
-        public List<int>? LastYearUserVisit { get; set; } = new List<int>();
+        public List<int> CurrentYearStoreVisit { get; set; } = new List<int>();
+        public List<int> LastYearStoreVisit { get; set; } = new List<int>();
     }
 }
