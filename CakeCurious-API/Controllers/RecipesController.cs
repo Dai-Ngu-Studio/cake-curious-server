@@ -258,9 +258,8 @@ namespace CakeCurious_API.Controllers
 
                     return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Console.WriteLine(ex.Message);
                     return StatusCode(500);
                 }
             }
