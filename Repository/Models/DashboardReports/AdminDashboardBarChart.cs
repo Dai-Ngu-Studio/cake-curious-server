@@ -8,7 +8,7 @@ namespace Repository.Models.DashboardReports
 {
     public class AdminDashboardBarChart
     {
-        public List<int>? CurrentWeekReport { get; set; } = new List<int>();
-        public List<int>? LastWeekReport { get; set; } = new List<int>();
+        public List<int>? CurrentWeekReport { get; set; } = new List<int>() { 0, 0, 0, 0 };
+        public List<int>? LastWeekReport { get; set; } = new List<int>() { 0, 0, 0, 0 };
     }
 }
