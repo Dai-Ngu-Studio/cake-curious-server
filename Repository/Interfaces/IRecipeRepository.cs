@@ -12,13 +12,13 @@ namespace Repository.Interfaces
         public Task<int> CountLatestRecipesForFollower(string uid);
         public IEnumerable<HomeRecipe> GetLatestRecipesForFollower(string uid, int skip, int take);
         public HomeRecipes GetHomeRecipes();
-        public Task AddRecipe(Recipe obj, IEnumerable<CreateRecipeMaterial> recipeMaterials);
+        public Task AddRecipe(Recipe obj);
         public Task<ICollection<ExploreRecipe>> Explore(int randSeed, int skip, int take);
         public Task<int> Delete(Guid id);
         public Task<Recipe?> GetRecipeReadonly(Guid id);
         public Task<Recipe?> GetRecipeWithStepsReadonly(Guid id);
         public Task<Recipe?> GetRecipe(Guid id);
-        public Task UpdateRecipe(Recipe recipe, Recipe updateRecipe, IEnumerable<CreateRecipeMaterial> recipeMaterials);
+        public Task UpdateRecipe(Recipe recipe, Recipe updateRecipe);
         public Task<int> CountBookmarksOfUser(string userId);
         public IEnumerable<HomeRecipe> GetBookmarksOfUser(string userId, int skip, int take);
         public Task<int> CountLikedOfUser(string userId);

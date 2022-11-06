@@ -8,6 +8,5 @@
         public decimal? Amount { get; set; }
         public string? Measurement { get; set; }
         public string? Color { get; set; }
-        public int[]? UsedInSteps { get; set; }
     }
 }

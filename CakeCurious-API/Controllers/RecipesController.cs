@@ -187,18 +187,10 @@ namespace CakeCurious_API.Controllers
                         || await UserRoleAuthorizer.AuthorizeUser(
                             new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
                     {
-                        // New materials
-                        var materials = new List<CreateRecipeMaterial>();
-                        materials.AddRange(updateRecipe.Ingredients);
-                        materials.AddRange(updateRecipe.Equipment);
-                        foreach (var material in materials)
-                        {
-                            material.Id = Guid.NewGuid();
-                        }
                         try
                         {
                             var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
-                            await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe, materials);
+                            await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
 
                             var elastisearchMaterials = updateRecipe.Ingredients
                                 .Select(x => x.MaterialName);
@@ -238,13 +230,6 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                var materials = new List<CreateRecipeMaterial>();
-                materials.AddRange(createRecipe.Ingredients);
-                materials.AddRange(createRecipe.Equipment);
-                foreach (var material in materials)
-                {
-                    material.Id = Guid.NewGuid();
-                }
                 try
                 {
                     var recipe = createRecipe.Adapt<Recipe>();
@@ -253,7 +238,7 @@ namespace CakeCurious_API.Controllers
                     recipe.PublishedDate = DateTime.Now;
                     recipe.UserId = uid;
 
-                    await recipeRepository.AddRecipe(recipe, materials);
+                    await recipeRepository.AddRecipe(recipe);
 
                     var elastisearchMaterials = createRecipe.Ingredients
                         .Select(x => x.MaterialName);
