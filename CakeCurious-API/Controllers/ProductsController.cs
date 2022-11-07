@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using BusinessObject;
 using Microsoft.AspNetCore.Authorization;
 using Repository.Interfaces;
-using System.Net.Mime;
 using Microsoft.EntityFrameworkCore;
 using Repository.Models.Product;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Nest;
+using Repository.Constants.Products;
 
 namespace CakeCurious_API.Controllers
 {
@@ -37,7 +36,7 @@ namespace CakeCurious_API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [Authorize]
         public async Task<ActionResult<StoreProductDetail>> GetProductsById(Guid id)
         {
@@ -93,7 +92,7 @@ namespace CakeCurious_API.Controllers
             return Ok(prod);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         [Authorize]
         public async Task<ActionResult> HideProduct(Guid id)
         {
@@ -101,7 +100,7 @@ namespace CakeCurious_API.Controllers
             return Ok("Delete product " + prod!.Name + " success");
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         [Authorize]
         public async Task<ActionResult> PutProduct(Guid id, Product product)
         {
