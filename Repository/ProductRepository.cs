@@ -1,5 +1,6 @@
 using BusinessObject;
 using Mapster;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Products;
 using Repository.Interfaces;
@@ -195,6 +196,42 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == (int)ProductStatusEnum.Active);
+        }
+
+        public async Task<ICollection<GroceryProduct>> Explore(int productType, int randSeed, int take, int key)
+        {
+            var result = new List<GroceryProduct>();
+            var db = new CakeCuriousDbContext();
+            string query = $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[discount], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] where abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) > @key and ([p].[product_type] = {productType}) AND ([p].[status] = 0) order by abs(checksum([p].id, rand(@randSeed)*rand(@randSeed)))";
+            var cmd = db.Database.GetDbConnection().CreateCommand();
+            cmd.CommandText = query;
+            cmd.Parameters.Add(new SqlParameter("@randSeed", randSeed));
+            cmd.Parameters.Add(new SqlParameter("@key", key));
+            if (cmd.Connection!.State != System.Data.ConnectionState.Open)
+            {
+                await cmd.Connection.OpenAsync();
+            }
+            using(var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (reader.Read())
+                {
+                    result.Add(new GroceryProduct
+                    {
+                        Id = (Guid)reader["id"],
+                        Name = (string)reader["name"],
+                        ProductType = (int)reader["product_type"],
+                        Price = (decimal)reader["price"],
+                        Discount = (decimal)reader["discount"],
+                        PhotoUrl = (string)reader["photo_url"],
+                        Key = (int)reader["key"],
+                    });
+                }
+            }
+            if (cmd.Connection!.State == System.Data.ConnectionState.Open)
+            {
+                await cmd.Connection!.CloseAsync();
+            }
+            return result;
         }
     }
 }
