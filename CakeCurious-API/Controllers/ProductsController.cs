@@ -66,6 +66,31 @@ namespace CakeCurious_API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("details/{id:guid}")]
+        [Authorize]
+        public async Task<ActionResult<DetailProduct>> GetRecipeDetails(Guid id)
+        {
+            try
+            {
+                // Get ID Token
+                string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrWhiteSpace(uid))
+                {
+                    var product = await productRepository.GetProductDetails(id);
+                    if (product != null)
+                    {
+                        return Ok(product);
+                    }
+                    return NotFound();
+                }
+                return Unauthorized();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<Product>> PostProduct(Product product)

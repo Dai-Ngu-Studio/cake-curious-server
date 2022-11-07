@@ -15,5 +15,6 @@ namespace Repository.Interfaces
         public Task<Product?> GetProductReadonly(Guid id);
         public Task<Product?> GetActiveProductReadonly(Guid id);
         public Task<ICollection<GroceryProduct>> Explore(int productType, int randSeed, int take, int key);
+        public Task<DetailProduct?> GetProductDetails(Guid id);
     }
 }

@@ -198,6 +198,16 @@ namespace Repository
             return await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == (int)ProductStatusEnum.Active);
         }
 
+        public async Task<DetailProduct?> GetProductDetails(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Products
+                .AsNoTracking()
+                .Where(x => x.Id == id)
+                .ProjectToType<DetailProduct>()
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<ICollection<GroceryProduct>> Explore(int productType, int randSeed, int take, int key)
         {
             var result = new List<GroceryProduct>();
