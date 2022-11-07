@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Repository.Constants.Products;
 using Repository.Interfaces;
 using Repository.Models.Coupons;
+using Repository.Models.Product;
 using Repository.Models.Stores;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
@@ -19,12 +21,14 @@ namespace CakeCurious_API.Controllers
         private readonly IStoreRepository storeRepository;
         private readonly ICouponRepository couponRepository;
         private readonly IOrderRepository orderRepository;
+        private readonly IProductRepository productRepository;
 
-        public StoresController(IStoreRepository _storeRepository, ICouponRepository _couponRepository, IOrderRepository _orderRepository)
+        public StoresController(IStoreRepository _storeRepository, ICouponRepository _couponRepository, IOrderRepository _orderRepository, IProductRepository _productRepository)
         {
             storeRepository = _storeRepository;
             couponRepository = _couponRepository;
             orderRepository = _orderRepository;
+            productRepository = _productRepository;
         }
 
         [HttpGet]
@@ -161,6 +165,30 @@ namespace CakeCurious_API.Controllers
                 return NotFound();
             }
             return Unauthorized();
+        }
+
+        [HttpGet("{id:guid}/ingredients")]
+        [Authorize]
+        public async Task<GroceryProductPage> ExploreIngredientsOfStore(Guid id,
+           int seed,
+           [Range(1, int.MaxValue)] int take = 10,
+           [Range(0, int.MaxValue)] int lastKey = 0)
+        {
+            var products = new GroceryProductPage();
+            products.Products = await productRepository.Explore((int)ProductTypeEnum.Ingredient, seed, take, lastKey, id);
+            return products;
+        }
+
+        [HttpGet("{id:guid}/equipment")]
+        [Authorize]
+        public async Task<GroceryProductPage> ExploreEquipmentOfStore(Guid id,
+           int seed,
+           [Range(1, int.MaxValue)] int take = 10,
+           [Range(0, int.MaxValue)] int lastKey = 0)
+        {
+            var products = new GroceryProductPage();
+            products.Products = await productRepository.Explore((int)ProductTypeEnum.Tool, seed, take, lastKey, id);
+            return products;
         }
     }
 }

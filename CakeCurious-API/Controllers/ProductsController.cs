@@ -43,7 +43,7 @@ namespace CakeCurious_API.Controllers
             [Range(0, int.MaxValue)] int lastKey = 0)
         {
             var products = new GroceryProductPage();
-            products.Products = await productRepository.Explore((int)ProductTypeEnum.Ingredient, seed, take, lastKey);
+            products.Products = await productRepository.Explore((int)ProductTypeEnum.Ingredient, seed, take, lastKey, null);
             return products;
         }
 
@@ -54,7 +54,7 @@ namespace CakeCurious_API.Controllers
             [Range(0, int.MaxValue)] int lastKey = 0)
         {
             var products = new GroceryProductPage();
-            products.Products = await productRepository.Explore((int)ProductTypeEnum.Tool, seed, take, lastKey);
+            products.Products = await productRepository.Explore((int)ProductTypeEnum.Tool, seed, take, lastKey, null);
             return products;
         }
 

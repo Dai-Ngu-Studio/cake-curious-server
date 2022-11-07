@@ -208,11 +208,13 @@ namespace Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<ICollection<GroceryProduct>> Explore(int productType, int randSeed, int take, int key)
+        public async Task<ICollection<GroceryProduct>> Explore(int productType, int randSeed, int take, int key, Guid? storeId)
         {
             var result = new List<GroceryProduct>();
             var db = new CakeCuriousDbContext();
-            string query = $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[discount], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] where abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) > @key and ([p].[product_type] = {productType}) AND ([p].[status] = 0) order by abs(checksum([p].id, rand(@randSeed)*rand(@randSeed)))";
+            string query = (storeId == null) 
+                ? $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[discount], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] where abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) > @key and ([p].[product_type] = {productType}) and ([p].[status] = 0) order by abs(checksum([p].id, rand(@randSeed)*rand(@randSeed)))" 
+                : $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[discount], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] where abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) > @key and ([p].[product_type] = {productType}) and ([p].[status] = 0) and ([p].[store_id] = '{storeId}') order by abs(checksum([p].id, rand(@randSeed)*rand(@randSeed)))";
             var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = query;
             cmd.Parameters.Add(new SqlParameter("@randSeed", randSeed));
