@@ -98,6 +98,8 @@ namespace CakeCurious_API.Controllers
                     Id = prod.Id,
                     Name = new string[] { prod.Name! },
                     Category = prod.ProductCategoryId,
+                    Price = prod.Price,
+                    Discount = prod.Discount,
                 };
 
                 var createResponse = await elasticClient.CreateAsync<ElasticsearchProduct>(elasticsearchProduct,
@@ -152,6 +154,8 @@ namespace CakeCurious_API.Controllers
                     Id = updateProd.Id,
                     Name = new string[] { updateProd.Name! },
                     Category = updateProd.ProductCategoryId,
+                    Price = updateProd.Price,
+                    Discount = updateProd.Discount,
                 };
 
                 var updateResponse = await elasticClient.UpdateAsync<ElasticsearchProduct>(updateProd.Id,
