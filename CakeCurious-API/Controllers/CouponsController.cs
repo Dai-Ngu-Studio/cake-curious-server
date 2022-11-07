@@ -9,6 +9,7 @@ using Mapster;
 using BusinessObject;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mime;
+using Repository.Constants.Coupons;
 
 namespace CakeCurious_API.Controllers
 {
@@ -26,6 +27,7 @@ namespace CakeCurious_API.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
         public ActionResult<Coupon> PostCoupon(Coupon coupon)
         {
             Guid id = Guid.NewGuid();
@@ -33,7 +35,7 @@ namespace CakeCurious_API.Controllers
             {
                 Id = id,
                 Code = coupon.Code,
-                Discount = coupon.Discount,
+                Discount = coupon.DiscountType == (int)CouponDiscountTypeEnum.PercentOff ? coupon.Discount / 100 : coupon.Discount,
                 ExpiryDate = coupon.ExpiryDate,
                 DiscountType = coupon.DiscountType,
                 MaxUses = coupon.MaxUses,
@@ -76,12 +78,12 @@ namespace CakeCurious_API.Controllers
             {
                 if (guid != coupon.Id) return BadRequest();
                 Coupon? beforeUpdateObj = await _couponRepository.GetById(coupon.Id.Value);
-                if (beforeUpdateObj == null) throw new Exception("Coupon that need to update does not exist");
+                if (beforeUpdateObj == null) throw new Exception("Coupon that need to update does not exist.");
                 Coupon updateCoupon = new Coupon()
                 {
                     Id = coupon.Id == null ? beforeUpdateObj.Id : coupon.Id,
                     Code = coupon.Code == null ? beforeUpdateObj.Code : coupon.Code,
-                    Discount = coupon.Discount == null ? beforeUpdateObj.Discount : coupon.Discount,
+                    Discount = coupon.Discount != null ? coupon.Discount == (int)CouponDiscountTypeEnum.PercentOff ? coupon.Discount / 100 : coupon.Discount : beforeUpdateObj.Discount,
                     ExpiryDate = !coupon.ExpiryDate.HasValue ? beforeUpdateObj.ExpiryDate : coupon.ExpiryDate,
                     DiscountType = coupon.DiscountType == null ? beforeUpdateObj.DiscountType : coupon.DiscountType,
                     MaxUses = coupon.MaxUses == null ? beforeUpdateObj.MaxUses : coupon.MaxUses,
@@ -107,7 +109,7 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult> HideCoupon(Guid guid)
         {
             Coupon? prod = await _couponRepository.DeleteCoupon(guid);
-            return Ok("Delete Coupon " + prod!.Name + " success");
+            return Ok("Delete Coupon " + prod!.Name + " success.");
         }
     }
 

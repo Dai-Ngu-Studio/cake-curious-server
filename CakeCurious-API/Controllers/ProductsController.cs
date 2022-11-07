@@ -57,7 +57,7 @@ namespace CakeCurious_API.Controllers
                 Id = id,
                 Name = product.Name,
                 Description = product.Description,
-                Discount = product.Discount,
+                Discount = product.Discount / 100,
                 PhotoUrl = product.PhotoUrl,
                 Quantity = product.Quantity,
                 StoreId = storeId,
@@ -93,13 +93,13 @@ namespace CakeCurious_API.Controllers
             {
                 if (guid != product.Id) return BadRequest();
                 Product? beforeUpdateObj = await _productRepository.GetById(product.Id.Value);
-                if (beforeUpdateObj == null) throw new Exception("Product that need to update does not exist");
+                if (beforeUpdateObj == null) throw new Exception("Product that need to update does not exist.");
                 Product updateProd = new Product()
                 {
                     Id = product.Id == null ? beforeUpdateObj.Id : product.Id,
                     Name = product.Name == null ? beforeUpdateObj.Name : product.Name,
                     Description = product.Description == null ? beforeUpdateObj.Description : product.Description,
-                    Discount = product.Discount == null ? beforeUpdateObj.Discount : product.Discount,
+                    Discount = product.Discount == null ? beforeUpdateObj.Discount : product.Discount / 100,
                     PhotoUrl = product.PhotoUrl == null ? beforeUpdateObj.PhotoUrl : product.PhotoUrl,
                     Quantity = product.Quantity == null ? beforeUpdateObj.Quantity : product.Quantity,
                     Price = product.Price == 0 ? beforeUpdateObj.Price : product.Price,
