@@ -6,7 +6,7 @@ namespace Repository.Models.Product
     public class DetailProduct
     {
         public Guid? Id { get; set; }
-        public SimpleStore? Store { get; set; }
+        public GroceryStore? Store { get; set; }
         public int? ProductType { get; set; }
         public SimpleProductCategory? ProductCategory { get; set; }
         public string? Name { get; set; }
