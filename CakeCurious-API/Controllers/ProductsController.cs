@@ -50,7 +50,7 @@ namespace CakeCurious_API.Controllers
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             Guid storeId = await _storeRepository.getStoreIdByUid(uid!);
-            if (storeId.ToString() == "00000000-0000-0000-0000-000000000000") return BadRequest("Invalid store id.You need to create a store to create a product");
+            if (storeId.ToString() == "00000000-0000-0000-0000-000000000000") return BadRequest("Invalid store id. You need to create a store to create a product");
             Guid id = Guid.NewGuid();
             Product prod = new Product()
             {
