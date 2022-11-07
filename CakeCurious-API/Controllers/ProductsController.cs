@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Repository.Models.Product;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using Nest;
 
 namespace CakeCurious_API.Controllers
 {
@@ -15,13 +16,15 @@ namespace CakeCurious_API.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IProductRepository productRepository;
+        private readonly IStoreRepository storeRepository;
+        private readonly IElasticClient elasticClient;
 
-        public ProductsController(IProductRepository productRepository, IStoreRepository storeRepository)
+        public ProductsController(IProductRepository _productRepository, IStoreRepository _storeRepository, IElasticClient _elasticClient)
         {
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            productRepository = _productRepository;
+            storeRepository = _storeRepository;
+            elasticClient = _elasticClient;
         }
 
         [HttpGet]
@@ -29,28 +32,26 @@ namespace CakeCurious_API.Controllers
         public ActionResult<IEnumerable<Product>> GetProducts(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             var result = new StoreDashboardProductPage();
-            result.Products = _productRepository.GetProducts(search, sort, filter, page, size);
-            result.TotalPage = (int)Math.Ceiling((decimal)_productRepository.CountDashboardProducts(search, sort, filter) / size);
+            result.Products = productRepository.GetProducts(search, sort, filter, page, size);
+            result.TotalPage = (int)Math.Ceiling((decimal)productRepository.CountDashboardProducts(search, sort, filter) / size);
             return Ok(result);
         }
 
-        [HttpGet("{guid}")]
+        [HttpGet("{id}")]
         [Authorize]
-        public async Task<ActionResult<StoreProductDetail>> GetProductsById(Guid guid)
+        public async Task<ActionResult<StoreProductDetail>> GetProductsById(Guid id)
         {
-            var result = await _productRepository.GetByIdForStore(guid);
+            var result = await productRepository.GetByIdForStore(id);
             return Ok(result);
         }
 
         [HttpPost]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            Guid storeId = await _storeRepository.getStoreIdByUid(uid!);
-            if (storeId.ToString() == "00000000-0000-0000-0000-000000000000") return BadRequest("Invalid store id. You need to create a store to create a product");
+            Guid storeId = await storeRepository.getStoreIdByUid(uid!);
+            if (storeId.ToString() == "00000000-0000-0000-0000-000000000000") return BadRequest("Invalid store ID. You need to create a store to create a product.");
             Guid id = Guid.NewGuid();
             Product prod = new Product()
             {
@@ -66,34 +67,49 @@ namespace CakeCurious_API.Controllers
                 Status = product.Status,
                 ProductType = product.ProductType,
             };
+
             try
             {
-                await _productRepository.Add(prod);
+                await productRepository.Add(prod);
+
+                var elasticsearchProduct = new ElasticsearchProduct
+                {
+                    Id = prod.Id,
+                    Name = new string[] { prod.Name! },
+                    Category = prod.ProductCategoryId,
+                };
+
+                var createResponse = await elasticClient.CreateAsync<ElasticsearchProduct>(elasticsearchProduct,
+                    x => x
+                        .Id(prod.Id)
+                        .Index("products")
+                    );
             }
             catch (DbUpdateException)
             {
-                if (_productRepository.GetById(prod.Id.Value) != null)
+                if (productRepository.GetById(prod.Id.Value) != null)
                     return Conflict();
             }
             return Ok(prod);
         }
 
-        [HttpDelete("{guid}")]
+        [HttpDelete("{id}")]
         [Authorize]
-        public async Task<ActionResult> HideProduct(Guid guid)
+        public async Task<ActionResult> HideProduct(Guid id)
         {
-            Product? prod = await _productRepository.Delete(guid);
+            Product? prod = await productRepository.Delete(id);
             return Ok("Delete product " + prod!.Name + " success");
         }
 
-        [HttpPut("{guid}")]
-        public async Task<ActionResult> PutProduct(Guid guid, Product product)
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<ActionResult> PutProduct(Guid id, Product product)
         {
             try
             {
-                if (guid != product.Id) return BadRequest();
-                Product? beforeUpdateObj = await _productRepository.GetById(product.Id.Value);
-                if (beforeUpdateObj == null) throw new Exception("Product that need to update does not exist.");
+                if (id != product.Id) return BadRequest();
+                Product? beforeUpdateObj = await productRepository.GetById(product.Id.Value);
+                if (beforeUpdateObj == null) return BadRequest("Product does not exist.");
                 Product updateProd = new Product()
                 {
                     Id = product.Id == null ? beforeUpdateObj.Id : product.Id,
@@ -108,11 +124,24 @@ namespace CakeCurious_API.Controllers
                     StoreId = product.StoreId == null ? beforeUpdateObj.StoreId : product.StoreId,
                     ProductCategoryId = product.ProductCategoryId == null ? beforeUpdateObj.ProductCategoryId : product.ProductCategoryId,
                 };
-                await _productRepository.Update(updateProd);
+                await productRepository.Update(updateProd);
+
+                var elasticsearchProduct = new ElasticsearchProduct
+                {
+                    Id = updateProd.Id,
+                    Name = new string[] { updateProd.Name! },
+                    Category = updateProd.ProductCategoryId,
+                };
+
+                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchProduct>(updateProd.Id,
+                    x => x
+                        .Index("products")
+                        .Doc(elasticsearchProduct)
+                    );
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (_productRepository.GetById(guid) == null)
+                if (productRepository.GetById(id) == null)
                 {
                     return NotFound();
                 }
