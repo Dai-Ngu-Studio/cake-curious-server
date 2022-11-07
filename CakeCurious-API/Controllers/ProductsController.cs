@@ -36,6 +36,28 @@ namespace CakeCurious_API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("grocery/ingredients")]
+        [Authorize]
+        public async Task<GroceryProductPage> ExploreIngredients(int seed,
+            [Range(1, int.MaxValue)] int take = 10,
+            [Range(0, int.MaxValue)] int lastKey = 0)
+        {
+            var products = new GroceryProductPage();
+            products.Products = await productRepository.Explore((int)ProductTypeEnum.Ingredient, seed, take, lastKey);
+            return products;
+        }
+
+        [HttpGet("grocery/equipment")]
+        [Authorize]
+        public async Task<GroceryProductPage> ExploreEquipment(int seed,
+            [Range(1, int.MaxValue)] int take = 10,
+            [Range(0, int.MaxValue)] int lastKey = 0)
+        {
+            var products = new GroceryProductPage();
+            products.Products = await productRepository.Explore((int)ProductTypeEnum.Tool, seed, take, lastKey);
+            return products;
+        }
+
         [HttpGet("{id:guid}")]
         [Authorize]
         public async Task<ActionResult<StoreProductDetail>> GetProductsById(Guid id)
