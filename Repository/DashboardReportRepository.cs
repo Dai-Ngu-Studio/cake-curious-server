@@ -64,20 +64,20 @@ namespace Repository
             int current3rdWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek3 && r!.SubmittedDate! <= endOfCurrentMonthWeek3).Count();
             int current4thWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek4 && r!.SubmittedDate! <= endOfCurrentMonthWeek4).Count();
 
-            bc!.CurrentWeekReport![0] = current1stWeekReports > 0 ? current1stWeekReports : 0;
-            bc!.CurrentWeekReport![1] = current2ndWeekReports > 0 ? current2ndWeekReports : 0;
-            bc!.CurrentWeekReport![2] = current3rdWeekReports > 0 ? current3rdWeekReports : 0;
-            bc!.CurrentWeekReport![3] = current4thWeekReports > 0 ? current4thWeekReports : 0;
+            bc!.CurrentMonthReport![0] = current1stWeekReports > 0 ? current1stWeekReports : 0;
+            bc!.CurrentMonthReport![1] = current2ndWeekReports > 0 ? current2ndWeekReports : 0;
+            bc!.CurrentMonthReport![2] = current3rdWeekReports > 0 ? current3rdWeekReports : 0;
+            bc!.CurrentMonthReport![3] = current4thWeekReports > 0 ? current4thWeekReports : 0;
             //Get last week reports
             int last1stWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek1.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek1.AddMonths(-1)).Count();
             int last2ndWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek2.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek2.AddMonths(-1)).Count();
             int last3rdWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek3.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek3.AddMonths(-1)).Count();
             int last4thWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek4.AddMonths(-1) && r!.SubmittedDate! <= endOfLastMonthWeek4).Count();
 
-            bc!.LastWeekReport![0] = last1stWeekReports > 0 ? last1stWeekReports : 0;
-            bc!.LastWeekReport![1] = last2ndWeekReports > 0 ? last2ndWeekReports : 0;
-            bc!.LastWeekReport![2] = last3rdWeekReports > 0 ? last3rdWeekReports : 0;
-            bc!.LastWeekReport![3] = last4thWeekReports > 0 ? last4thWeekReports : 0;
+            bc!.LastMonthReport![0] = last1stWeekReports > 0 ? last1stWeekReports : 0;
+            bc!.LastMonthReport![1] = last2ndWeekReports > 0 ? last2ndWeekReports : 0;
+            bc!.LastMonthReport![2] = last3rdWeekReports > 0 ? last3rdWeekReports : 0;
+            bc!.LastMonthReport![3] = last4thWeekReports > 0 ? last4thWeekReports : 0;
            //1.5s
             report.BarChart = bc;
 
@@ -164,7 +164,7 @@ namespace Repository
                 }
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
-            bc!.CurrentWeekSales![0] = currentWeekSale;
+            bc!.CurrentMonthSales![0] = currentWeekSale;
 
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek2 && ord!.OrderDate! <= endOfCurrentMonthWeek2 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
@@ -175,7 +175,7 @@ namespace Repository
                 }
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
-            bc!.CurrentWeekSales![1] = currentWeekSale;
+            bc!.CurrentMonthSales![1] = currentWeekSale;
 
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek3 && ord!.OrderDate! <= endOfCurrentMonthWeek3 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
@@ -186,7 +186,7 @@ namespace Repository
                 }
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
-            bc!.CurrentWeekSales![2] = currentWeekSale;
+            bc!.CurrentMonthSales![2] = currentWeekSale;
 
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek4 && ord!.OrderDate! <= endOfCurrentMonthWeek4 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
@@ -197,7 +197,7 @@ namespace Repository
                 }
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
-            bc!.CurrentWeekSales![3] = currentWeekSale;
+            bc!.CurrentMonthSales![3] = currentWeekSale;
 
 
             currentWeekSale = 0;
@@ -209,7 +209,7 @@ namespace Repository
                 }
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
-            bc!.LastWeekSales![0] = currentWeekSale;
+            bc!.LastMonthSales![0] = currentWeekSale;
 
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek2.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek2.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
@@ -220,7 +220,7 @@ namespace Repository
                 }
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
-            bc!.LastWeekSales![1] = currentWeekSale;
+            bc!.LastMonthSales![1] = currentWeekSale;
 
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek3.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek3.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
@@ -231,7 +231,7 @@ namespace Repository
                 }
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
-            bc!.LastWeekSales![2] = currentWeekSale;
+            bc!.LastMonthSales![2] = currentWeekSale;
 
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek4.AddMonths(-1) && ord!.OrderDate! <= endOfLastMonthWeek4 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
@@ -242,7 +242,7 @@ namespace Repository
                 }
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
-            bc!.LastWeekSales![3] = currentWeekSale;
+            bc!.LastMonthSales![3] = currentWeekSale;
             report.BarChart = bc;
             return report;
         }
