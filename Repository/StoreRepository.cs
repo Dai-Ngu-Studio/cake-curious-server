@@ -71,15 +71,7 @@ namespace Repository
                 else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
                 {
                     stores = OrderByAscName(stores);
-                }
-                else if (order_by != null && order_by == StoreSortEnum.DescName.ToString())
-                {
-                    stores = OrderByDescName(stores);
-                }
-                else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
-                {
-                    stores = OrderByAscName(stores);
-                }
+                }              
                 return stores.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).Adapt<IEnumerable<AdminDashboardStore>>().ToList();
             }

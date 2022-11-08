@@ -1,4 +1,5 @@
 ﻿using Google.Analytics.Data.V1Beta;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
@@ -22,6 +23,8 @@ namespace CakeCurious_API.Controllers
             storeRepository = _storeRepository;
         }
         [HttpGet("Admin")]
+        [Authorize]
+
         public async Task<ActionResult<AdminDashboardReport>> GetAdminDashboardReport()
         {
             AdminDashboardReport dbr;
@@ -97,6 +100,7 @@ namespace CakeCurious_API.Controllers
             return Ok(dbr);
         }
         [HttpGet("Store")]
+        [Authorize]
         public async Task<ActionResult<AdminDashboardReport>> GetStoreDashboardReport()
         {
             StoreDashboardReport dbr;
