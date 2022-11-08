@@ -14,5 +14,7 @@ namespace Repository.Interfaces
         public int CountDashboardProducts(string? s, string? order_by, string? product_type);
         public Task<Product?> GetProductReadonly(Guid id);
         public Task<Product?> GetActiveProductReadonly(Guid id);
+        public Task<ICollection<GroceryProduct>> Explore(int productType, int randSeed, int take, int key, Guid? storeId);
+        public Task<DetailProduct?> GetProductDetails(Guid id);
     }
 }
