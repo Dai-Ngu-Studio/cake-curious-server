@@ -29,11 +29,11 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<AdminDashboardStorePage>> GetStores(string? search, string? order_by, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int page = 1)
+        public ActionResult<IEnumerable<AdminDashboardStorePage>> GetStores(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int page = 1)
         {
             var result = new AdminDashboardStorePage();
-            result.Stores = storeRepository.GetStores(search, order_by, filter, size, page);
-            result.TotalPage = (int)Math.Ceiling((decimal)storeRepository.CountDashboardStores(search, order_by, filter) / size);
+            result.Stores = storeRepository.GetStores(search, sort, filter, size, page);
+            result.TotalPage = (int)Math.Ceiling((decimal)storeRepository.CountDashboardStores(search, sort, filter) / size);
             return Ok(result);
         }
 
