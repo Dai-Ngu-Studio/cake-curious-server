@@ -347,17 +347,14 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/comments")]
         [Authorize]
-        public ActionResult<IEnumerable<RecipeComment>> GetCommentsOfRecipe(Guid id)
+        public async Task<ActionResult<CommentPage>> GetCommentsOfRecipe(Guid id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
         {
-            try
-            {
-                var comments = commentRepository.GetCommentsForRecipe(id);
-                return Ok(comments);
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            var commentPage = new CommentPage();
+            commentPage.TotalPages = (int)Math.Ceiling((decimal)await commentRepository.CountCommentsForRecipe(id) / take);
+            commentPage.Comments = commentRepository.GetCommentsForRecipe(id, (page - 1) * take, take);
+            return Ok(commentPage);
         }
 
         [HttpGet("search")]
@@ -374,8 +371,8 @@ namespace CakeCurious_API.Controllers
             var shouldContainer = new List<QueryContainer>();
             var filterContainer = new List<QueryContainer>();
 
-            if ((query == null || string.IsNullOrWhiteSpace(query)) 
-                && (ingredients == null || ingredients.Length == 0) 
+            if ((query == null || string.IsNullOrWhiteSpace(query))
+                && (ingredients == null || ingredients.Length == 0)
                 && (categories == null || categories.Length == 0))
             {
                 var emptyPage = new HomeRecipePage();

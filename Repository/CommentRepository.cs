@@ -9,15 +9,6 @@ namespace Repository
 {
     public class CommentRepository : ICommentRepository
     {
-        public IEnumerable<RecipeComment> GetCommentsForRecipe(Guid recipeId)
-        {
-            var db = new CakeCuriousDbContext();
-            return db.Comments
-                .Where(x => x.RecipeId == recipeId && x.RootId == null)
-                .Where(x => x.Status == (int)CommentStatusEnum.Active)
-                .ProjectToType<RecipeComment>();
-        }
-
         public async Task Add(Comment comment)
         {
             var db = new CakeCuriousDbContext();
@@ -47,6 +38,31 @@ namespace Repository
                 await transaction.CommitAsync();
                 return rows;
             }
+        }
+
+        public async Task<int> CountCommentsForRecipe(Guid recipeId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Comments
+                .AsNoTracking()
+                .Where(x => x.RecipeId == recipeId)
+                .Where(x => x.RootId == null)
+                .Where(x => x.Status == (int)CommentStatusEnum.Active)
+                .CountAsync();
+        }
+
+        public IEnumerable<RecipeComment> GetCommentsForRecipe(Guid recipeId, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Comments
+                .AsNoTracking()
+                .OrderByDescending(x => x.SubmittedDate)
+                .Where(x => x.RecipeId == recipeId)
+                .Where(x => x.RootId == null)
+                .Where(x => x.Status == (int)CommentStatusEnum.Active)
+                .Skip(skip)
+                .Take(take)
+                .ProjectToType<RecipeComment>();
         }
     }
 }
