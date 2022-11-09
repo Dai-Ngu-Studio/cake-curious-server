@@ -14,5 +14,6 @@ namespace Repository.Interfaces
         public int CountDashboardStores(string? s, string? order_by, string? filter_Store);
         public Task<bool> IsStoreExisted(Guid id);
         public Task<Guid> getStoreIdByUid(string uid);
+        public Task<DetailStore?> GetStoreDetails(Guid id);
     }
 }
