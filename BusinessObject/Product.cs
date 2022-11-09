@@ -49,6 +49,9 @@ namespace BusinessObject
         [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
 
+        [Column("share_url", TypeName = "nvarchar(2048)")]
+        public string? ShareUrl { get; set; }
+
         [Column("status")]
         public int? Status { get; set; }
 

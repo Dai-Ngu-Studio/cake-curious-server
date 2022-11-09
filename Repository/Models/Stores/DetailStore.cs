@@ -9,6 +9,7 @@
         public string? Address { get; set; }
         public decimal? Rating { get; set; }
         public int? Products { get; set; }
+        public string? ShareUrl { get; set; }
         public int? Status { get; set; }
     }
 }

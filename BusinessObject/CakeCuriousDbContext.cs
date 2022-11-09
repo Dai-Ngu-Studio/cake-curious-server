@@ -72,6 +72,11 @@ namespace BusinessObject
             modelBuilder.Entity<UserHasRole>().HasData(
                 new UserHasRole { Id = Guid.Parse("248231d9-3f05-473d-9135-7be4188e0635"), RoleId = 0, UserId = "y0Bqpw0nQSaq4rJnZzntgmkQ6ar1" }
                 );
+
+            // Create unique key
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
         }
     }
 }
