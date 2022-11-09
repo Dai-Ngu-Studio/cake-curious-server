@@ -67,7 +67,8 @@ namespace Repository.Configuration.Mappings
 
             TypeAdapterConfig<RecipeCategory, DetachedRecipeCategory>
                 .NewConfig()
-                .Map(dest => dest.RecipeCategoryGroupType, src => src.RecipeCategoryGroup!.GroupType);
+                .Map(dest => dest.RecipeCategoryGroupType, src => src.RecipeCategoryGroup!.GroupType)
+                .Map(dest => dest.RecipeCategoryGroupName, src => src.RecipeCategoryGroup!.Name);
 
             TypeAdapterConfig<Recipe, EditRecipe>
                 .NewConfig()
