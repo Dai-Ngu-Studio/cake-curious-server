@@ -187,35 +187,29 @@ namespace CakeCurious_API.Controllers
                         || await UserRoleAuthorizer.AuthorizeUser(
                             new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
                     {
-                        try
+                        var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
+                        await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
+
+                        var elastisearchMaterials = updateRecipe.Ingredients
+                            .Select(x => x.MaterialName);
+                        var elastisearchCategories = updateRecipe.HasCategories!
+                            .Where(x => x.RecipeCategoryId.HasValue)
+                            .Select(x => x.RecipeCategoryId!.Value);
+
+                        var elastisearchRecipe = new ElastisearchRecipe
                         {
-                            var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
-                            await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
+                            Id = recipe.Id,
+                            Name = new string[] { updateRecipe.Name! },
+                            Materials = elastisearchMaterials.ToArray()!,
+                            Categories = elastisearchCategories.ToArray(),
+                        };
 
-                            var elastisearchMaterials = updateRecipe.Ingredients
-                                .Select(x => x.MaterialName);
-                            var elastisearchCategories = updateRecipe.HasCategories!
-                                .Where(x => x.RecipeCategoryId.HasValue)
-                                .Select(x => x.RecipeCategoryId!.Value);
+                        var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
+                                .Doc(elastisearchRecipe)
+                            );
 
-                            var elastisearchRecipe = new ElastisearchRecipe
-                            {
-                                Id = recipe.Id,
-                                Name = new string[] { updateRecipe.Name! },
-                                Materials = elastisearchMaterials.ToArray()!,
-                                Categories = elastisearchCategories.ToArray(),
-                            };
+                        return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
 
-                            var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
-                                    .Doc(elastisearchRecipe)
-                                );
-
-                            return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
-                        }
-                        catch (Exception)
-                        {
-                            return StatusCode(500);
-                        }
                     }
                 }
                 return BadRequest();
