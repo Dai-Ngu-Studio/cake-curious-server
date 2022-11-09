@@ -230,38 +230,31 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                try
+                var recipe = createRecipe.Adapt<Recipe>();
+
+                recipe.Status = (int)RecipeStatusEnum.Active;
+                recipe.PublishedDate = DateTime.Now;
+                recipe.UserId = uid;
+
+                await recipeRepository.AddRecipe(recipe);
+
+                var elastisearchMaterials = createRecipe.Ingredients
+                    .Select(x => x.MaterialName);
+                var elastisearchCategories = createRecipe.HasCategories!
+                    .Where(x => x.RecipeCategoryId.HasValue)
+                    .Select(x => x.RecipeCategoryId!.Value);
+
+                var elastisearchRecipe = new ElastisearchRecipe
                 {
-                    var recipe = createRecipe.Adapt<Recipe>();
+                    Id = recipe.Id,
+                    Name = new string[] { createRecipe.Name! },
+                    Materials = elastisearchMaterials.ToArray()!,
+                    Categories = elastisearchCategories.ToArray(),
+                };
 
-                    recipe.Status = (int)RecipeStatusEnum.Active;
-                    recipe.PublishedDate = DateTime.Now;
-                    recipe.UserId = uid;
-
-                    await recipeRepository.AddRecipe(recipe);
-
-                    var elastisearchMaterials = createRecipe.Ingredients
-                        .Select(x => x.MaterialName);
-                    var elastisearchCategories = createRecipe.HasCategories!
-                        .Where(x => x.RecipeCategoryId.HasValue)
-                        .Select(x => x.RecipeCategoryId!.Value);
-
-                    var elastisearchRecipe = new ElastisearchRecipe
-                    {
-                        Id = recipe.Id,
-                        Name = new string[] { createRecipe.Name! },
-                        Materials = elastisearchMaterials.ToArray()!,
-                        Categories = elastisearchCategories.ToArray(),
-                    };
-
-                    var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
-
-                    return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
-                }
-                catch (Exception)
-                {
-                    return StatusCode(500);
-                }
+                var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
+                var details = await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid);
+                return Ok(details);
             }
             return Unauthorized();
         }
