@@ -173,6 +173,27 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
+        [HttpGet("{id:guid}/model")]
+        [Authorize]
+        public async Task<ActionResult<EditRecipe>> GetEditRecipe(Guid id)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var recipeReadonly = await recipeRepository.GetRecipeReadonly(id);
+                if (recipeReadonly != null)
+                {
+                    if (recipeReadonly.UserId == uid
+                        || await UserRoleAuthorizer.AuthorizeUser(
+                            new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
+                    {
+                        return Ok(await recipeRepository.GetEditRecipe(id));
+                    }
+                }
+            }
+            return Unauthorized();
+        }
+
         [HttpPut("{id:guid}")]
         [Authorize]
         public async Task<ActionResult<DetailRecipe>> UpdateRecipe(Guid id, UpdateRecipe updateRecipe)

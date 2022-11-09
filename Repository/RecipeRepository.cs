@@ -4,7 +4,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Recipes;
 using Repository.Interfaces;
-using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 
@@ -75,6 +74,15 @@ namespace Repository
             return result;
         }
 
+        public async Task<EditRecipe?> GetEditRecipe(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes
+                .Where(x => x.Id == id)
+                .ProjectToType<EditRecipe>()
+                .FirstOrDefaultAsync();
+        }
+
         public async Task UpdateRecipe(Recipe recipe, Recipe updateRecipe)
         {
             var db = new CakeCuriousDbContext();
@@ -86,6 +94,7 @@ namespace Repository
                 recipe.ServingSize = updateRecipe.ServingSize;
                 recipe.PhotoUrl = updateRecipe.PhotoUrl;
                 recipe.CookTime = updateRecipe.CookTime;
+                recipe.ShareUrl = updateRecipe.ShareUrl;
 
                 db.Recipes.Update(recipe);
 
