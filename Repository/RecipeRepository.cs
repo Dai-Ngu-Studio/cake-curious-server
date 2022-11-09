@@ -29,6 +29,18 @@ namespace Repository
             return await db.Recipes.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<int> UpdateShareUrl(Guid id, string shareUrl)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                string query = $"update [Recipe] set [Recipe].[share_url] = '{shareUrl}' where [Recipe].[id] = '{id}'";
+                var rows = await db.Database.ExecuteSqlRawAsync(query);
+                await transaction.CommitAsync();
+                return rows;
+            }
+        }
+
         public async Task<int> Delete(Guid id)
         {
             var db = new CakeCuriousDbContext();
@@ -94,7 +106,6 @@ namespace Repository
                 recipe.ServingSize = updateRecipe.ServingSize;
                 recipe.PhotoUrl = updateRecipe.PhotoUrl;
                 recipe.CookTime = updateRecipe.CookTime;
-                recipe.ShareUrl = updateRecipe.ShareUrl;
 
                 db.Recipes.Update(recipe);
 

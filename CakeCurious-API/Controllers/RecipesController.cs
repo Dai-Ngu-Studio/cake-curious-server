@@ -1,5 +1,7 @@
 ﻿using BusinessObject;
 using CakeCurious_API.Utilities;
+using Google.Apis.FirebaseDynamicLinks.v1;
+using Google.Apis.FirebaseDynamicLinks.v1.Data;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +12,6 @@ using Repository.Interfaces;
 using Repository.Models.Bookmarks;
 using Repository.Models.Comments;
 using Repository.Models.Likes;
-using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 using System.ComponentModel.DataAnnotations;
@@ -28,9 +29,10 @@ namespace CakeCurious_API.Controllers
         private readonly IBookmarkRepository bookmarkRepository;
         private readonly IUserRepository userRepository;
         private readonly IElasticClient elasticClient;
+        private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
 
         public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
-            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient)
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
@@ -38,6 +40,43 @@ namespace CakeCurious_API.Controllers
             bookmarkRepository = _bookmarkRepository;
             userRepository = _userRepository;
             elasticClient = _elasticClient;
+            firebaseDynamicLinksService = _firebaseDynamicLinksService;
+        }
+
+        private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Recipe recipe)
+        {
+            var webAppUri = Environment.GetEnvironmentVariable("WEB_APP_URI");
+            var sharePrefixUri = Environment.GetEnvironmentVariable("SHARE_URI_PREFIX");
+            var androidPackageName = Environment.GetEnvironmentVariable("ANDROID_PACKAGE_NAME");
+            var androidMinPackageVersion = Environment.GetEnvironmentVariable("ANDROID_MIN_PACKAGE_VERSION_CODE");
+            var androidFallbackLink = Environment.GetEnvironmentVariable("ANDROID_FALLBACK_LINK");
+            var suffixOption = Environment.GetEnvironmentVariable("SUFFIX_OPTION");
+
+            var linkRequest = firebaseDynamicLinksService.ShortLinks.Create(new CreateShortDynamicLinkRequest
+            {
+                DynamicLinkInfo = new DynamicLinkInfo
+                {
+                    Link = $"{webAppUri}/recipe-detail/{recipe.Id}/?name={recipe.Name}&photoUrl={recipe.PhotoUrl}",
+                    DomainUriPrefix = sharePrefixUri,
+                    AndroidInfo = new AndroidInfo
+                    {
+                        AndroidPackageName = androidPackageName,
+                        AndroidMinPackageVersionCode = androidMinPackageVersion,
+                        AndroidFallbackLink = androidFallbackLink,
+                    },
+                    SocialMetaTagInfo = new SocialMetaTagInfo
+                    {
+                        SocialTitle = recipe.Name,
+                        SocialImageLink = recipe.PhotoUrl,
+                        SocialDescription = recipe.Description,
+                    }
+                },
+                Suffix = new Suffix
+                {
+                    Option = suffixOption
+                }
+            });
+            return await linkRequest.ExecuteAsync();
         }
 
         [HttpDelete("{id:guid}")]
@@ -229,6 +268,10 @@ namespace CakeCurious_API.Controllers
                                 .Doc(elastisearchRecipe)
                             );
 
+                        var dynamicLinkResponse = await CreateDynamicLink(recipe);
+
+                        await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
+
                         return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
 
                     }
@@ -268,8 +311,12 @@ namespace CakeCurious_API.Controllers
                 };
 
                 var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
-                var details = await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid);
-                return Ok(details);
+
+                var dynamicLinkResponse = await CreateDynamicLink(recipe);
+
+                await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
+
+                return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
             }
             return Unauthorized();
         }
