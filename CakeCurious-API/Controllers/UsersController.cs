@@ -291,6 +291,7 @@ namespace CakeCurious_API.Controllers
                             ? userRecord!.DisplayName
                             : "Anonymous User"
                             : "Anonymous User",
+                            Username = uid,
                             Email = isUserRecordExisted ? userRecord!.Email : "Anonymous",
                             PhotoUrl = isUserRecordExisted ? userRecord!.PhotoUrl : "",
                             HasRoles = hasRoles,
