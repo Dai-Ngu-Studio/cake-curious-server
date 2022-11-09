@@ -11,8 +11,24 @@ using System.Text.Json.Serialization;
 using Nest;
 using Elasticsearch.Net;
 using CakeCurious_API.Services;
+using Google.Apis.Services;
+using Google.Apis.FirebaseDynamicLinks.v1;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var appConfiguration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+// Set web app info
+var appInfo = appConfiguration.GetSection("CakeCuriousInfo");
+Environment.SetEnvironmentVariable("WEB_APP_URI", appInfo.GetValue<string>("WebAppUri"));
+Environment.SetEnvironmentVariable("SHARE_URI_PREFIX", appInfo.GetValue<string>("ShareUriPrefix"));
+Environment.SetEnvironmentVariable("ANDROID_PACKAGE_NAME", appInfo.GetValue<string>("AndroidPackageName"));
+Environment.SetEnvironmentVariable("ANDROID_MIN_PACKAGE_VERSION_CODE", appInfo.GetValue<string>("AndroidMinPackageVersionCode"));
+Environment.SetEnvironmentVariable("ANDROID_FALLBACK_LINK", appInfo.GetValue<string>("AndroidFallbackLink"));
+Environment.SetEnvironmentVariable("SUFFIX_OPTION", appInfo.GetValue<string>("SuffixOption"));
 
 // Add services to the container.
 
@@ -56,9 +72,20 @@ builder.Services.RegisterMapsterConfiguration();
 
 builder.Services.AddDbContext<CakeCuriousDbContext>();
 
+// Configure Google Services
+var googleCredential = GoogleCredential.GetApplicationDefault();
+
+var firebaseDynamicLinksService = new FirebaseDynamicLinksService(new BaseClientService.Initializer
+{
+    HttpClientInitializer = googleCredential,
+    ApplicationName = "CakeCuriousServer",
+});
+
+builder.Services.AddSingleton(firebaseDynamicLinksService);
+
 FirebaseApp.Create(new AppOptions()
 {
-    Credential = GoogleCredential.GetApplicationDefault(),
+    Credential = googleCredential,
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
