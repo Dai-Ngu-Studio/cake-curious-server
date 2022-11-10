@@ -56,7 +56,7 @@ namespace CakeCurious_API.Controllers
             {
                 DynamicLinkInfo = new DynamicLinkInfo
                 {
-                    Link = $"{webAppUri}/recipe-detail/{recipe.Id}/?name={recipe.Name}&photoUrl={recipe.PhotoUrl}",
+                    Link = $"{webAppUri}/recipe-details/{recipe.Id}/?name={recipe.Name}&photoUrl={recipe.PhotoUrl}",
                     DomainUriPrefix = sharePrefixUri,
                     AndroidInfo = new AndroidInfo
                     {
