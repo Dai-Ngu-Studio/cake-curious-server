@@ -134,7 +134,7 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult> HideProduct(Guid id)
         {
             Product? prod = await productRepository.Delete(id);
-            await elasticClient.DeleteAsync<ElasticsearchProduct>(id);
+            await elasticClient.DeleteAsync(new DeleteRequest(index: "products", prod!.Id));
             return Ok();
         }
 

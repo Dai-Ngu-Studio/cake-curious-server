@@ -3,6 +3,7 @@ using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Nest;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
@@ -22,13 +23,15 @@ namespace CakeCurious_API.Controllers
         private readonly IUserDeviceRepository userDeviceRepository;
         private readonly IUserFollowRepository userFollowRepository;
         private readonly IRecipeRepository recipeRepository;
+        private readonly IElasticClient elasticClient;
 
-        public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository, IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository)
+        public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository, IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IElasticClient _elasticClient)
         {
             userRepository = _userRepository;
             userDeviceRepository = _userDeviceRepository;
             userFollowRepository = _userFollowRepository;
             recipeRepository = _recipeRepository;
+            elasticClient = _elasticClient;
         }
 
         [HttpGet]
@@ -74,6 +77,20 @@ namespace CakeCurious_API.Controllers
                     CitizenshipNumber = user.CitizenshipNumber == null ? beforeUpdateObj.CitizenshipNumber : user.CitizenshipNumber,
                 };
                 await userRepository.Update(updateObj);
+
+                var elasticsearchUser = new ElasticsearchUser
+                {
+                    Id = user.Id,
+                    Username = updateObj.Username,
+                    DisplayName = updateObj.DisplayName,
+                    Roles = beforeUpdateObj.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+                };
+
+                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
+                    x => x
+                        .Index("users")
+                        .Doc(elasticsearchUser)
+                    );
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -85,13 +102,16 @@ namespace CakeCurious_API.Controllers
             }
             return NoContent();
         }
+
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<ActionResult<User?>> DeleteUser(string? id)
         {
             User? user = await userRepository.DeleteUser(id);
-            return Ok("Delete User " + user!.DisplayName + " success");
+            await elasticClient.DeleteAsync(new DeleteRequest(index: "users", user!.Id));
+            return Ok();
         }
+
         [HttpGet("{id}/following")]
         [Authorize]
         public async Task<ActionResult<FollowUserPage>> GetFollowingOfUser(string id,
@@ -195,6 +215,19 @@ namespace CakeCurious_API.Controllers
                                 RoleId = (int)RoleEnum.StoreOwner,
                             });
                             await userRepository.Update(user);
+                            var elasticsearchUser = new ElasticsearchUser
+                            {
+                                Id = user.Id,
+                                Username = user.Username,
+                                DisplayName = user.DisplayName,
+                                Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+                            };
+
+                            var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
+                                x => x
+                                    .Index("users")
+                                    .Doc(elasticsearchUser)
+                                );
                             return Ok();
                         }
                         catch (Exception)
@@ -238,6 +271,19 @@ namespace CakeCurious_API.Controllers
                                 RoleId = roleRequest.RoleId,
                             });
                             await userRepository.Update(user);
+                            var elasticsearchUser = new ElasticsearchUser
+                            {
+                                Id = user.Id,
+                                Username = user.Username,
+                                DisplayName = user.DisplayName,
+                                Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+                            };
+
+                            var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
+                                x => x
+                                    .Index("users")
+                                    .Doc(elasticsearchUser)
+                                );
                             return Ok();
                         }
                         catch (Exception)
@@ -265,6 +311,26 @@ namespace CakeCurious_API.Controllers
                 {
                     // User already exists in database, check if device needed to be added
                     await CheckAndAddDevice(FcmToken, uid);
+                    // Check if user existed in Elasticsearch
+                    var existsResponse = await elasticClient
+                        .DocumentExistsAsync(new DocumentExistsRequest(index: "users", user.Id));
+                    if (!existsResponse.Exists)
+                    {
+                        // Create user for Elasticsearch
+                        var elasticsearchUser = new ElasticsearchUser
+                        {
+                            Id = user.Id,
+                            Username = user.Username,
+                            DisplayName = user.DisplayName,
+                            Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+                        };
+
+                        var createResponse = await elasticClient.CreateAsync<ElasticsearchUser>(elasticsearchUser,
+                            x => x
+                                .Id(user.Id)
+                                .Index("users")
+                            );
+                    }
                     // Return user with no collection attached (except roles)
                     return Ok(user);
                 }
@@ -299,6 +365,20 @@ namespace CakeCurious_API.Controllers
                             Status = (int)UserStatusEnum.Active,
                         };
                         await userRepository.Add(newUser);
+                        // Add user to Elasticsearch
+                        var elasticsearchUser = new ElasticsearchUser
+                        {
+                            Id = newUser.Id,
+                            Username = newUser.Username,
+                            DisplayName = newUser.DisplayName,
+                            Roles = newUser.HasRoles.Select(x => (int)x.RoleId!).ToArray(),
+                        };
+
+                        var createResponse = await elasticClient.CreateAsync<ElasticsearchUser>(elasticsearchUser,
+                            x => x
+                                .Id(newUser.Id)
+                                .Index("users")
+                            );
                         // Check if device needed to be added
                         await CheckAndAddDevice(FcmToken, uid);
                         // Return user with no collection attached (except roles)
