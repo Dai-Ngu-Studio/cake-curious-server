@@ -22,6 +22,7 @@ namespace Repository.Models
         public SimpleRecipeForReportList? Recipe { get; set; }
         public SimpleUser? Reporter { get; set; }
         public string? Title { get; set; }
+        public string? Content { get; set; }
         public SimpleUser? Staff { get; set; }   
         public SimpleUser? ReportedUser { get; set; }
         public int Status { get; set; }
