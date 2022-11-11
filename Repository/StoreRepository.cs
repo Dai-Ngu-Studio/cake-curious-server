@@ -220,10 +220,10 @@ namespace Repository
             return await db.Stores.AsNoTracking().AnyAsync(x => x.Id == id && x.Status == (int)StoreStatusEnum.Active);
         }
 
-        public Task<StoreDetail?> GetByUserId(string? uid)
+        public async Task<StoreDetail?> GetByUserId(string? uid)
         {
             var db = new CakeCuriousDbContext();
-            return db.Stores.Include(s => s.User!).ProjectToType<StoreDetail>().FirstOrDefaultAsync(x => x.UserId == uid);
+            return await db.Stores.Include(s => s.User!).ProjectToType<StoreDetail>().FirstOrDefaultAsync(x => x.UserId == uid);
         }
     }
 }

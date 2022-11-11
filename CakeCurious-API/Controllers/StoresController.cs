@@ -46,7 +46,7 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult<StoreDetail>> GetStoresByUserId()
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var result = await storeRepository.GetByUserId(uid);
+            StoreDetail? result = await storeRepository.GetByUserId(uid);
             return Ok(result);
         }
 
@@ -66,16 +66,17 @@ namespace CakeCurious_API.Controllers
         public ActionResult<Store> PostStore(Store Store)
         {
             Guid id = Guid.NewGuid();
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             Store prod = new Store()
             {
                 Address = Store.Address,
                 Description = Store.Description,
-                Id = Store.Id,
+                Id = id,
                 PhotoUrl = Store.PhotoUrl,
                 Name = Store.Name,
-                UserId = Store.UserId,
+                UserId = !string.IsNullOrWhiteSpace(uid) ? uid : "",
                 Rating = Store.Rating,
-                Status = Store.Status,
+                Status = Store.Status,               
             };
             try
             {
