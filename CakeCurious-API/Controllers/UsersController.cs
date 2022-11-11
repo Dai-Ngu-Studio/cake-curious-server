@@ -86,11 +86,26 @@ namespace CakeCurious_API.Controllers
                     Roles = beforeUpdateObj.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
                 };
 
-                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
-                    x => x
-                        .Index("users")
-                        .Doc(elasticsearchUser)
-                    );
+                // Does doc exist on Elasticsearch?
+                var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "users", updateObj.Id));
+                if (!existsResponse.Exists)
+                {
+                    // Doc doesn't exist, create new
+                    var createResponse = await elasticClient.CreateAsync<ElasticsearchUser>(elasticsearchUser,
+                        x => x
+                            .Id(updateObj.Id)
+                            .Index("users")
+                        );
+                }
+                else
+                {
+                    // Doc exists, update
+                    var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(updateObj.Id,
+                        x => x
+                            .Index("users")
+                            .Doc(elasticsearchUser)
+                        );
+                }
             }
             catch (DbUpdateConcurrencyException)
             {

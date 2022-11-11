@@ -251,7 +251,7 @@ namespace CakeCurious_API.Controllers
                         await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
 
                         var elastisearchMaterials = updateRecipe.Ingredients
-                            .Select(x => x.MaterialName);
+                                .Select(x => x.MaterialName);
                         var elastisearchCategories = updateRecipe.HasCategories!
                             .Where(x => x.RecipeCategoryId.HasValue)
                             .Select(x => x.RecipeCategoryId!.Value);
@@ -264,16 +264,26 @@ namespace CakeCurious_API.Controllers
                             Categories = elastisearchCategories.ToArray(),
                         };
 
-                        var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
-                                .Doc(elastisearchRecipe)
-                            );
+                        // Does doc exist on Elasticsearch?
+                        var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "recipes", recipe.Id));
+                        if (!existsResponse.Exists)
+                        {
+                            // Doc doesn't exist, create new
+                            var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
+                        }
+                        else
+                        {
+                            // Doc exists, update
+                            var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
+                                    .Doc(elastisearchRecipe)
+                                );
+                        }
 
                         var dynamicLinkResponse = await CreateDynamicLink(recipe);
 
                         await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
 
                         return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
-
                     }
                 }
                 return BadRequest();

@@ -159,11 +159,26 @@ namespace CakeCurious_API.Controllers
                     Rating = updateObj.Rating,
                 };
 
-                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchStore>(updateObj.Id,
-                    x => x
-                        .Index("stores")
-                        .Doc(elasticsearchStore)
-                    );
+                // Does doc exist on Elasticsearch?
+                var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "stores", updateObj.Id));
+                if (!existsResponse.Exists)
+                {
+                    // Doc doesn't exist, create new
+                    var createResponse = await elasticClient.CreateAsync<ElasticsearchStore>(elasticsearchStore,
+                        x => x
+                            .Id(updateObj.Id)
+                            .Index("stores")
+                        );
+                }
+                else
+                {
+                    // Doc exists, update
+                    var updateResponse = await elasticClient.UpdateAsync<ElasticsearchStore>(updateObj.Id,
+                        x => x
+                            .Index("stores")
+                            .Doc(elasticsearchStore)
+                        );
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
