@@ -42,6 +42,9 @@ namespace BusinessObject
         [Column("created_date", TypeName = "datetime2(7)")]
         public DateTime? CreatedDate { get; set; }
 
+        [Column("share_url", TypeName = "nvarchar(2048)")]
+        public string? ShareUrl { get; set; }
+
         [Column("status")]
         public int? Status { get; set; }
 

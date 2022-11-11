@@ -1,4 +1,5 @@
-﻿using Repository.Models.RecipeMaterials;
+﻿using Repository.Models.RecipeHasCategories;
+using Repository.Models.RecipeMaterials;
 using Repository.Models.RecipeSteps;
 using Repository.Models.Users;
 
@@ -18,8 +19,10 @@ namespace Repository.Models.Recipes
         public int? Likes { get; set; }
         public bool? IsLikedByCurrentUser { get; set; }
         public bool? IsBookmarkedByCurrentUser { get; set; }
+        public string? ShareUrl { get; set; }
         public IEnumerable<DetachedRecipeMaterial>? Ingredients { get; set; }
         public IEnumerable<DetachedRecipeMaterial>? Equipment { get; set; }
         public IEnumerable<SimpleRecipeStep>? RecipeSteps { get; set; }
+        public IEnumerable<SimpleRecipeHasCategory>? HasCategories { get; set; }
     }
 }

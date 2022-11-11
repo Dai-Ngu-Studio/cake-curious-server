@@ -29,6 +29,9 @@ namespace BusinessObject
         [Column("email", TypeName = "nvarchar(256)")]
         public string? Email { get; set; }
 
+        [Column("username", TypeName = "nvarchar(128)")]
+        public string? Username { get; set; }
+
         [Column("display_name", TypeName = "nvarchar(64)")]
         public string? DisplayName { get; set; }
 
@@ -61,6 +64,9 @@ namespace BusinessObject
 
         [Column("created_date", TypeName = "datetime2(7)")]
         public DateTime? CreatedDate { get; set; }
+
+        [Column("share_url", TypeName = "nvarchar(2048)")]
+        public string? ShareUrl { get; set; }
 
         [Column("status")]
         public int? Status { get; set; }

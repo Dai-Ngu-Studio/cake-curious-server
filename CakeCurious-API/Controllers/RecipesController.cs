@@ -1,5 +1,7 @@
 ﻿using BusinessObject;
 using CakeCurious_API.Utilities;
+using Google.Apis.FirebaseDynamicLinks.v1;
+using Google.Apis.FirebaseDynamicLinks.v1.Data;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +12,6 @@ using Repository.Interfaces;
 using Repository.Models.Bookmarks;
 using Repository.Models.Comments;
 using Repository.Models.Likes;
-using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 using System.ComponentModel.DataAnnotations;
@@ -28,9 +29,10 @@ namespace CakeCurious_API.Controllers
         private readonly IBookmarkRepository bookmarkRepository;
         private readonly IUserRepository userRepository;
         private readonly IElasticClient elasticClient;
+        private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
 
         public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
-            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient)
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
@@ -38,6 +40,43 @@ namespace CakeCurious_API.Controllers
             bookmarkRepository = _bookmarkRepository;
             userRepository = _userRepository;
             elasticClient = _elasticClient;
+            firebaseDynamicLinksService = _firebaseDynamicLinksService;
+        }
+
+        private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Recipe recipe)
+        {
+            var webAppUri = Environment.GetEnvironmentVariable("WEB_APP_URI");
+            var sharePrefixUri = Environment.GetEnvironmentVariable("SHARE_URI_PREFIX");
+            var androidPackageName = Environment.GetEnvironmentVariable("ANDROID_PACKAGE_NAME");
+            var androidMinPackageVersion = Environment.GetEnvironmentVariable("ANDROID_MIN_PACKAGE_VERSION_CODE");
+            var androidFallbackLink = Environment.GetEnvironmentVariable("ANDROID_FALLBACK_LINK");
+            var suffixOption = Environment.GetEnvironmentVariable("SUFFIX_OPTION");
+
+            var linkRequest = firebaseDynamicLinksService.ShortLinks.Create(new CreateShortDynamicLinkRequest
+            {
+                DynamicLinkInfo = new DynamicLinkInfo
+                {
+                    Link = $"{webAppUri}/recipe-details/{recipe.Id}/?name={recipe.Name}&photoUrl={recipe.PhotoUrl}",
+                    DomainUriPrefix = sharePrefixUri,
+                    AndroidInfo = new AndroidInfo
+                    {
+                        AndroidPackageName = androidPackageName,
+                        AndroidMinPackageVersionCode = androidMinPackageVersion,
+                        AndroidFallbackLink = androidFallbackLink,
+                    },
+                    SocialMetaTagInfo = new SocialMetaTagInfo
+                    {
+                        SocialTitle = recipe.Name,
+                        SocialImageLink = recipe.PhotoUrl,
+                        SocialDescription = recipe.Description,
+                    }
+                },
+                Suffix = new Suffix
+                {
+                    Option = suffixOption
+                }
+            });
+            return await linkRequest.ExecuteAsync();
         }
 
         [HttpDelete("{id:guid}")]
@@ -173,6 +212,27 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
+        [HttpGet("{id:guid}/model")]
+        [Authorize]
+        public async Task<ActionResult<EditRecipe>> GetEditRecipe(Guid id)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var recipeReadonly = await recipeRepository.GetRecipeReadonly(id);
+                if (recipeReadonly != null)
+                {
+                    if (recipeReadonly.UserId == uid
+                        || await UserRoleAuthorizer.AuthorizeUser(
+                            new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
+                    {
+                        return Ok(await recipeRepository.GetEditRecipe(id));
+                    }
+                }
+            }
+            return Unauthorized();
+        }
+
         [HttpPut("{id:guid}")]
         [Authorize]
         public async Task<ActionResult<DetailRecipe>> UpdateRecipe(Guid id, UpdateRecipe updateRecipe)
@@ -187,35 +247,33 @@ namespace CakeCurious_API.Controllers
                         || await UserRoleAuthorizer.AuthorizeUser(
                             new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
                     {
-                        try
+                        var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
+                        await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
+
+                        var elastisearchMaterials = updateRecipe.Ingredients
+                            .Select(x => x.MaterialName);
+                        var elastisearchCategories = updateRecipe.HasCategories!
+                            .Where(x => x.RecipeCategoryId.HasValue)
+                            .Select(x => x.RecipeCategoryId!.Value);
+
+                        var elastisearchRecipe = new ElastisearchRecipe
                         {
-                            var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
-                            await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
+                            Id = recipe.Id,
+                            Name = new string[] { updateRecipe.Name! },
+                            Materials = elastisearchMaterials.ToArray()!,
+                            Categories = elastisearchCategories.ToArray(),
+                        };
 
-                            var elastisearchMaterials = updateRecipe.Ingredients
-                                .Select(x => x.MaterialName);
-                            var elastisearchCategories = updateRecipe.HasCategories!
-                                .Where(x => x.RecipeCategoryId.HasValue)
-                                .Select(x => x.RecipeCategoryId!.Value);
+                        var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
+                                .Doc(elastisearchRecipe)
+                            );
 
-                            var elastisearchRecipe = new ElastisearchRecipe
-                            {
-                                Id = recipe.Id,
-                                Name = new string[] { updateRecipe.Name! },
-                                Materials = elastisearchMaterials.ToArray()!,
-                                Categories = elastisearchCategories.ToArray(),
-                            };
+                        var dynamicLinkResponse = await CreateDynamicLink(recipe);
 
-                            var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
-                                    .Doc(elastisearchRecipe)
-                                );
+                        await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
 
-                            return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
-                        }
-                        catch (Exception)
-                        {
-                            return StatusCode(500);
-                        }
+                        return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
+
                     }
                 }
                 return BadRequest();
@@ -230,38 +288,35 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                try
+                var recipe = createRecipe.Adapt<Recipe>();
+
+                recipe.Status = (int)RecipeStatusEnum.Active;
+                recipe.PublishedDate = DateTime.Now;
+                recipe.UserId = uid;
+
+                await recipeRepository.AddRecipe(recipe);
+
+                var elastisearchMaterials = createRecipe.Ingredients
+                    .Select(x => x.MaterialName);
+                var elastisearchCategories = createRecipe.HasCategories!
+                    .Where(x => x.RecipeCategoryId.HasValue)
+                    .Select(x => x.RecipeCategoryId!.Value);
+
+                var elastisearchRecipe = new ElastisearchRecipe
                 {
-                    var recipe = createRecipe.Adapt<Recipe>();
+                    Id = recipe.Id,
+                    Name = new string[] { createRecipe.Name! },
+                    Materials = elastisearchMaterials.ToArray()!,
+                    Categories = elastisearchCategories.ToArray(),
+                };
 
-                    recipe.Status = (int)RecipeStatusEnum.Active;
-                    recipe.PublishedDate = DateTime.Now;
-                    recipe.UserId = uid;
+                var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
 
-                    await recipeRepository.AddRecipe(recipe);
+                var dynamicLinkResponse = await CreateDynamicLink(recipe);
 
-                    var elastisearchMaterials = createRecipe.Ingredients
-                        .Select(x => x.MaterialName);
-                    var elastisearchCategories = createRecipe.HasCategories!
-                        .Where(x => x.RecipeCategoryId.HasValue)
-                        .Select(x => x.RecipeCategoryId!.Value);
+                await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
 
-                    var elastisearchRecipe = new ElastisearchRecipe
-                    {
-                        Id = recipe.Id,
-                        Name = new string[] { createRecipe.Name! },
-                        Materials = elastisearchMaterials.ToArray()!,
-                        Categories = elastisearchCategories.ToArray(),
-                    };
-
-                    var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
-
-                    return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
-                }
-                catch (Exception)
-                {
-                    return StatusCode(500);
-                }
+                return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
             }
             return Unauthorized();
         }
@@ -347,17 +402,14 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/comments")]
         [Authorize]
-        public ActionResult<IEnumerable<RecipeComment>> GetCommentsOfRecipe(Guid id)
+        public async Task<ActionResult<CommentPage>> GetCommentsOfRecipe(Guid id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
         {
-            try
-            {
-                var comments = commentRepository.GetCommentsForRecipe(id);
-                return Ok(comments);
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            var commentPage = new CommentPage();
+            commentPage.TotalPages = (int)Math.Ceiling((decimal)await commentRepository.CountCommentsForRecipe(id) / take);
+            commentPage.Comments = commentRepository.GetCommentsForRecipe(id, (page - 1) * take, take);
+            return Ok(commentPage);
         }
 
         [HttpGet("search")]
@@ -374,8 +426,8 @@ namespace CakeCurious_API.Controllers
             var shouldContainer = new List<QueryContainer>();
             var filterContainer = new List<QueryContainer>();
 
-            if ((query == null || string.IsNullOrWhiteSpace(query)) 
-                && (ingredients == null || ingredients.Length == 0) 
+            if ((query == null || string.IsNullOrWhiteSpace(query))
+                && (ingredients == null || ingredients.Length == 0)
                 && (categories == null || categories.Length == 0))
             {
                 var emptyPage = new HomeRecipePage();

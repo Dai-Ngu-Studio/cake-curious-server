@@ -4,7 +4,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Recipes;
 using Repository.Interfaces;
-using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 
@@ -28,6 +27,18 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return await db.Recipes.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<int> UpdateShareUrl(Guid id, string shareUrl)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                string query = $"update [Recipe] set [Recipe].[share_url] = '{shareUrl}' where [Recipe].[id] = '{id}'";
+                var rows = await db.Database.ExecuteSqlRawAsync(query);
+                await transaction.CommitAsync();
+                return rows;
+            }
         }
 
         public async Task<int> Delete(Guid id)
@@ -73,6 +84,15 @@ namespace Repository
                 await cmd.Connection!.CloseAsync();
             }
             return result;
+        }
+
+        public async Task<EditRecipe?> GetEditRecipe(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes
+                .Where(x => x.Id == id)
+                .ProjectToType<EditRecipe>()
+                .FirstOrDefaultAsync();
         }
 
         public async Task UpdateRecipe(Recipe recipe, Recipe updateRecipe)

@@ -50,12 +50,24 @@ namespace CakeCurious_API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{guid}")]
+        [HttpGet("{id:guid}")]
         [Authorize]
-        public async Task<ActionResult<Store>> GetStoresById(Guid guid)
+        public async Task<ActionResult<Store>> GetStoresById(Guid id)
         {
-            var result = await storeRepository.GetById(guid);
+            var result = await storeRepository.GetById(id);
             return Ok(result);
+        }
+
+        [HttpGet("{id:guid}/details")]
+        [Authorize]
+        public async Task<ActionResult<DetailStore>> GetStoreDetails(Guid id)
+        {
+            var store = await storeRepository.GetStoreDetails(id);
+            if (store != null)
+            {
+                return Ok(store);
+            }
+            return NotFound();
         }
 
         [HttpPost]
@@ -90,21 +102,21 @@ namespace CakeCurious_API.Controllers
             return Ok(prod);
         }
 
-        [HttpDelete("{guid}")]
+        [HttpDelete("{id:guid}")]
         [Authorize]
-        public async Task<ActionResult> DeleteStore(Guid? guid)
+        public async Task<ActionResult> DeleteStore(Guid? id)
         {
-            Store? store = await storeRepository.Delete(guid);
+            Store? store = await storeRepository.Delete(id);
             return Ok("Delete Store " + store!.Name + " success");
         }
 
-        [HttpPut("{guid}")]
+        [HttpPut("{id:guid}")]
         [Authorize]
-        public async Task<ActionResult> PutStore(Guid guid, Store Store)
+        public async Task<ActionResult> PutStore(Guid id, Store Store)
         {
             try
             {
-                if (guid != Store.Id) return BadRequest();
+                if (id != Store.Id) return BadRequest();
                 Store? beforeUpdateObj = await storeRepository.GetById(Store.Id.Value);
                 if (beforeUpdateObj == null) throw new Exception("Store that need to update does not exist");
                 Store updateObj = new Store()
@@ -122,7 +134,7 @@ namespace CakeCurious_API.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (storeRepository.GetById(guid) == null)
+                if (storeRepository.GetById(id) == null)
                 {
                     return NotFound();
                 }

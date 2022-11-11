@@ -5,8 +5,9 @@ using Repository.Models.RecipeSteps;
 
 namespace Repository.Models.Recipes
 {
-    public class CreateRecipe
+    public class EditRecipe
     {
+        public Guid? Id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
         public int? ServingSize { get; set; }

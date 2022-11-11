@@ -67,7 +67,13 @@ namespace Repository.Configuration.Mappings
 
             TypeAdapterConfig<RecipeCategory, DetachedRecipeCategory>
                 .NewConfig()
-                .Map(dest => dest.RecipeCategoryGroupType, src => src.RecipeCategoryGroup!.GroupType);
+                .Map(dest => dest.RecipeCategoryGroupType, src => src.RecipeCategoryGroup!.GroupType)
+                .Map(dest => dest.RecipeCategoryGroupName, src => src.RecipeCategoryGroup!.Name);
+
+            TypeAdapterConfig<Recipe, EditRecipe>
+                .NewConfig()
+                .Map(dest => dest.Equipment, src => src.RecipeMaterials!.Where(x => x.MaterialType == (int)RecipeMaterialTypeEnum.Equipment))
+                .Map(dest => dest.Ingredients, src => src.RecipeMaterials!.Where(x => x.MaterialType == (int)RecipeMaterialTypeEnum.Ingredient));
         }
     }
 }
