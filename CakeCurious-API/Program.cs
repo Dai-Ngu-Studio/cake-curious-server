@@ -47,11 +47,13 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHostedService<CouponExpireCheckService>();
-
 builder.Services.AddCors();
 
 ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
+
+builder.Services.AddHostedService<CouponExpireCheckService>();
+
+builder.Services.AddDbContext<CakeCuriousDbContext>();
 
 // Configure Elastisearch Client
 var elasticUri = new Uri(Environment.GetEnvironmentVariable("ES_SECRET")!);
@@ -64,8 +66,6 @@ var elasticClient = new ElasticClient(elasticSettings);
 builder.Services.AddSingleton<IElasticClient>(elasticClient);
 
 builder.Services.RegisterMapsterConfiguration();
-
-builder.Services.AddDbContext<CakeCuriousDbContext>();
 
 // Configure Google Services
 var googleCredential = GoogleCredential.GetApplicationDefault();
