@@ -105,6 +105,7 @@ namespace Repository
                 recipe.Description = updateRecipe.Description;
                 recipe.ServingSize = updateRecipe.ServingSize;
                 recipe.PhotoUrl = updateRecipe.PhotoUrl;
+                recipe.ThumbnailUrl = updateRecipe.ThumbnailUrl;
                 recipe.CookTime = updateRecipe.CookTime;
 
                 db.Recipes.Update(recipe);
