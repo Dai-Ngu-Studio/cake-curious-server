@@ -424,7 +424,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("search")]
         [Authorize]
-        public async Task<ActionResult> SearchRecipes(
+        public async Task<ActionResult<HomeRecipePage>> SearchRecipes(
             [FromQuery] string? query,
             [FromQuery] string[]? ingredients,
             [FromQuery] int[]? categories,

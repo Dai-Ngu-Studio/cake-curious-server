@@ -528,5 +528,106 @@ namespace CakeCurious_API.Controllers
                 Console.WriteLine(e.Message);
             }
         }
+
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<ActionResult<SimpleUserPage>> SearchUsers(
+            [FromQuery] string? query,
+            [FromQuery] int[]? roles,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            var searchDescriptor = new SearchDescriptor<ElasticsearchUser>();
+            var descriptor = new QueryContainerDescriptor<ElasticsearchUser>();
+            var shouldContainer = new List<QueryContainer>();
+            var filterContainer = new List<QueryContainer>();
+
+            if ((query == null || string.IsNullOrEmpty(query)
+                && (roles == null || roles.Length == 0)))
+            {
+                var emptyPage = new SimpleUserPage();
+                emptyPage.TotalPages = 0;
+                emptyPage.Users = new List<SimpleUser>();
+
+                return Ok(emptyPage);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                shouldContainer.Add(descriptor
+                    .MultiMatch(m => m
+                        .Fields(f => f
+                            .Field(ff => ff.DisplayName)
+                            .Field(ff => ff.Username))
+                        .Query(query)
+                        .Fuzziness(Fuzziness.EditDistance(2))
+                    )
+                );
+            }
+
+            if (roles != null)
+            {
+                shouldContainer.Add(descriptor
+                    .Terms(x => x
+                        .Field(f => f.Roles)
+                        .Terms(roles)
+                    )
+                );
+
+                filterContainer.Add(descriptor
+                    .Terms(x => x
+                        .Field(f => f.Roles)
+                        .Terms(roles)
+                    )
+                );
+            }
+
+            var countResponse = await elasticClient.CountAsync<ElasticsearchUser>(s => s
+                .Index("users")
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
+                    )
+                )
+            );
+
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchUser>(s => s
+                .Index("users")
+                .From((page - 1) * take)
+                .Size(take)
+                .MinScore(0.01D)
+                .Sort(ss => ss
+                    .Descending(SortSpecialField.Score)
+                )
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
+                    )
+                )
+            );
+
+            var userIds = new List<string>();
+            var users = new List<SimpleUser?>();
+
+            foreach (var doc in searchResponse.Documents)
+            {
+                userIds.Add(doc.Id!);
+            }
+
+            var suggestedUsers = await userRepository.GetSuggestedUsers(userIds);
+
+            foreach (var userId in userIds)
+            {
+                users.Add(suggestedUsers.FirstOrDefault(x => x.Id == userId));
+            }
+
+            var userPage = new SimpleUserPage();
+            userPage.TotalPages = (int)Math.Ceiling((decimal)countResponse.Count / take);
+            userPage.Users = users;
+
+            return Ok(userPage);
+        }
     }
 }
