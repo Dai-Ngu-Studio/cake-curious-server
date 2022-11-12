@@ -45,12 +45,12 @@ namespace CakeCurious_API.Controllers
 
         private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Recipe recipe)
         {
-            var webAppUri = Environment.GetEnvironmentVariable("WEB_APP_URI");
-            var sharePrefixUri = Environment.GetEnvironmentVariable("SHARE_URI_PREFIX");
-            var androidPackageName = Environment.GetEnvironmentVariable("ANDROID_PACKAGE_NAME");
-            var androidMinPackageVersion = Environment.GetEnvironmentVariable("ANDROID_MIN_PACKAGE_VERSION_CODE");
-            var androidFallbackLink = Environment.GetEnvironmentVariable("ANDROID_FALLBACK_LINK");
-            var suffixOption = Environment.GetEnvironmentVariable("SUFFIX_OPTION");
+            var webAppUri = Environment.GetEnvironmentVariable(EnvironmentHelper.WebAppUri);
+            var sharePrefixUri = Environment.GetEnvironmentVariable(EnvironmentHelper.ShareUriPrefix);
+            var androidPackageName = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidPackageName);
+            var androidMinPackageVersion = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidMinPackageVersionCode);
+            var androidFallbackLink = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidFallbackLink);
+            var suffixOption = Environment.GetEnvironmentVariable(EnvironmentHelper.SuffixOption);
 
             var linkRequest = firebaseDynamicLinksService.ShortLinks.Create(new CreateShortDynamicLinkRequest
             {
