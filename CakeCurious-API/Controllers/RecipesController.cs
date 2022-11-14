@@ -67,7 +67,7 @@ namespace CakeCurious_API.Controllers
                     SocialMetaTagInfo = new SocialMetaTagInfo
                     {
                         SocialTitle = recipe.Name,
-                        SocialImageLink = recipe.ThumbnailUrl,
+                        SocialImageLink = !string.IsNullOrWhiteSpace(recipe.ThumbnailUrl) ? recipe.ThumbnailUrl: recipe.PhotoUrl,
                         SocialDescription = recipe.Description,
                     }
                 },
