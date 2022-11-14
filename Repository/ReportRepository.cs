@@ -67,7 +67,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             Recipe? recipe = await db.Recipes.Include(r => r.User).SingleOrDefaultAsync(r => r.Id == itemId);
             if (recipe == null)
-            {   
+            {
                 Comment? comment = await db.Comments.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == itemId);
                 return comment!.User!.Adapt<SimpleUser>();
             }
