@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Reports;
 using Repository.Interfaces;
+using Repository.Models;
 using Repository.Models.Product;
 using Repository.Models.Reports;
 using System.ComponentModel.DataAnnotations;
@@ -44,9 +45,9 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{guid}")]
         [Authorize]
-        public async Task<ActionResult<Product>> GetReportById(Guid guid)
+        public async Task<ActionResult<StaffDashboardReport>> GetReportById(Guid guid)
         {
-            var result = await _ReportRepository.GetById(guid);
+            var result = await _ReportRepository.GetReportDetailById(guid);
             return Ok(result);
         }
 
@@ -54,7 +55,7 @@ namespace CakeCurious_API.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<Product> PostReport(ViolationReport inputReport)
+        public ActionResult<ViolationReport> PostReport(ViolationReport inputReport)
         {
             Guid id = Guid.NewGuid();
             ViolationReport report = new ViolationReport()

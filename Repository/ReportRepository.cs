@@ -67,7 +67,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             Recipe? recipe = await db.Recipes.Include(r => r.User).SingleOrDefaultAsync(r => r.Id == itemId);
             if (recipe == null)
-            {
+            {   
                 Comment? comment = await db.Comments.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == itemId);
                 return comment!.User!.Adapt<SimpleUser>();
             }
@@ -146,10 +146,19 @@ namespace Repository
             return null;
         }
 
-        public async Task<ViolationReport?> GetById(Guid id)
+        public async Task<StaffDashboardReport?> GetReportDetailById(Guid id)
         {
             var db = new CakeCuriousDbContext();
-            return await db.ViolationReports.Include(r => r.Staff).FirstOrDefaultAsync(x => x.Id == id);
+            StaffDashboardReport? report = await db.ViolationReports.Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().FirstOrDefaultAsync(x => x.Id == id);
+            if (report!.ItemType == (int)ItemTypeEnum.Recipe)
+            {
+                report.Recipe = await db.Recipes.Include(r => r.User).Include(r => r.HasCategories)!.ThenInclude(r => r.RecipeCategory).Include(r => r.RecipeMaterials).Include(r => r.RecipeMedia).Include(r => r.RecipeSteps).ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
+            }
+            else
+            {
+                report.Comment = await db.Comments.Include(r => r.User).Include(c => c.Images).ProjectToType<SimpleCommentForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
+            }
+            return report;
         }
 
         public async Task Update(ViolationReport updateObj)
@@ -241,6 +250,12 @@ namespace Repository
                 };
             }
             return null;
+        }
+
+        public async Task<ViolationReport?> GetById(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.ViolationReports.FirstOrDefaultAsync(r => r.Id == id);
         }
     }
 }

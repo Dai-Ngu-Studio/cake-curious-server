@@ -36,7 +36,7 @@ namespace CakeCurious_API.Controllers
             DateTime monthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             DateTime startAtSunday = DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
             DateTime LastYear = new DateTime(DateTime.Now.AddYears(-1).Year, 1, 1);
-            //Get this year active user for line chart(Not cost much time 4.27s)
+            //Get this year active user for line chart(Not cost much time 1.89)
             AdminDashboardLineChart lc = new AdminDashboardLineChart();
             RunReportRequest requestThisYearActiveUser = new RunReportRequest
             {
@@ -57,30 +57,23 @@ namespace CakeCurious_API.Controllers
             }
             dbr.LineChart = lc;
 
-            //Get weely Active user
-            RunReportRequest requestLastWeekActiveUser = new RunReportRequest
-            {
-                Property = "properties/" + AnalyticsPropertyId,
-                Metrics = { new Metric { Name = "activeUsers" }, },
-                DateRanges = { new DateRange { StartDate = startAtSunday.AddDays(-7).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), EndDate = startAtSunday.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) }, },
-            };
-
+            //Get weely Active user 1.x s
             RunReportRequest requestActiveUser = new RunReportRequest
             {
                 Property = "properties/" + AnalyticsPropertyId,
+                Dimensions = { new Dimension { Name = "week" }, },
                 Metrics = { new Metric { Name = "activeUsers" }, },
-                DateRanges = { new DateRange { StartDate = startAtSunday.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), EndDate = "today" }, },
+                DateRanges = { new DateRange { StartDate = startAtSunday.AddDays(-7).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), EndDate = "today" }, },
             };
 
             //Add active user by week data to report
             var activeUserRes = client.RunReport(requestActiveUser);
-            dbr!.CardStats!.CurrentWeekActiveUser = activeUserRes.Rows.Count() > 0 ? Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value) : 0;
-            var lastWeekActiveUserRes = client.RunReport(requestLastWeekActiveUser);
-            decimal lastWeekActiveUser = Int32.Parse(lastWeekActiveUserRes.Rows[0].MetricValues[0].Value);
+            dbr!.CardStats!.CurrentWeekActiveUser = activeUserRes.Rows.Count() > 0 ? Int32.Parse(activeUserRes.Rows[1].MetricValues[0].Value) : 0;
+            decimal lastWeekActiveUser = Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value);
             double sinceLastWeekActiveUser = dbr!.CardStats!.CurrentWeekActiveUser > 0 && lastWeekActiveUser > 0 ? (double)((dbr!.CardStats!.CurrentWeekActiveUser - lastWeekActiveUser) / (dbr!.CardStats!.CurrentWeekActiveUser > lastWeekActiveUser ? dbr!.CardStats!.CurrentWeekActiveUser : lastWeekActiveUser)) : -1;
             dbr!.CardStats!.SinceLastWeekActiveUser = Math.Round(sinceLastWeekActiveUser, 2);
 
-            // Get store visit by month
+            // Get store visit by month 2.6s
             RunReportRequest storeVisitReq = new RunReportRequest
             {
                 Property = "properties/" + AnalyticsPropertyId,
@@ -90,12 +83,9 @@ namespace CakeCurious_API.Controllers
             };
             // Make the request
             var storeVisitRes = client.RunReport(storeVisitReq);
-            foreach (Row row in storeVisitRes.Rows)
+            foreach (Row row in storeVisitRes.Rows.Where(r => r.DimensionValues[0].Value.Contains("StoreDemoData")))
             {
-                if (row.DimensionValues[0].Value.Contains("StoreDemoData"))
-                {
-                    dbr!.TableStoreVisit!.Add(new TableRowStoreVisit { StoreName = row.DimensionValues[0].Value.Substring(row.DimensionValues[0].Value.LastIndexOf("/") + 1), Visitors = row.MetricValues[0].Value });
-                }
+                dbr!.TableStoreVisit!.Add(new TableRowStoreVisit { StoreName = row.DimensionValues[0].Value.Substring(row.DimensionValues[0].Value.LastIndexOf("/") + 1), Visitors = row.MetricValues[0].Value });
             }
             return Ok(dbr);
         }
