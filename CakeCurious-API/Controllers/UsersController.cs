@@ -542,8 +542,8 @@ namespace CakeCurious_API.Controllers
             var shouldContainer = new List<QueryContainer>();
             var filterContainer = new List<QueryContainer>();
 
-            if ((query == null || string.IsNullOrEmpty(query)
-                && (roles == null || roles.Length == 0)))
+            if (string.IsNullOrWhiteSpace(query)
+                && (roles == null || roles.Length == 0))
             {
                 var emptyPage = new SimpleUserPage();
                 emptyPage.TotalPages = 0;

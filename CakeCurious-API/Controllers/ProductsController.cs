@@ -206,5 +206,127 @@ namespace CakeCurious_API.Controllers
             return NoContent();
         }
 
+
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<ActionResult<GroceryProductPage>> SearchProducts(
+            [FromQuery] string? query,
+            [FromQuery] int[] categories,
+            [FromQuery] Guid? storeId,
+            [FromQuery] decimal? fromPrice,
+            [FromQuery] decimal? toPrice,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            var searchDescriptor = new SearchDescriptor<ElasticsearchProduct>();
+            var descriptor = new QueryContainerDescriptor<ElasticsearchProduct>();
+            var shouldContainer = new List<QueryContainer>();
+            var filterContainer = new List<QueryContainer>();
+
+            if (string.IsNullOrWhiteSpace(query)
+                && (categories == null || categories.Length == 0)
+                && storeId == null && fromPrice == null && toPrice == null)
+            {
+                var emptyPage = new GroceryProductPage();
+                emptyPage.TotalPages = 0;
+                emptyPage.Products = new List<GroceryProduct>();
+
+                return Ok(emptyPage);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                shouldContainer.Add(descriptor
+                    .Match(m => m
+                        .Field(f => f.Name)
+                        .Query(query)
+                        .Fuzziness(Fuzziness.EditDistance(2))
+                    )
+                );
+            }
+
+            if (categories != null)
+            {
+                shouldContainer.Add(descriptor
+                    .Terms(x => x
+                        .Field(f => f.Category)
+                        .Terms(categories)
+                    )
+                );
+
+                filterContainer.Add(descriptor
+                    .Terms(x => x
+                        .Field(f => f.Category)
+                        .Terms(categories)
+                    )
+                );
+            }
+
+            if (storeId != null)
+            {
+                shouldContainer.Add(descriptor
+                    .Terms(x => x
+                        .Field(f => f.StoreId)
+                        .Terms(storeId)
+                    )
+                );
+
+                filterContainer.Add(descriptor
+                    .Terms(x => x
+                        .Field(f => f.StoreId)
+                        .Terms(storeId)
+                    )
+                );
+            }
+
+            // TODO: Filter price range
+
+            var countResponse = await elasticClient.CountAsync<ElasticsearchProduct>(s => s
+                .Index("products")
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
+                    )
+                )
+            );
+
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchProduct>(s => s
+                .Index("products")
+                .From((page - 1) * take)
+                .Size(take)
+                .MinScore(0.01D)
+                .Sort(ss => ss
+                    .Descending(SortSpecialField.Score)
+                )
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
+                    )
+                )
+            );
+
+            var productIds = new List<Guid>();
+            var products = new List<GroceryProduct?>();
+
+            foreach (var doc in searchResponse.Documents)
+            {
+                productIds.Add((Guid)doc.Id!);
+            }
+
+            var suggestedProducts = await productRepository.GetSuggestedProducts(productIds);
+
+            foreach (var productId in productIds)
+            {
+                products.Add(suggestedProducts.FirstOrDefault(x => x.Id == productId));
+            }
+
+            var productPage = new GroceryProductPage();
+            productPage.TotalPages = (int)Math.Ceiling((decimal)countResponse.Count / take);
+            productPage.Products = products;
+
+            return Ok(productPage);
+        }
     }
 }
