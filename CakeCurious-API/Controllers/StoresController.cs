@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Nest;
 using Repository.Constants.Products;
 using Repository.Interfaces;
 using Repository.Models.Coupons;
@@ -22,13 +23,15 @@ namespace CakeCurious_API.Controllers
         private readonly ICouponRepository couponRepository;
         private readonly IOrderRepository orderRepository;
         private readonly IProductRepository productRepository;
+        private readonly IElasticClient elasticClient;
 
-        public StoresController(IStoreRepository _storeRepository, ICouponRepository _couponRepository, IOrderRepository _orderRepository, IProductRepository _productRepository)
+        public StoresController(IStoreRepository _storeRepository, ICouponRepository _couponRepository, IOrderRepository _orderRepository, IProductRepository _productRepository, IElasticClient _elasticClient)
         {
             storeRepository = _storeRepository;
             couponRepository = _couponRepository;
             orderRepository = _orderRepository;
             productRepository = _productRepository;
+            elasticClient = _elasticClient;
         }
 
         [HttpGet]
@@ -71,35 +74,51 @@ namespace CakeCurious_API.Controllers
         }
 
         [HttpPost]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Authorize]
-        public ActionResult<Store> PostStore(Store Store)
+        public async Task<ActionResult<Store>> PostStore(Store store)
         {
-            Guid id = Guid.NewGuid();
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            Store prod = new Store()
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                Address = Store.Address,
-                Description = Store.Description,
-                Id = id,
-                PhotoUrl = Store.PhotoUrl,
-                Name = Store.Name,
-                UserId = !string.IsNullOrWhiteSpace(uid) ? uid : "",
-                Rating = Store.Rating,
-                Status = Store.Status,               
-            };
-            try
-            {
-                storeRepository.Add(prod);
+                try
+                {
+                    Guid id = Guid.NewGuid();
+                    var newStore = new Store
+                    {
+                        Address = store.Address,
+                        Description = store.Description,
+                        Id = id,
+                        PhotoUrl = store.PhotoUrl,
+                        Name = store.Name,
+                        UserId = uid,
+                        Rating = store.Rating,
+                        Status = store.Status,
+                    };
+
+                    await storeRepository.Add(newStore);
+
+                    var elasticsearchStore = new ElasticsearchStore
+                    {
+                        Id = newStore.Id,
+                        Name = newStore.Name,
+                        Rating = newStore.Rating,
+                    };
+
+                    var createResponse = await elasticClient.CreateAsync<ElasticsearchStore>(elasticsearchStore,
+                        x => x
+                            .Id(newStore.Id)
+                            .Index("stores")
+                        );
+
+                    return Ok(newStore);
+                }
+                catch (DbUpdateException)
+                {
+                    if (storeRepository.GetById(store.Id!.Value) != null)
+                        return Conflict();
+                }
             }
-            catch (DbUpdateException)
-            {
-                if (storeRepository.GetById(prod.Id!.Value) != null)
-                    return Conflict();
-            }
-            return Ok(prod);
+            return Unauthorized();
         }
 
         [HttpDelete("{id:guid}")]
@@ -107,7 +126,8 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult> DeleteStore(Guid? id)
         {
             Store? store = await storeRepository.Delete(id);
-            return Ok("Delete Store " + store!.Name + " success");
+            await elasticClient.DeleteAsync(new DeleteRequest(index: "stores", store!.Id));
+            return Ok();
         }
 
         [HttpPut("{id:guid}")]
@@ -131,6 +151,34 @@ namespace CakeCurious_API.Controllers
                     Status = Store.Status == null ? beforeUpdateObj.Status : Store.Status,
                 };
                 await storeRepository.Update(updateObj);
+
+                var elasticsearchStore = new ElasticsearchStore
+                {
+                    Id = updateObj.Id,
+                    Name = updateObj.Name,
+                    Rating = updateObj.Rating,
+                };
+
+                // Does doc exist on Elasticsearch?
+                var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "stores", updateObj.Id));
+                if (!existsResponse.Exists)
+                {
+                    // Doc doesn't exist, create new
+                    var createResponse = await elasticClient.CreateAsync<ElasticsearchStore>(elasticsearchStore,
+                        x => x
+                            .Id(updateObj.Id)
+                            .Index("stores")
+                        );
+                }
+                else
+                {
+                    // Doc exists, update
+                    var updateResponse = await elasticClient.UpdateAsync<ElasticsearchStore>(updateObj.Id,
+                        x => x
+                            .Index("stores")
+                            .Doc(elasticsearchStore)
+                        );
+                }
             }
             catch (DbUpdateConcurrencyException)
             {

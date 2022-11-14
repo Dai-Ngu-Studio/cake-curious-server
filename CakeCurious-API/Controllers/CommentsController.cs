@@ -71,5 +71,28 @@ namespace CakeCurious_API.Controllers
             }
             return Unauthorized();
         }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize]
+        public async Task<ActionResult> DeleteComment(Guid id)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var comment = await commentRepository.GetCommentReadonly(id);
+                if (comment != null)
+                {
+                    if (comment.UserId == uid
+                        || await UserRoleAuthorizer.AuthorizeUser(new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
+                    {
+                        var rows = await commentRepository.Delete(id);
+                        return (rows > 0) ? Ok() : BadRequest();
+                    }
+                }
+                return BadRequest();
+            }
+            return Unauthorized();
+        }
     }
 }

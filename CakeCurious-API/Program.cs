@@ -13,6 +13,7 @@ using Elasticsearch.Net;
 using CakeCurious_API.Services;
 using Google.Apis.Services;
 using Google.Apis.FirebaseDynamicLinks.v1;
+using Google.Cloud.Storage.V1;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,15 +24,9 @@ var appConfiguration = new ConfigurationBuilder()
 
 // Set web app info
 var appInfo = appConfiguration.GetSection("CakeCuriousInfo");
-Environment.SetEnvironmentVariable("WEB_APP_URI", appInfo.GetValue<string>("WebAppUri"));
-Environment.SetEnvironmentVariable("SHARE_URI_PREFIX", appInfo.GetValue<string>("ShareUriPrefix"));
-Environment.SetEnvironmentVariable("ANDROID_PACKAGE_NAME", appInfo.GetValue<string>("AndroidPackageName"));
-Environment.SetEnvironmentVariable("ANDROID_MIN_PACKAGE_VERSION_CODE", appInfo.GetValue<string>("AndroidMinPackageVersionCode"));
-Environment.SetEnvironmentVariable("ANDROID_FALLBACK_LINK", appInfo.GetValue<string>("AndroidFallbackLink"));
-Environment.SetEnvironmentVariable("SUFFIX_OPTION", appInfo.GetValue<string>("SuffixOption"));
+EnvironmentHelper.AddEnvironmentVariables(appInfo);
 
 // Add services to the container.
-
 builder.Services.AddRouting(o =>
 {
     o.LowercaseUrls = true;
@@ -52,11 +47,13 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHostedService<CouponExpireCheckService>();
-
 builder.Services.AddCors();
 
 ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
+
+builder.Services.AddHostedService<CouponExpireCheckService>();
+
+builder.Services.AddDbContext<CakeCuriousDbContext>();
 
 // Configure Elastisearch Client
 var elasticUri = new Uri(Environment.GetEnvironmentVariable("ES_SECRET")!);
@@ -69,8 +66,6 @@ var elasticClient = new ElasticClient(elasticSettings);
 builder.Services.AddSingleton<IElasticClient>(elasticClient);
 
 builder.Services.RegisterMapsterConfiguration();
-
-builder.Services.AddDbContext<CakeCuriousDbContext>();
 
 // Configure Google Services
 var googleCredential = GoogleCredential.GetApplicationDefault();
@@ -87,6 +82,9 @@ FirebaseApp.Create(new AppOptions()
 {
     Credential = googleCredential,
 });
+
+var storageClient = StorageClient.Create();
+builder.Services.AddSingleton(storageClient);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {

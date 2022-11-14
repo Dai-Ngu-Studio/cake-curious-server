@@ -13,6 +13,7 @@ namespace Repository.Models.Recipes
         public string? Description { get; set; }
         public int? ServingSize { get; set; }
         public string? PhotoUrl { get; set; }
+        public string? ThumbnailUrl { get; set; }
         public string? VideoUrl { get; set; }
         public int? CookTime { get; set; }
         public DateTime? PublishedDate { get; set; }

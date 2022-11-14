@@ -45,12 +45,12 @@ namespace CakeCurious_API.Controllers
 
         private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Recipe recipe)
         {
-            var webAppUri = Environment.GetEnvironmentVariable("WEB_APP_URI");
-            var sharePrefixUri = Environment.GetEnvironmentVariable("SHARE_URI_PREFIX");
-            var androidPackageName = Environment.GetEnvironmentVariable("ANDROID_PACKAGE_NAME");
-            var androidMinPackageVersion = Environment.GetEnvironmentVariable("ANDROID_MIN_PACKAGE_VERSION_CODE");
-            var androidFallbackLink = Environment.GetEnvironmentVariable("ANDROID_FALLBACK_LINK");
-            var suffixOption = Environment.GetEnvironmentVariable("SUFFIX_OPTION");
+            var webAppUri = Environment.GetEnvironmentVariable(EnvironmentHelper.WebAppUri);
+            var sharePrefixUri = Environment.GetEnvironmentVariable(EnvironmentHelper.ShareUriPrefix);
+            var androidPackageName = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidPackageName);
+            var androidMinPackageVersion = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidMinPackageVersionCode);
+            var androidFallbackLink = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidFallbackLink);
+            var suffixOption = Environment.GetEnvironmentVariable(EnvironmentHelper.SuffixOption);
 
             var linkRequest = firebaseDynamicLinksService.ShortLinks.Create(new CreateShortDynamicLinkRequest
             {
@@ -67,7 +67,7 @@ namespace CakeCurious_API.Controllers
                     SocialMetaTagInfo = new SocialMetaTagInfo
                     {
                         SocialTitle = recipe.Name,
-                        SocialImageLink = recipe.PhotoUrl,
+                        SocialImageLink = !string.IsNullOrWhiteSpace(recipe.ThumbnailUrl) ? recipe.ThumbnailUrl: recipe.PhotoUrl,
                         SocialDescription = recipe.Description,
                     }
                 },
@@ -251,7 +251,7 @@ namespace CakeCurious_API.Controllers
                         await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
 
                         var elastisearchMaterials = updateRecipe.Ingredients
-                            .Select(x => x.MaterialName);
+                                .Select(x => x.MaterialName);
                         var elastisearchCategories = updateRecipe.HasCategories!
                             .Where(x => x.RecipeCategoryId.HasValue)
                             .Select(x => x.RecipeCategoryId!.Value);
@@ -264,16 +264,26 @@ namespace CakeCurious_API.Controllers
                             Categories = elastisearchCategories.ToArray(),
                         };
 
-                        var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
-                                .Doc(elastisearchRecipe)
-                            );
+                        // Does doc exist on Elasticsearch?
+                        var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "recipes", recipe.Id));
+                        if (!existsResponse.Exists)
+                        {
+                            // Doc doesn't exist, create new
+                            var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
+                        }
+                        else
+                        {
+                            // Doc exists, update
+                            var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
+                                    .Doc(elastisearchRecipe)
+                                );
+                        }
 
                         var dynamicLinkResponse = await CreateDynamicLink(recipe);
 
                         await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
 
                         return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
-
                     }
                 }
                 return BadRequest();
@@ -414,7 +424,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("search")]
         [Authorize]
-        public async Task<ActionResult> SearchRecipes(
+        public async Task<ActionResult<HomeRecipePage>> SearchRecipes(
             [FromQuery] string? query,
             [FromQuery] string[]? ingredients,
             [FromQuery] int[]? categories,

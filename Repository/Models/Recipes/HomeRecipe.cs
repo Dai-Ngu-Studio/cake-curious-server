@@ -9,6 +9,7 @@ namespace Repository.Models.Recipes
         public string? Name { get; set; }
         public int? ServingSize { get; set; }
         public string? PhotoUrl { get; set; }
+        public string? ThumbnailUrl { get; set; }
         public int? CookTime { get; set; }
         public int? Likes { get; set; }
     }

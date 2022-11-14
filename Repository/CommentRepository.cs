@@ -1,5 +1,6 @@
 ﻿using BusinessObject;
 using Mapster;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Comments;
 using Repository.Interfaces;
@@ -31,12 +32,65 @@ namespace Repository
         public async Task<int> Update(Guid id, UpdateComment updateComment)
         {
             var db = new CakeCuriousDbContext();
-            using (var transaction = await db.Database.BeginTransactionAsync())
+            string query = $"update [Comment] set [Comment].content = @commentContent where [Comment].id = '{id}'";
+            using (var connection = db.Database.GetDbConnection())
             {
-                string query = $"update [Comment] set [Comment].content = N'{updateComment.Content}' where [Comment].id = '{id}'";
-                var rows = await db.Database.ExecuteSqlRawAsync(query);
-                await transaction.CommitAsync();
-                return rows;
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                using (var transaction = await connection.BeginTransactionAsync())
+                {
+                    try
+                    {
+                        var cmd = connection.CreateCommand();
+                        cmd.Transaction = transaction;
+                        cmd.Connection = connection;
+                        cmd.CommandText = query;
+                        cmd.Parameters.Add(new SqlParameter("@commentContent", updateComment.Content));
+                        var rows = await cmd.ExecuteNonQueryAsync();
+                        await transaction.CommitAsync();
+                        return rows;
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync();
+                        return 0;
+                    }
+                }
+            }
+        }
+
+        public async Task<int> Delete(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            string query = $"update [Comment] set [Comment].status = {(int)CommentStatusEnum.Inactive} where [Comment].id = '{id}'";
+            using (var connection = db.Database.GetDbConnection())
+            {
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                using (var transaction = await connection.BeginTransactionAsync())
+                {
+                    try
+                    {
+                        var cmd = connection.CreateCommand();
+                        cmd.Transaction = transaction;
+                        cmd.Connection = connection;
+                        cmd.CommandText = query;
+                        var rows = await cmd.ExecuteNonQueryAsync();
+                        await transaction.CommitAsync();
+                        return rows;
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync();
+                        return 0;
+                    }
+                }
             }
         }
 

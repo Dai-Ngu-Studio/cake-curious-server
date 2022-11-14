@@ -134,7 +134,7 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult> HideProduct(Guid id)
         {
             Product? prod = await productRepository.Delete(id);
-            await elasticClient.DeleteAsync<ElasticsearchProduct>(id);
+            await elasticClient.DeleteAsync(new DeleteRequest(index: "products", prod!.Id));
             return Ok();
         }
 
@@ -173,11 +173,26 @@ namespace CakeCurious_API.Controllers
                     StoreId = updateProd.StoreId,
                 };
 
-                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchProduct>(updateProd.Id,
-                    x => x
-                        .Index("products")
-                        .Doc(elasticsearchProduct)
-                    );
+                // Does doc exist on Elasticsearch?
+                var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "products", updateProd.Id));
+                if (!existsResponse.Exists)
+                {
+                    // Doc doesn't exist, create new
+                    var createResponse = await elasticClient.CreateAsync<ElasticsearchProduct>(elasticsearchProduct,
+                        x => x
+                            .Id(updateProd.Id)
+                            .Index("products")
+                        );
+                }
+                else
+                {
+                    // Doc exists, update
+                    var updateResponse = await elasticClient.UpdateAsync<ElasticsearchProduct>(updateProd.Id,
+                        x => x
+                            .Index("products")
+                            .Doc(elasticsearchProduct)
+                        );
+                }
             }
             catch (DbUpdateConcurrencyException)
             {

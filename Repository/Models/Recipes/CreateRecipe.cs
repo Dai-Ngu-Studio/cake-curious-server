@@ -11,6 +11,7 @@ namespace Repository.Models.Recipes
         public string? Description { get; set; }
         public int? ServingSize { get; set; }
         public string? PhotoUrl { get; set; }
+        public string? ThumbnailUrl { get; set; }
         public int? CookTime { get; set; }
         public string? ShareUrl { get; set; }
         public IEnumerable<CreateRecipeMaterial> Ingredients { get; set; } = new List<CreateRecipeMaterial>();

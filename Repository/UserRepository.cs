@@ -231,5 +231,16 @@ namespace Repository
                 return await db.Users.Where(x => x.Id == id).ProjectToType<ProfileUser>().FirstOrDefaultAsync();
             }
         }
+
+        public async Task<ICollection<SimpleUser>> GetSuggestedUsers(List<string> userIds)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Users
+                .AsNoTracking()
+                .Where(x => userIds.Any(y => y == x.Id))
+                .Where(x => x.Status == (int)UserStatusEnum.Active)
+                .ProjectToType<SimpleUser>()
+                .ToListAsync();
+        }
     }
 }
