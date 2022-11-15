@@ -11,6 +11,7 @@ using Repository.Models.RecipeMaterials;
 using Repository.Models.RecipeMedia;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
+using Repository.Models.Reports;
 using Repository.Models.Users;
 
 namespace Repository
@@ -123,21 +124,8 @@ namespace Repository
                 {
                     reports = OrderByAscTitle(reports);
                 }
-
-                reports = reports.Skip((pageIndex - 1) * pageSize)
+                return reports.Skip((pageIndex - 1) * pageSize)
                             .Take(pageSize).ToList();
-                foreach (var report in reports)
-                {
-                    if (report.ItemType == (int)ItemTypeEnum.Recipe)
-                    {
-                        report.Recipe = await db.Recipes.Include(r => r.User).Include(r => r.HasCategories)!.ThenInclude(r => r.RecipeCategory).Include(r => r.RecipeMaterials).Include(r => r.RecipeMedia).Include(r => r.RecipeSteps).ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
-                    }
-                    else
-                    {
-                        report.Comment = await db.Comments.Include(r => r.User).Include(c => c.Images).ProjectToType<SimpleCommentForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
-                    }
-                }
-                return reports;
             }
             catch (Exception ex)
             {
@@ -146,10 +134,10 @@ namespace Repository
             return null;
         }
 
-        public async Task<StaffDashboardReport?> GetReportDetailById(Guid id)
+        public async Task<StaffReportDetail?> GetReportDetailById(Guid id)
         {
             var db = new CakeCuriousDbContext();
-            StaffDashboardReport? report = await db.ViolationReports.Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().FirstOrDefaultAsync(x => x.Id == id);
+            StaffReportDetail? report = await db.ViolationReports.Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffReportDetail>().FirstOrDefaultAsync(x => x.Id == id);
             if (report!.ItemType == (int)ItemTypeEnum.Recipe)
             {
                 report.Recipe = await db.Recipes.Include(r => r.User).Include(r => r.HasCategories)!.ThenInclude(r => r.RecipeCategory).Include(r => r.RecipeMaterials).Include(r => r.RecipeMedia).Include(r => r.RecipeSteps).ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report.ItemId);
