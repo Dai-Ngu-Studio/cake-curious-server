@@ -256,5 +256,20 @@ namespace Repository
                 .ProjectToType<GroceryProduct>()
                 .ToListAsync();
         }
+
+        public async Task<ICollection<CartOrder>> GetCartOrders(List<Guid> storeIds, List<Guid> productIds)
+        {
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("productIds", productIds);
+
+                var db = new CakeCuriousDbContext();
+                return await db.Stores
+                    .AsNoTracking()
+                    .Where(x => storeIds.Any(y => y == (Guid)x.Id!))
+                    .ProjectToType<CartOrder>()
+                    .ToListAsync();
+            }
+        }
     }
 }
