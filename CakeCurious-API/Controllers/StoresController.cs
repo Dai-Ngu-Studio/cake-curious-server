@@ -57,7 +57,7 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult<Store>> GetStoresById(Guid id)
         {
-            var result = await storeRepository.GetById(id);
+            var result = await storeRepository.GetStoreDetailForWeb(id);
             return Ok(result);
         }
 

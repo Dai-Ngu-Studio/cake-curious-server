@@ -224,6 +224,11 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Stores.Include(s => s.User!).ProjectToType<StoreDetail>().FirstOrDefaultAsync(x => x.UserId == uid);
         }
+        public async Task<AdminDashboardStore?> GetStoreDetailForWeb(Guid guid)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Stores.Include(s => s.User!).ProjectToType<AdminDashboardStore>().FirstOrDefaultAsync(x => x.Id == guid);
+        }
 
         public async Task<DetailStore?> GetStoreDetails(Guid id)
         {
