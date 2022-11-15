@@ -279,7 +279,39 @@ namespace CakeCurious_API.Controllers
                 );
             }
 
-            // TODO: Filter price range
+            if (fromPrice != null)
+            {
+                shouldContainer.Add(descriptor
+                    .Range(x => x
+                        .Field("discountPrice")
+                        .GreaterThanOrEquals(decimal.ToDouble((decimal)fromPrice))
+                    )
+                );
+
+                filterContainer.Add(descriptor
+                    .Range(x => x
+                        .Field("discountPrice")
+                        .GreaterThanOrEquals(decimal.ToDouble((decimal)fromPrice))
+                    )
+                );
+            }
+
+            if (toPrice != null)
+            {
+                shouldContainer.Add(descriptor
+                    .Range(x => x
+                        .Field("discountPrice")
+                        .LessThanOrEquals(decimal.ToDouble((decimal)toPrice))
+                    )
+                );
+
+                filterContainer.Add(descriptor
+                    .Range(x => x
+                        .Field("discountPrice")
+                        .LessThanOrEquals(decimal.ToDouble((decimal)toPrice))
+                    )
+                );
+            }
 
             var countResponse = await elasticClient.CountAsync<ElasticsearchProduct>(s => s
                 .Index("products")
