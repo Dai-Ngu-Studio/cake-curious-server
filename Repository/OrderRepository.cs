@@ -202,12 +202,16 @@ namespace Repository
             return 0;
         }
 
+        public async Task<StoreDashboardOrder?> GetOrderDetailById(Guid guid)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Orders.ProjectToType<StoreDashboardOrder>().FirstOrDefaultAsync(x => x.Id == guid);
+        }
         public async Task<Order?> GetById(Guid guid)
         {
             var db = new CakeCuriousDbContext();
             return await db.Orders.FirstOrDefaultAsync(x => x.Id == guid);
         }
-
         public async Task AddOrder(Order order, string query)
         {
             var db = new CakeCuriousDbContext();

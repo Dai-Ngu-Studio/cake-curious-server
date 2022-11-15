@@ -8,6 +8,7 @@ namespace Repository.Interfaces
     {
         public IEnumerable<StoreDashboardOrder>? GetOrdersOfAStore(string uid, string? s, string? order_by, string? filter_Order, int pageSize, int pageIndex);
         public Task UpdateOrder(Order order);
+        public Task<StoreDashboardOrder?> GetOrderDetailById(Guid guid);
         public Task<Order?> GetById(Guid guid);
         public Task<IEnumerable<SimpleOrderDetail>?> GetOrderDetailForStore(Guid guid, string? sort, int pageIndex, int pageSize);
         public Task<int?> OrderDetailCount(Guid id, string? sort);

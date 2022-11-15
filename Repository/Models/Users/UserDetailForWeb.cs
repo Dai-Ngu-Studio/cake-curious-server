@@ -13,7 +13,9 @@ namespace Repository.Models.Users
         public string? DisplayName { get; set; }       
         public string? PhotoUrl { get; set; }     
         public string? Gender { get; set; }
-        public List<string>? Roles { get; set; } = new List<string>();
+        public string? FullName { get; set; }
         public int Status { get; set; }
+        public List<string>? Roles { get; set; } = new List<string>();
+
     }
 }
