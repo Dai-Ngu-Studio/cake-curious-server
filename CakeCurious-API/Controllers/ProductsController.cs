@@ -220,6 +220,14 @@ namespace CakeCurious_API.Controllers
                 {
                     Orders = storeIds.Join(cartOrders, id => id, od => (Guid)od.Store!.Id!, (id, od) => od),
                 };
+
+                foreach (var order in orders.Orders)
+                {
+                    var orderProductIds = cartOrdersRequests
+                        .Where(x => x.StoreId == order.Store!.Id)
+                        .SelectMany(x => x.ProductIds ?? Enumerable.Empty<Guid>());
+                    order.Products = orderProductIds.Join(order.Products!, id => id, pd => (Guid)pd.Id!, (id, pd) => pd);
+                }
                 return Ok(orders);
             }
             return BadRequest();
