@@ -206,6 +206,24 @@ namespace CakeCurious_API.Controllers
             return NoContent();
         }
 
+        [HttpPost("cart")]
+        [Authorize]
+        public async Task<ActionResult<CartOrders>> GetCartOrdersRequest(CartOrdersRequest ordersRequest)
+        {
+            var cartOrdersRequests = ordersRequest.CartOrderRequests;
+            if (cartOrdersRequests != null)
+            {
+                List<Guid> storeIds = cartOrdersRequests.Select(x => (Guid)x.StoreId!).ToList();
+                List<Guid> productIds = cartOrdersRequests.SelectMany(x => x.ProductIds ?? Enumerable.Empty<Guid>()).ToList();
+                var cartOrders = await productRepository.GetCartOrders(storeIds, productIds);
+                var orders = new CartOrders
+                {
+                    Orders = storeIds.Join(cartOrders, id => id, od => (Guid)od.Store!.Id!, (id, od) => od),
+                };
+                return Ok(orders);
+            }
+            return BadRequest();
+        }
 
         [HttpGet("search")]
         [Authorize]
