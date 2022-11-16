@@ -155,7 +155,7 @@ namespace CakeCurious_API.Controllers
                     Discount = product.Discount == null ? beforeUpdateObj.Discount : product.Discount / 100,
                     PhotoUrl = product.PhotoUrl == null ? beforeUpdateObj.PhotoUrl : product.PhotoUrl,
                     Quantity = product.Quantity == null ? beforeUpdateObj.Quantity : product.Quantity,
-                    Price = product.Price == 0 ? beforeUpdateObj.Price : product.Price,
+                    Price = product.Price == null ? beforeUpdateObj.Price : product.Price,
                     ProductType = product.ProductType == null ? beforeUpdateObj.ProductType : product.ProductType,
                     Status = product.Status == null ? beforeUpdateObj.Status : product.Status,
                     StoreId = product.StoreId == null ? beforeUpdateObj.StoreId : product.StoreId,
