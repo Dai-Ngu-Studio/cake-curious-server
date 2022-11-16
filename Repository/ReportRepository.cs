@@ -63,17 +63,17 @@ namespace Repository
         {
             return reports.Where(p => p.Title!.Contains(keyWord!)).ToList();
         }
-        public async Task<SimpleUser?> getReportedUser(Guid? itemId)
+        public async Task<SimpleUser?> getReportedUser(Guid? itemId, int? ItemType)
         {
             var db = new CakeCuriousDbContext();
-            Recipe? recipe = await db.Recipes.Include(r => r.User).SingleOrDefaultAsync(r => r.Id == itemId);
-            if (recipe == null)
+            if (ItemType!.Value == (int)ItemTypeEnum.Comment)
             {
                 Comment? comment = await db.Comments.Include(c => c.User).SingleOrDefaultAsync(c => c.Id == itemId);
                 return comment!.User!.Adapt<SimpleUser>();
             }
-            else if (recipe != null)
+            else if (ItemType!.Value == (int)ItemTypeEnum.Recipe)
             {
+                Recipe? recipe = await db.Recipes.Include(r => r.User).SingleOrDefaultAsync(r => r.Id == itemId);
                 return recipe!.User!.Adapt<SimpleUser>();
             }
             return null;
@@ -84,7 +84,8 @@ namespace Repository
             IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
             foreach (var report in reports)
             {
-                report.ReportedUser = await getReportedUser(report.ItemId);
+                if (report.ItemType.HasValue && report.ItemId.HasValue)
+                    report.ReportedUser = await getReportedUser(report.ItemId, report.ItemType);
             }
             try
             {
@@ -166,7 +167,7 @@ namespace Repository
         public int CountDashboardViolationReports(string? s, string? order_by, string? filter_type, string? filter_status)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Include(r => r.Reporter).Adapt<IEnumerable<StaffDashboardReport>>().ToList();
+            IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Adapt<IEnumerable<StaffDashboardReport>>().ToList();
             try
             {
                 if (s != null)
@@ -188,6 +189,10 @@ namespace Repository
                     reports = FilterByCensoredStatus(reports);
                 }
                 else if (filter_status != null && filter_status == ReportStatusEnum.Pending.ToString())
+                {
+                    reports = FilterByPendingStatus(reports);
+                }
+                else if (filter_status != null && filter_status == ReportStatusEnum.Rejected.ToString())
                 {
                     reports = FilterByPendingStatus(reports);
                 }
