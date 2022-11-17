@@ -17,6 +17,6 @@ namespace Repository.Models.Stores
         public string? Address { get; set; }
         public string? Description { get; set; }
         public string? Name { get; set; }
-        public SimpleUser? User { get; set; }
+        public UserForStoreOfAUser? User { get; set; }
     }
 }
