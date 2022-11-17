@@ -204,7 +204,7 @@ namespace CakeCurious_API.Controllers
         /// Add user role to current user
         /// </summary>
         /// <returns></returns>
-        [HttpPost("current/to-user")]
+        [HttpPost("current/to-store")]
         [Authorize]
         public async Task<ActionResult<DetachedUser>> AdduserRoleToCurrentUser()
         {
