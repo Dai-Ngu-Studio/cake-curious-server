@@ -80,23 +80,21 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
+                Guid id = Guid.NewGuid();
+                var newStore = new Store
+                {
+                    Address = store.Address,
+                    Description = store.Description,
+                    Id = id,
+                    PhotoUrl = store.PhotoUrl,
+                    Name = store.Name,
+                    UserId = uid,
+                    Rating = store.Rating,
+                    Status = 0,
+                };
                 try
                 {
-                    Guid id = Guid.NewGuid();
-                    var newStore = new Store
-                    {
-                        Address = store.Address,
-                        Description = store.Description,
-                        Id = id,
-                        PhotoUrl = store.PhotoUrl,
-                        Name = store.Name,
-                        UserId = uid,
-                        Rating = store.Rating,
-                        Status = store.Status,
-                    };
-
                     await storeRepository.Add(newStore);
-
                     var elasticsearchStore = new ElasticsearchStore
                     {
                         Id = newStore.Id,
@@ -114,7 +112,7 @@ namespace CakeCurious_API.Controllers
                 }
                 catch (DbUpdateException)
                 {
-                    if (storeRepository.GetById(store.Id!.Value) != null)
+                    if (storeRepository.GetById(newStore.Id!.Value) != null)
                         return Conflict();
                 }
             }
