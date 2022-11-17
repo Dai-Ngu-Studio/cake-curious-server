@@ -46,12 +46,11 @@ namespace CakeCurious_API.Controllers
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<UserDetailForWeb?>> GetUser(string? id)
-        {
-            if (id == null)
-            {
-                return BadRequest("You need to input id");
-            }
-            return Ok(await userRepository.GetUserDetailForWeb(id!));
+        {           
+            UserDetailForWeb? user = await userRepository.GetUserDetailForWeb(id!);
+            if (user == null)
+                return BadRequest("User not found.");
+            return Ok(user);
         }
         [HttpPut("{id}")]
         [Authorize]

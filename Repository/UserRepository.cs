@@ -170,6 +170,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             List<string> rolestring = new List<string>();
             UserDetailForWeb? user = await db.Users.ProjectToType<UserDetailForWeb>().FirstOrDefaultAsync(x => x.Id == uid);
+            if (user == null) return null;
             IEnumerable<UserHasRole> roles = await db.UserHasRoles.Include(ur => ur.Role).ToListAsync();
             foreach (var role in roles)
             {
