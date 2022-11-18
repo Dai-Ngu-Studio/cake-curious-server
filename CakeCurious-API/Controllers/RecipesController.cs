@@ -97,7 +97,7 @@ namespace CakeCurious_API.Controllers
                         var rows = await recipeRepository.Delete(id);
                         if (rows > 0)
                         {
-                            await elasticClient.DeleteAsync<ElastisearchRecipe>(id);
+                            await elasticClient.DeleteAsync<ElasticsearchRecipe>(id);
                         }
                         return (rows > 0) ? Ok() : BadRequest();
                     }
@@ -256,7 +256,7 @@ namespace CakeCurious_API.Controllers
                             .Where(x => x.RecipeCategoryId.HasValue)
                             .Select(x => x.RecipeCategoryId!.Value);
 
-                        var elastisearchRecipe = new ElastisearchRecipe
+                        var elastisearchRecipe = new ElasticsearchRecipe
                         {
                             Id = recipe.Id,
                             Name = new string[] { updateRecipe.Name! },
@@ -274,7 +274,7 @@ namespace CakeCurious_API.Controllers
                         else
                         {
                             // Doc exists, update
-                            var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
+                            var updateResponse = await elasticClient.UpdateAsync<ElasticsearchRecipe>(recipe.Id, x => x
                                     .Doc(elastisearchRecipe)
                                 );
                         }
@@ -312,7 +312,7 @@ namespace CakeCurious_API.Controllers
                     .Where(x => x.RecipeCategoryId.HasValue)
                     .Select(x => x.RecipeCategoryId!.Value);
 
-                var elastisearchRecipe = new ElastisearchRecipe
+                var elastisearchRecipe = new ElasticsearchRecipe
                 {
                     Id = recipe.Id,
                     Name = new string[] { createRecipe.Name! },
@@ -431,8 +431,8 @@ namespace CakeCurious_API.Controllers
             [Range(1, int.MaxValue)] int page = 1,
             [Range(1, int.MaxValue)] int take = 5)
         {
-            var searchDescriptor = new SearchDescriptor<ElastisearchRecipe>();
-            var descriptor = new QueryContainerDescriptor<ElastisearchRecipe>();
+            var searchDescriptor = new SearchDescriptor<ElasticsearchRecipe>();
+            var descriptor = new QueryContainerDescriptor<ElasticsearchRecipe>();
             var shouldContainer = new List<QueryContainer>();
             var filterContainer = new List<QueryContainer>();
 
@@ -492,7 +492,7 @@ namespace CakeCurious_API.Controllers
                 );
             }
 
-            var countResponse = await elasticClient.CountAsync<ElastisearchRecipe>(s => s
+            var countResponse = await elasticClient.CountAsync<ElasticsearchRecipe>(s => s
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
@@ -501,7 +501,7 @@ namespace CakeCurious_API.Controllers
                 )
             );
 
-            var searchResponse = await elasticClient.SearchAsync<ElastisearchRecipe>(s => s
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchRecipe>(s => s
                 .From((page - 1) * take)
                 .Size(take)
                 .MinScore(0.01D)
