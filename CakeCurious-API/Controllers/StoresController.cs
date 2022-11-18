@@ -112,7 +112,7 @@ namespace CakeCurious_API.Controllers
                 }
                 catch (DbUpdateException)
                 {
-                    if (storeRepository.GetById(newStore.Id!.Value) != null)
+                    if (storeRepository.GetById(store.Id!.Value) != null)
                         return Conflict();
                 }
             }
@@ -186,7 +186,7 @@ namespace CakeCurious_API.Controllers
                 }
                 throw;
             }
-            return NoContent();
+            return Ok("Update store successfully.");
         }
 
         /// <summary>

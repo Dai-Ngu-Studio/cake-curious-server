@@ -70,7 +70,7 @@ namespace Repository
                 else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
                 {
                     stores = OrderByAscName(stores);
-                }              
+                }
                 return stores.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).Adapt<IEnumerable<AdminDashboardStore>>().ToList();
             }
@@ -151,7 +151,7 @@ namespace Repository
                 int deleteOrderStatus = await DeleteAllOrderOfInActiveStore(id.Value);
                 if (deleteOrderStatus < 0) throw new Exception("Delete Store Success .But Delete Store's orders fail");
                 int deleteProductStatus = await DeleteAllProductOfInActiveStore(id.Value);
-                if (deleteProductStatus < 0) throw new Exception("Delete Store Success .But Delete Product's orders fail");
+                if (deleteProductStatus < 0) throw new Exception("Delete Store Success .But Delete Store's products fail");
                 return store;
             }
             catch (Exception ex)
@@ -168,6 +168,13 @@ namespace Repository
                 var db = new CakeCuriousDbContext();
                 db.Entry<Store>(updateObj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 await db.SaveChangesAsync();
+                if (updateObj.Status != null && updateObj.Status == (int)StoreStatusEnum.Inactive)
+                {
+                    int deleteOrderStatus = await DeleteAllOrderOfInActiveStore(updateObj!.Id!.Value);
+                    if (deleteOrderStatus < 0) throw new Exception("Delete Store Success .But Delete Store's orders fail");
+                    int deleteProductStatus = await DeleteAllProductOfInActiveStore(updateObj!.Id!.Value);
+                    if (deleteProductStatus < 0) throw new Exception("Delete Store Success .But Delete Store's products fail");
+                }
             }
             catch (Exception ex)
             {
