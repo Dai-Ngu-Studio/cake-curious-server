@@ -9,5 +9,6 @@
         public decimal? Discount { get; set; }
         public string? PhotoUrl { get; set; }
         public int? Key { get; set; }
+        public double? Score { get; set; }
     }
 }

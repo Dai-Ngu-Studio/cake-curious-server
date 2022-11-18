@@ -241,7 +241,8 @@ namespace CakeCurious_API.Controllers
             [FromQuery] Guid? storeId,
             [FromQuery] decimal? fromPrice,
             [FromQuery] decimal? toPrice,
-            [Range(1, int.MaxValue)] int page = 1,
+            [FromQuery] Guid? lastId,
+            [FromQuery] double? lastScore,
             [Range(1, int.MaxValue)] int take = 5)
         {
             var searchDescriptor = new SearchDescriptor<ElasticsearchProduct>();
@@ -339,49 +340,44 @@ namespace CakeCurious_API.Controllers
                 );
             }
 
-            var countResponse = await elasticClient.CountAsync<ElasticsearchProduct>(s => s
-                .Index("products")
-                .Query(q => q
-                    .Bool(b => b
-                        .Should(shouldContainer.ToArray())
-                        .Filter(filterContainer.ToArray())
-                    )
-                )
-            );
+            if (lastId != null && lastScore != null)
+            {
+                searchDescriptor = searchDescriptor.SearchAfter(lastScore, lastId);
+            }
 
-            var searchResponse = await elasticClient.SearchAsync<ElasticsearchProduct>(s => s
-                .Index("products")
-                .From((page - 1) * take)
+            searchDescriptor = searchDescriptor.Index("products")
                 .Size(take)
                 .MinScore(0.01D)
                 .Sort(ss => ss
                     .Descending(SortSpecialField.Score)
+                    .Descending(f => f.Id.Suffix("keyword"))
                 )
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
                         .Filter(filterContainer.ToArray())
                     )
-                )
-            );
+                );
 
-            var productIds = new List<Guid>();
-            var products = new List<GroceryProduct?>();
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchProduct>(searchDescriptor);
 
-            foreach (var doc in searchResponse.Documents)
+            var elasticsearchProducts = new List<KeyValuePair<Guid, double>>();
+
+            foreach (var hit in searchResponse.Hits)
             {
-                productIds.Add((Guid)doc.Id!);
+                elasticsearchProducts.Add(
+                    new KeyValuePair<Guid, double>((Guid)hit.Source.Id!, (double)hit.Score!)
+                );
             }
 
+            var productIds = elasticsearchProducts.Select(x => x.Key).ToList();
             var suggestedProducts = await productRepository.GetSuggestedProducts(productIds);
 
-            foreach (var productId in productIds)
-            {
-                products.Add(suggestedProducts.FirstOrDefault(x => x.Id == productId));
-            }
+            var products = elasticsearchProducts
+                .Join(suggestedProducts, es => es.Key, pd => (Guid)pd.Id!,
+                    (es, pd) => { pd.Score = es.Value; return pd; });
 
             var productPage = new GroceryProductPage();
-            productPage.TotalPages = (int)Math.Ceiling((decimal)countResponse.Count / take);
             productPage.Products = products;
 
             return Ok(productPage);
