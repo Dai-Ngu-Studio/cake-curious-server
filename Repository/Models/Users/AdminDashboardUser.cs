@@ -17,6 +17,6 @@ namespace Repository.Models.Users
         public string? Gender { get; set; }
         public string? FullName { get; set; }
         public int? Status { get; set; }
-        public List<string>? Roles { get; set; } = new List<string>();
+        public List<int>? Roles { get; set; } = new List<int>();
     }
 }
