@@ -3,6 +3,7 @@ using Mapster;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Recipes;
+using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
@@ -301,6 +302,7 @@ namespace Repository
                 .AsNoTracking()
                 .Where(x => recipeIds.Any(y => y == (Guid)x.Id!))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                 .ProjectToType<HomeRecipe>()
                 .ToListAsync();
         }

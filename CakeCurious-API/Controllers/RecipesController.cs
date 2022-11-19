@@ -67,7 +67,7 @@ namespace CakeCurious_API.Controllers
                     SocialMetaTagInfo = new SocialMetaTagInfo
                     {
                         SocialTitle = recipe.Name,
-                        SocialImageLink = !string.IsNullOrWhiteSpace(recipe.ThumbnailUrl) ? recipe.ThumbnailUrl: recipe.PhotoUrl,
+                        SocialImageLink = !string.IsNullOrWhiteSpace(recipe.ThumbnailUrl) ? recipe.ThumbnailUrl : recipe.PhotoUrl,
                         SocialDescription = recipe.Description,
                     }
                 },
@@ -428,7 +428,8 @@ namespace CakeCurious_API.Controllers
             [FromQuery] string? query,
             [FromQuery] string[]? ingredients,
             [FromQuery] int[]? categories,
-            [Range(1, int.MaxValue)] int page = 1,
+            [FromQuery] Guid? lastId,
+            [FromQuery] double? lastScore,
             [Range(1, int.MaxValue)] int take = 5)
         {
             var searchDescriptor = new SearchDescriptor<ElasticsearchRecipe>();
@@ -492,47 +493,44 @@ namespace CakeCurious_API.Controllers
                 );
             }
 
-            var countResponse = await elasticClient.CountAsync<ElasticsearchRecipe>(s => s
-                .Query(q => q
-                    .Bool(b => b
-                        .Should(shouldContainer.ToArray())
-                        .Filter(filterContainer.ToArray())
-                    )
-                )
-            );
+            if (lastId != null && lastScore != null)
+            {
+                searchDescriptor = searchDescriptor.SearchAfter(lastScore, lastId);
+            }
 
-            var searchResponse = await elasticClient.SearchAsync<ElasticsearchRecipe>(s => s
-                .From((page - 1) * take)
+            searchDescriptor = searchDescriptor.Index("recipes")
                 .Size(take)
                 .MinScore(0.01D)
                 .Sort(ss => ss
                     .Descending(SortSpecialField.Score)
+                    .Descending(f => f.Id.Suffix("keyword"))
                 )
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
                         .Filter(filterContainer.ToArray())
                     )
-                )
-            );
+                );
 
-            var recipeIds = new List<Guid>();
-            var recipes = new List<HomeRecipe>();
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchRecipe>(searchDescriptor);
 
-            foreach (var doc in searchResponse.Documents)
+            var elasticsearchRecipes = new List<KeyValuePair<Guid, double>>();
+
+            foreach (var hit in searchResponse.Hits)
             {
-                recipeIds.Add((Guid)doc.Id!);
+                elasticsearchRecipes.Add(
+                    new KeyValuePair<Guid, double>((Guid)hit.Source.Id!, (double)hit.Score!)
+                );
             }
 
+            var recipeIds = elasticsearchRecipes.Select(x => x.Key).ToList();
             var suggestedRecipes = await recipeRepository.GetSuggestedRecipes(recipeIds);
 
-            foreach (var recipeId in recipeIds)
-            {
-                recipes.Add(suggestedRecipes.FirstOrDefault(x => x.Id == recipeId)!);
-            }
+            var recipes = elasticsearchRecipes
+                .Join(suggestedRecipes, es => es.Key, rc => (Guid)rc.Id!,
+                    (es, rc) => { rc.Score = es.Value; return rc; });
 
             var recipePage = new HomeRecipePage();
-            recipePage.TotalPages = (int)Math.Ceiling((decimal)countResponse.Count / take);
             recipePage.Recipes = recipes;
 
             return Ok(recipePage);
