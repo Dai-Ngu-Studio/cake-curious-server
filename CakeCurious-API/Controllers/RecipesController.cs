@@ -331,11 +331,17 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
-        [HttpGet("home")]
+        [HttpGet("trending")]
         [Authorize]
-        public ActionResult<HomeRecipes> GetHomeRecipes()
+        public async Task<ActionResult<HomeRecipes>> GetTrendingRecipes(
+            [Range(0, int.MaxValue)] int period = 0,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
         {
-            return Ok(recipeRepository.GetHomeRecipes());
+            var recipePage = new HomeRecipePage();
+            recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountTrendingRecipes(period) / take);
+            recipePage.Recipes = recipeRepository.GetTrendingRecipes(period, (page - 1) * take, take);
+            return Ok(recipePage);
         }
 
         [HttpGet("{id:guid}")]
