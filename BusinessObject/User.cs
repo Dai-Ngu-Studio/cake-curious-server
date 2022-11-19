@@ -38,6 +38,9 @@ namespace BusinessObject
         [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
 
+        [Column("phone_number", TypeName = "nvarchar(24)")]
+        public string? PhoneNumber { get; set; }
+
         [Column("full_name", TypeName = "nvarchar(256)")]
         public string? FullName { get; set; }
 
