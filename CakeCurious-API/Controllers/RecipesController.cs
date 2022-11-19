@@ -114,7 +114,7 @@ namespace CakeCurious_API.Controllers
             [Range(0, int.MaxValue)] int lastKey = 0)
         {
             var explore = new ExploreRecipes();
-            explore.Explore = await recipeRepository.Explore(seed, take, lastKey);
+            explore.Recipes = await recipeRepository.Explore(seed, take, lastKey);
             return explore;
         }
 
