@@ -140,10 +140,10 @@ namespace Repository
             }
         }
 
-        public int CountDashboardProducts(string? s, string? order_by, string? product_type)
+        public int CountDashboardProducts(Guid? id, string? s, string? order_by, string? product_type)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Product> prods = db.Products.ToList();
+            IEnumerable<Product> prods = db.Products.Where(p => p.StoreId == id).ToList();
             try
             {   //Search
                 if (s != null)
