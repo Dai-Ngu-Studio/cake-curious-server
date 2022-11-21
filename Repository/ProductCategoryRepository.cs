@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.ProductCategories;
@@ -18,6 +19,12 @@ namespace Repository
             ProductCategoryResponse pcs = new ProductCategoryResponse();
             pcs.ProductCategories = await db.ProductCategories.ToListAsync();
             return pcs;
+        }
+
+        public IEnumerable<SimpleProductCategory> GetSimpleProductCategories()
+        {
+            var db = new CakeCuriousDbContext();
+            return db.ProductCategories.ProjectToType<SimpleProductCategory>();
         }
     }
 }
