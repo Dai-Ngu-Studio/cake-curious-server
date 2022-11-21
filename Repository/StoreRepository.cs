@@ -246,5 +246,20 @@ namespace Repository
                 .ProjectToType<DetailStore>()
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<Store> CreateStoreForUser(User user, Store store)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                db.Stores.Add(store);
+                user.StoreId = store.Id;
+                db.Users.Update(user);
+                await db.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return store;
+            }
+        }
     }
 }
