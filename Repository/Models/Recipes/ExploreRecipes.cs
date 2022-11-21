@@ -2,6 +2,6 @@
 {
     public class ExploreRecipes
     {
-        public IEnumerable<ExploreRecipe>? Explore { get; set; }
+        public IEnumerable<ExploreRecipe>? Recipes { get; set; }
     }
 }

@@ -67,7 +67,7 @@ namespace CakeCurious_API.Controllers
                     SocialMetaTagInfo = new SocialMetaTagInfo
                     {
                         SocialTitle = recipe.Name,
-                        SocialImageLink = !string.IsNullOrWhiteSpace(recipe.ThumbnailUrl) ? recipe.ThumbnailUrl: recipe.PhotoUrl,
+                        SocialImageLink = !string.IsNullOrWhiteSpace(recipe.ThumbnailUrl) ? recipe.ThumbnailUrl : recipe.PhotoUrl,
                         SocialDescription = recipe.Description,
                     }
                 },
@@ -97,7 +97,7 @@ namespace CakeCurious_API.Controllers
                         var rows = await recipeRepository.Delete(id);
                         if (rows > 0)
                         {
-                            await elasticClient.DeleteAsync<ElastisearchRecipe>(id);
+                            await elasticClient.DeleteAsync<ElasticsearchRecipe>(id);
                         }
                         return (rows > 0) ? Ok() : BadRequest();
                     }
@@ -114,7 +114,7 @@ namespace CakeCurious_API.Controllers
             [Range(0, int.MaxValue)] int lastKey = 0)
         {
             var explore = new ExploreRecipes();
-            explore.Explore = await recipeRepository.Explore(seed, take, lastKey);
+            explore.Recipes = await recipeRepository.Explore(seed, take, lastKey);
             return explore;
         }
 
@@ -256,7 +256,7 @@ namespace CakeCurious_API.Controllers
                             .Where(x => x.RecipeCategoryId.HasValue)
                             .Select(x => x.RecipeCategoryId!.Value);
 
-                        var elastisearchRecipe = new ElastisearchRecipe
+                        var elastisearchRecipe = new ElasticsearchRecipe
                         {
                             Id = recipe.Id,
                             Name = new string[] { updateRecipe.Name! },
@@ -274,7 +274,7 @@ namespace CakeCurious_API.Controllers
                         else
                         {
                             // Doc exists, update
-                            var updateResponse = await elasticClient.UpdateAsync<ElastisearchRecipe>(recipe.Id, x => x
+                            var updateResponse = await elasticClient.UpdateAsync<ElasticsearchRecipe>(recipe.Id, x => x
                                     .Doc(elastisearchRecipe)
                                 );
                         }
@@ -312,7 +312,7 @@ namespace CakeCurious_API.Controllers
                     .Where(x => x.RecipeCategoryId.HasValue)
                     .Select(x => x.RecipeCategoryId!.Value);
 
-                var elastisearchRecipe = new ElastisearchRecipe
+                var elastisearchRecipe = new ElasticsearchRecipe
                 {
                     Id = recipe.Id,
                     Name = new string[] { createRecipe.Name! },
@@ -331,11 +331,17 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
-        [HttpGet("home")]
+        [HttpGet("trending")]
         [Authorize]
-        public ActionResult<HomeRecipes> GetHomeRecipes()
+        public async Task<ActionResult<HomeRecipes>> GetTrendingRecipes(
+            [Range(0, int.MaxValue)] int period = 0,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
         {
-            return Ok(recipeRepository.GetHomeRecipes());
+            var recipePage = new HomeRecipePage();
+            recipePage.TotalPages = (int)Math.Ceiling((decimal)await recipeRepository.CountTrendingRecipes(period) / take);
+            recipePage.Recipes = recipeRepository.GetTrendingRecipes(period, (page - 1) * take, take);
+            return Ok(recipePage);
         }
 
         [HttpGet("{id:guid}")]
@@ -428,11 +434,12 @@ namespace CakeCurious_API.Controllers
             [FromQuery] string? query,
             [FromQuery] string[]? ingredients,
             [FromQuery] int[]? categories,
-            [Range(1, int.MaxValue)] int page = 1,
+            [FromQuery] Guid? lastId,
+            [FromQuery] double? lastScore,
             [Range(1, int.MaxValue)] int take = 5)
         {
-            var searchDescriptor = new SearchDescriptor<ElastisearchRecipe>();
-            var descriptor = new QueryContainerDescriptor<ElastisearchRecipe>();
+            var searchDescriptor = new SearchDescriptor<ElasticsearchRecipe>();
+            var descriptor = new QueryContainerDescriptor<ElasticsearchRecipe>();
             var shouldContainer = new List<QueryContainer>();
             var filterContainer = new List<QueryContainer>();
 
@@ -492,47 +499,44 @@ namespace CakeCurious_API.Controllers
                 );
             }
 
-            var countResponse = await elasticClient.CountAsync<ElastisearchRecipe>(s => s
-                .Query(q => q
-                    .Bool(b => b
-                        .Should(shouldContainer.ToArray())
-                        .Filter(filterContainer.ToArray())
-                    )
-                )
-            );
+            if (lastId != null && lastScore != null)
+            {
+                searchDescriptor = searchDescriptor.SearchAfter(lastScore, lastId);
+            }
 
-            var searchResponse = await elasticClient.SearchAsync<ElastisearchRecipe>(s => s
-                .From((page - 1) * take)
+            searchDescriptor = searchDescriptor.Index("recipes")
                 .Size(take)
                 .MinScore(0.01D)
                 .Sort(ss => ss
                     .Descending(SortSpecialField.Score)
+                    .Descending(f => f.Id.Suffix("keyword"))
                 )
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
                         .Filter(filterContainer.ToArray())
                     )
-                )
-            );
+                );
 
-            var recipeIds = new List<Guid>();
-            var recipes = new List<HomeRecipe>();
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchRecipe>(searchDescriptor);
 
-            foreach (var doc in searchResponse.Documents)
+            var elasticsearchRecipes = new List<KeyValuePair<Guid, double>>();
+
+            foreach (var hit in searchResponse.Hits)
             {
-                recipeIds.Add((Guid)doc.Id!);
+                elasticsearchRecipes.Add(
+                    new KeyValuePair<Guid, double>((Guid)hit.Source.Id!, (double)hit.Score!)
+                );
             }
 
+            var recipeIds = elasticsearchRecipes.Select(x => x.Key).ToList();
             var suggestedRecipes = await recipeRepository.GetSuggestedRecipes(recipeIds);
 
-            foreach (var recipeId in recipeIds)
-            {
-                recipes.Add(suggestedRecipes.FirstOrDefault(x => x.Id == recipeId)!);
-            }
+            var recipes = elasticsearchRecipes
+                .Join(suggestedRecipes, es => es.Key, rc => (Guid)rc.Id!,
+                    (es, rc) => { rc.Score = es.Value; return rc; });
 
             var recipePage = new HomeRecipePage();
-            recipePage.TotalPages = (int)Math.Ceiling((decimal)countResponse.Count / take);
             recipePage.Recipes = recipes;
 
             return Ok(recipePage);

@@ -12,5 +12,6 @@ namespace Repository.Models.Recipes
         public string? ThumbnailUrl { get; set; }
         public int? CookTime { get; set; }
         public int? Likes { get; set; }
+        public double? Score { get; set; }
     }
 }

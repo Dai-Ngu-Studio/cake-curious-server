@@ -43,63 +43,66 @@ namespace CakeCurious_API.Controllers
             result.TotalPage = (int)Math.Ceiling((decimal)userRepository.CountDashboardUser(search, sort, filter) / size);
             return Ok(result);
         }
+
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<UserDetailForWeb?>> GetUser(string? id)
-        {           
+        {
             UserDetailForWeb? user = await userRepository.GetUserDetailForWeb(id!);
             if (user == null)
                 return BadRequest("User not found.");
             return Ok(user);
         }
+
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<ActionResult> UpdateUser(User user, string id)
+        public async Task<ActionResult> UpdateUser(User newUser, string id)
         {
             try
             {
-                if (id != user.Id) return BadRequest("Input id must match with id of input user obj");
-                User? beforeUpdateObj = await userRepository.Get(user.Id);
-                if (beforeUpdateObj == null) throw new Exception("user that need to update does not exist");
-                User updateObj = new User()
+                if (id != newUser.Id) return BadRequest("Input id must match with id of input user obj");
+                User? user = await userRepository.Get(newUser.Id);
+                if (user == null) return BadRequest("user that need to update does not exist");
+                User updateUser = new User()
                 {
-                    Address = user.Address == null ? beforeUpdateObj.Address : user.Address,
-                    CitizenshipDate = user.CitizenshipDate == null ? beforeUpdateObj.CitizenshipDate : user.CitizenshipDate,
-                    DateOfBirth = user.DateOfBirth == null ? beforeUpdateObj.DateOfBirth : user.DateOfBirth,
-                    Email = user.Email == null ? beforeUpdateObj.Email : user.Email,
-                    DisplayName = user.DisplayName == null ? beforeUpdateObj.DisplayName : user.DisplayName,
-                    Gender = user.Gender == null ? beforeUpdateObj.Gender : user.Gender,
-                    FullName = user.FullName == null ? beforeUpdateObj.FullName : user.FullName,
-                    PhotoUrl = user.PhotoUrl == null ? beforeUpdateObj.PhotoUrl : user.PhotoUrl,
-                    Status = user.Status == null ? beforeUpdateObj.Status : user.Status,
-                    Id = user.Id == null ? beforeUpdateObj.Id : user.Id,
-                    CitizenshipNumber = user.CitizenshipNumber == null ? beforeUpdateObj.CitizenshipNumber : user.CitizenshipNumber,
+                    Address = newUser.Address ?? user.Address,
+                    CitizenshipDate = newUser.CitizenshipDate ?? user.CitizenshipDate,
+                    DateOfBirth = newUser.DateOfBirth ?? user.DateOfBirth,
+                    Email = newUser.Email ?? user.Email,
+                    DisplayName = newUser.DisplayName ?? user.DisplayName,
+                    Gender = newUser.Gender ?? user.Gender,
+                    FullName = newUser.FullName ?? user.FullName,
+                    PhotoUrl = newUser.PhotoUrl ?? user.PhotoUrl,
+                    PhoneNumber = newUser.PhoneNumber ?? user.PhoneNumber,
+                    Status = newUser.Status ?? user.Status,
+                    Id = newUser.Id ?? user.Id,
+                    CitizenshipNumber = newUser.CitizenshipNumber ?? user.CitizenshipNumber,
                 };
-                await userRepository.Update(updateObj);
+                await userRepository.Update(updateUser);
 
                 var elasticsearchUser = new ElasticsearchUser
                 {
                     Id = user.Id,
-                    Username = updateObj.Username,
-                    DisplayName = updateObj.DisplayName,
-                    Roles = beforeUpdateObj.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+                    Username = updateUser.Username,
+                    DisplayName = updateUser.DisplayName,
+                    Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
                 };
 
                 // Does doc exist on Elasticsearch?
-                var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "users", updateObj.Id));
+                var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "users", updateUser.Id));
                 if (!existsResponse.Exists)
                 {
                     // Doc doesn't exist, create new
                     var createResponse = await elasticClient.CreateAsync<ElasticsearchUser>(elasticsearchUser,
                         x => x
-                            .Id(updateObj.Id)
+                            .Id(updateUser.Id)
                             .Index("users")
                         );
                 }
                 else
                 {
                     // Doc exists, update
-                    var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(updateObj.Id,
+                    var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(updateUser.Id,
                         x => x
                             .Index("users")
                             .Doc(elasticsearchUser)
@@ -206,7 +209,7 @@ namespace CakeCurious_API.Controllers
         /// <returns></returns>
         [HttpPost("current/to-store")]
         [Authorize]
-        public async Task<ActionResult<DetachedUser>> AdduserRoleToCurrentUser()
+        public async Task<ActionResult<DetachedUser>> AddStoreRoleToCurrentUser()
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -216,37 +219,42 @@ namespace CakeCurious_API.Controllers
                 User? user = await userRepository.Get(uid);
                 if (user != null)
                 {
-                    // Check if user already has user role
-                    var roleExisted = user.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner);
-                    if (!roleExisted)
+                    UserRecord? userRecord = await FirebaseAuth.DefaultInstance.GetUserAsync(uid);
+                    var phoneNumber = userRecord.PhoneNumber;
+                    if (!string.IsNullOrWhiteSpace(phoneNumber))
                     {
-                        try
+                        // Check if user already has user role
+                        var roleExisted = user.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner);
+                        if (!roleExisted)
                         {
-                            // Add role to user
-                            user.HasRoles!.Add(new UserHasRole
+                            try
                             {
-                                UserId = uid,
-                                RoleId = (int)RoleEnum.StoreOwner,
-                            });
-                            await userRepository.Update(user);
-                            var elasticsearchUser = new ElasticsearchUser
-                            {
-                                Id = user.Id,
-                                Username = user.Username,
-                                DisplayName = user.DisplayName,
-                                Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
-                            };
+                                // Add role to user
+                                user.HasRoles!.Add(new UserHasRole
+                                {
+                                    UserId = uid,
+                                    RoleId = (int)RoleEnum.StoreOwner,
+                                });
+                                await userRepository.Update(user);
+                                var elasticsearchUser = new ElasticsearchUser
+                                {
+                                    Id = user.Id,
+                                    Username = user.Username,
+                                    DisplayName = user.DisplayName,
+                                    Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+                                };
 
-                            var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
-                                x => x
-                                    .Index("users")
-                                    .Doc(elasticsearchUser)
-                                );
-                            return Ok();
-                        }
-                        catch (Exception)
-                        {
-                            return BadRequest();
+                                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
+                                    x => x
+                                        .Index("users")
+                                        .Doc(elasticsearchUser)
+                                    );
+                                return Ok();
+                            }
+                            catch (Exception)
+                            {
+                                return BadRequest();
+                            }
                         }
                     }
                     return BadRequest();

@@ -3,6 +3,7 @@ using Mapster;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Recipes;
+using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
@@ -188,6 +189,7 @@ namespace Repository
                 .AsNoTracking()
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                 .CountAsync();
         }
 
@@ -201,28 +203,37 @@ namespace Repository
                 .OrderByDescending(x => x.PublishedDate)
                 .Where(x => x.User!.Followers!.Any(x => x.FollowerId == uid))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                 .Skip(skip)
                 .Take(take)
                 .ProjectToType<HomeRecipe>();
         }
 
-        // 10 recipes for each collection
-        // Collections:
-        // Trending - Most liked within 3 days
-        public HomeRecipes GetHomeRecipes()
+        public async Task<int> CountTrendingRecipes(int period)
         {
             var db = new CakeCuriousDbContext();
-            var home = new HomeRecipes();
-            var trending = db.Recipes
+            return await db.Recipes
+                .AsNoTracking()
+                .Where(x => x.PublishedDate!.Value <= DateTime.Now.AddDays(3 * (-period)))
+                .Where(x => x.PublishedDate!.Value > DateTime.Now.AddDays(-3 * (period + 1)))
+                .Where(x => x.Status == (int)RecipeStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                .CountAsync();
+        }
+
+        public IEnumerable<HomeRecipe> GetTrendingRecipes(int period, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Recipes
                 .AsNoTracking()
                 .OrderByDescending(x => x.Likes!.Count)
-                .Where(x => x.PublishedDate!.Value <= DateTime.Now
-                && x.PublishedDate!.Value >= DateTime.Now.AddDays(-3))
+                .Where(x => x.PublishedDate!.Value <= DateTime.Now.AddDays(3 * (-period)))
+                .Where(x => x.PublishedDate!.Value > DateTime.Now.AddDays(-3 * (period + 1)))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
-                .Take(10)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                .Skip(skip)
+                .Take(take)
                 .ProjectToType<HomeRecipe>();
-            home.Trending = trending;
-            return home;
         }
 
         public async Task<int> CountBookmarksOfUser(string userId)
@@ -301,6 +312,7 @@ namespace Repository
                 .AsNoTracking()
                 .Where(x => recipeIds.Any(y => y == (Guid)x.Id!))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                 .ProjectToType<HomeRecipe>()
                 .ToListAsync();
         }

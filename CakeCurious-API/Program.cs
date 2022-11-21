@@ -55,6 +55,8 @@ builder.Services.AddHostedService<CouponExpireCheckService>();
 
 builder.Services.AddDbContext<CakeCuriousDbContext>();
 
+builder.Services.RegisterMapsterConfiguration();
+
 // Configure Elastisearch Client
 var elasticUri = new Uri(Environment.GetEnvironmentVariable("ES_SECRET")!);
 var elasticPool = new SingleNodeConnectionPool(elasticUri);
@@ -64,8 +66,6 @@ var elasticSettings = new ConnectionSettings(elasticPool)
     .EnableApiVersioningHeader();
 var elasticClient = new ElasticClient(elasticSettings);
 builder.Services.AddSingleton<IElasticClient>(elasticClient);
-
-builder.Services.RegisterMapsterConfiguration();
 
 // Configure Google Services
 var googleCredential = GoogleCredential.GetApplicationDefault();

@@ -253,6 +253,7 @@ namespace Repository
                 .AsNoTracking()
                 .Where(x => productIds.Any(y => y == (Guid)x.Id!))
                 .Where(x => x.Status == (int)ProductStatusEnum.Active)
+                .Where(x => x.Store!.Status == (int)StoreStatusEnum.Active)
                 .ProjectToType<GroceryProduct>()
                 .ToListAsync();
         }
