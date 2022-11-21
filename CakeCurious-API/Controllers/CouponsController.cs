@@ -35,7 +35,8 @@ namespace CakeCurious_API.Controllers
             {
                 Id = id,
                 Code = coupon.Code,
-                Discount = coupon.DiscountType == (int)CouponDiscountTypeEnum.PercentOff ? coupon.Discount / 100 : coupon.Discount,
+                Discount = coupon.DiscountType == (int)CouponDiscountTypeEnum.PercentOff ? coupon.Discount >= 1 && coupon.Discount <= 100 ? coupon.Discount / 100 : throw new Exception("Min value is 1 and max value is 100 for PercentOff discount type")
+                : coupon.Discount < 1 ? throw new Exception("Min value for FixedDecrease discount type is 1") : coupon.Discount,
                 ExpiryDate = coupon.ExpiryDate,
                 DiscountType = coupon.DiscountType,
                 MaxUses = coupon.MaxUses,
@@ -47,20 +48,20 @@ namespace CakeCurious_API.Controllers
             {
                 _couponRepository.CreateCoupon(obj);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException )
             {
                 if (_couponRepository.GetById(obj.Id.Value) != null)
                     return Conflict();
-            }
+            }          
             return Ok(obj);
         }
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<StoreDashboardCouponPage>> GetCoupons(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int index = 1)
+        public ActionResult<IEnumerable<StoreDashboardCouponPage>> GetCoupons(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int size = 10, [Range(1, int.MaxValue)] int page = 1)
         {
             var result = new StoreDashboardCouponPage();
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            result.Coupons = _couponRepository.GetCouponsOfAStore(uid!, search, sort, filter, size, index);
+            result.Coupons = _couponRepository.GetCouponsOfAStore(uid!, search, sort, filter, size, page);
             result.TotalPage = (int)Math.Ceiling((decimal)_couponRepository.CountCouponPage(uid!, search!, sort!, filter!)! / size);
             return Ok(result);
         }
