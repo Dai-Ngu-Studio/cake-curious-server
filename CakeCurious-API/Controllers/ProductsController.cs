@@ -19,6 +19,7 @@ namespace CakeCurious_API.Controllers
         private readonly IStoreRepository storeRepository;
         private readonly IElasticClient elasticClient;
 
+
         public ProductsController(IProductRepository _productRepository, IStoreRepository _storeRepository, IElasticClient _elasticClient)
         {
             productRepository = _productRepository;
@@ -28,10 +29,13 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<IEnumerable<Product>> GetProducts(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             var result = new StoreDashboardProductPage();
-            result.Products = productRepository.GetProducts(search, sort, filter, page, size);
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Guid storeId = await storeRepository.getStoreIdByUid(uid!);
+            if (storeId.ToString() == "00000000-0000-0000-0000-000000000000") return BadRequest("Invalid store ID. You need to create a store to get product list.");
+            result.Products = productRepository.GetProducts(storeId, search, sort, filter, page, size);
             result.TotalPage = (int)Math.Ceiling((decimal)productRepository.CountDashboardProducts(search, sort, filter) / size);
             return Ok(result);
         }
@@ -124,7 +128,7 @@ namespace CakeCurious_API.Controllers
             catch (DbUpdateException)
             {
                 if (productRepository.GetById(prod.Id.Value) != null)
-                    return Conflict();
+                    return Conflict("This product already exist.");
             }
             return Ok(prod);
         }
@@ -135,7 +139,7 @@ namespace CakeCurious_API.Controllers
         {
             Product? prod = await productRepository.Delete(id);
             await elasticClient.DeleteAsync(new DeleteRequest(index: "products", prod!.Id));
-            return Ok();
+            return Ok("Delete product " + prod.Name + "  successfully");
         }
 
         [HttpPut("{id:guid}")]
@@ -203,7 +207,7 @@ namespace CakeCurious_API.Controllers
 
                 throw;
             }
-            return NoContent();
+            return Ok("Update product successfully");
         }
 
         [HttpPost("cart")]

@@ -50,10 +50,10 @@ namespace Repository
             prods = prods.Where(p => p!.Name!.Contains(keyWord!)).ToList();
             return prods;
         }
-        public IEnumerable<StoreProductDetail>? GetProducts(string? s, string? order_by, string? product_type, int pageIndex, int pageSize)
+        public IEnumerable<StoreProductDetail>? GetProducts(Guid? id, string? s, string? order_by, string? product_type, int pageIndex, int pageSize)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Product> prods = db.Products.Include(p => p.ProductCategory).ToList();
+            IEnumerable<Product> prods = db.Products.Include(p => p.ProductCategory).Where(p => p.StoreId == id).ToList();
             try
             {   //Search
                 if (s != null)
@@ -212,8 +212,8 @@ namespace Repository
         {
             var result = new List<GroceryProduct>();
             var db = new CakeCuriousDbContext();
-            string query = (storeId == null) 
-                ? $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[discount], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] where abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) > @key and ([p].[product_type] = {productType}) and ([p].[status] = 0) order by abs(checksum([p].id, rand(@randSeed)*rand(@randSeed)))" 
+            string query = (storeId == null)
+                ? $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[discount], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] where abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) > @key and ([p].[product_type] = {productType}) and ([p].[status] = 0) order by abs(checksum([p].id, rand(@randSeed)*rand(@randSeed)))"
                 : $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[discount], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] where abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) > @key and ([p].[product_type] = {productType}) and ([p].[status] = 0) and ([p].[store_id] = '{storeId}') order by abs(checksum([p].id, rand(@randSeed)*rand(@randSeed)))";
             var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = query;
@@ -223,7 +223,7 @@ namespace Repository
             {
                 await cmd.Connection.OpenAsync();
             }
-            using(var reader = await cmd.ExecuteReaderAsync())
+            using (var reader = await cmd.ExecuteReaderAsync())
             {
                 while (reader.Read())
                 {
