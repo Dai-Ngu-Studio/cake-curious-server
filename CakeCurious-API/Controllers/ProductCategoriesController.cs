@@ -24,5 +24,14 @@ namespace CakeCurious_API.Controllers
         {
             return Ok(await _productCategoryRepository.GetProductCategories());
         }
+
+        [HttpGet("simple")]
+        [Authorize]
+        public ActionResult<SimpleProductCategories> GetSimpleProductCategories()
+        {
+            var productCategories = new SimpleProductCategories();
+            productCategories.ProductCategories = _productCategoryRepository.GetSimpleProductCategories();
+            return Ok(productCategories);
+        }
     }
 }
