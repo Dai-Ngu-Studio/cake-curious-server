@@ -61,7 +61,7 @@ namespace CakeCurious_API.Controllers
         {
             var result = new StoreDashboardCouponPage();
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            result.Coupons = _couponRepository.GetCouponsOfAStore(uid!, search, sort, filter, size, index);
+            result.Coupons = _couponRepository.GetCouponsOfAStore(uid!, search, sort, filter, size, page);
             result.TotalPage = (int)Math.Ceiling((decimal)_couponRepository.CountCouponPage(uid!, search!, sort!, filter!)! / size);
             return Ok(result);
         }
