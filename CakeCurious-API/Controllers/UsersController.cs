@@ -634,7 +634,8 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult<SimpleUserPage>> SearchUsers(
             [FromQuery] string? query,
             [FromQuery] int[]? roles,
-            [Range(1, int.MaxValue)] int page = 1,
+            [FromQuery] string? lastId,
+            [FromQuery] double? lastScore,
             [Range(1, int.MaxValue)] int take = 5)
         {
             var searchDescriptor = new SearchDescriptor<ElasticsearchUser>();
@@ -682,49 +683,43 @@ namespace CakeCurious_API.Controllers
                 );
             }
 
-            var countResponse = await elasticClient.CountAsync<ElasticsearchUser>(s => s
-                .Index("users")
-                .Query(q => q
-                    .Bool(b => b
-                        .Should(shouldContainer.ToArray())
-                        .Filter(filterContainer.ToArray())
-                    )
-                )
-            );
+            if (lastId != null && lastScore != null)
+            {
+                searchDescriptor = searchDescriptor.SearchAfter(lastScore, lastId);
+            }
 
-            var searchResponse = await elasticClient.SearchAsync<ElasticsearchUser>(s => s
-                .Index("users")
-                .From((page - 1) * take)
+            searchDescriptor = searchDescriptor.Index("users")
                 .Size(take)
                 .MinScore(0.01D)
                 .Sort(ss => ss
                     .Descending(SortSpecialField.Score)
+                    .Descending(f => f.Id.Suffix("keyword"))
                 )
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
                         .Filter(filterContainer.ToArray())
                     )
-                )
-            );
+                );
 
-            var userIds = new List<string>();
-            var users = new List<SimpleUser?>();
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchUser>(searchDescriptor);
 
-            foreach (var doc in searchResponse.Documents)
+            var elasticsearchUsers = new List<KeyValuePair<string, double>>();
+
+            foreach (var hit in searchResponse.Hits)
             {
-                userIds.Add(doc.Id!);
+                elasticsearchUsers.Add(
+                    new KeyValuePair<string, double>(hit.Source.Id!, (double)hit.Score!)
+                );
             }
 
+            var userIds = elasticsearchUsers.Select(x => x.Key).ToList();
             var suggestedUsers = await userRepository.GetSuggestedUsers(userIds);
 
-            foreach (var userId in userIds)
-            {
-                users.Add(suggestedUsers.FirstOrDefault(x => x.Id == userId));
-            }
+            var users = elasticsearchUsers
+                .Join(suggestedUsers, es => es.Key, us => us.Id!, (es, us) => { us.Score = es.Value; return us; });
 
             var userPage = new SimpleUserPage();
-            userPage.TotalPages = (int)Math.Ceiling((decimal)countResponse.Count / take);
             userPage.Users = users;
 
             return Ok(userPage);
