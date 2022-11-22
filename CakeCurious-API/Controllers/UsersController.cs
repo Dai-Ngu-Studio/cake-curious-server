@@ -56,7 +56,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<ActionResult> UpdateUser(User newUser, string id)
+        public async Task<ActionResult> UpdateUser(UpdateUser newUser, string id)
         {
             try
             {
@@ -78,6 +78,23 @@ namespace CakeCurious_API.Controllers
                     Id = newUser.Id ?? user.Id,
                     CitizenshipNumber = newUser.CitizenshipNumber ?? user.CitizenshipNumber,
                 };
+                var roleExisted = user.HasRoles!.Any(x => x.RoleId == newUser.RoleId);
+                if (!roleExisted)
+                {
+                    try
+                    {
+                        // Add role to user
+                        updateUser.HasRoles!.Add(new UserHasRole
+                        {
+                            UserId = newUser.Id,
+                            RoleId = newUser.RoleId,
+                        });
+                    }
+                    catch (Exception)
+                    {
+                        return BadRequest();
+                    }
+                }
                 await userRepository.Update(updateUser);
 
                 var elasticsearchUser = new ElasticsearchUser
