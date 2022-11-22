@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nest;
+using Repository.Constants.Products;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
 using Repository.Models.Roles;
+using Repository.Models.Stores;
 using Repository.Models.Users;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
@@ -23,14 +25,17 @@ namespace CakeCurious_API.Controllers
         private readonly IUserDeviceRepository userDeviceRepository;
         private readonly IUserFollowRepository userFollowRepository;
         private readonly IRecipeRepository recipeRepository;
+        private readonly IStoreRepository storeRepository;
         private readonly IElasticClient elasticClient;
 
-        public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository, IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IElasticClient _elasticClient)
+        public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository,
+            IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IStoreRepository _storeRepository, IElasticClient _elasticClient)
         {
             userRepository = _userRepository;
             userDeviceRepository = _userDeviceRepository;
             userFollowRepository = _userFollowRepository;
             recipeRepository = _recipeRepository;
+            storeRepository = _storeRepository;
             elasticClient = _elasticClient;
         }
 
@@ -220,13 +225,48 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
+        private async Task<Store> CreateStoreForUser(CreateStoreRequest request, User user)
+        {
+            // Add role to user
+            user.HasRoles!.Add(new UserHasRole
+            {
+                UserId = user.Id,
+                RoleId = (int)RoleEnum.StoreOwner,
+            });
+
+            // Update user information
+            user.FullName = request.FullName;
+            user.Gender = request.Gender;
+            user.DateOfBirth = request.DateOfBirth;
+            user.Address = request.Address;
+            user.CitizenshipNumber = request.CitizenshipNumber;
+            user.CitizenshipDate = request.CitizenshipDate;
+
+            // Create store
+            var store = new Store
+            {
+                UserId = user.Id,
+                Name = request.Name,
+                Description = request.Description,
+                Address = request.StoreAddress,
+                PhotoUrl = request.PhotoUrl,
+                Rating = 0.0M,
+                CreatedDate = DateTime.Now,
+                Status = (int)StoreStatusEnum.Active,
+            };
+
+            // Save changes to database
+            store = await storeRepository.CreateStoreForUser(user, store);
+            return store;
+        }
+
         /// <summary>
         /// Add user role to current user
         /// </summary>
         /// <returns></returns>
         [HttpPost("current/to-store")]
         [Authorize]
-        public async Task<ActionResult<DetachedUser>> AddStoreRoleToCurrentUser()
+        public async Task<ActionResult> AddStoreRoleToCurrentUser(CreateStoreRequest request)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -240,42 +280,45 @@ namespace CakeCurious_API.Controllers
                     var phoneNumber = userRecord.PhoneNumber;
                     if (!string.IsNullOrWhiteSpace(phoneNumber))
                     {
-                        // Check if user already has user role
+                        // Check if user already has store role
                         var roleExisted = user.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner);
                         if (!roleExisted)
                         {
-                            try
-                            {
-                                // Add role to user
-                                user.HasRoles!.Add(new UserHasRole
-                                {
-                                    UserId = uid,
-                                    RoleId = (int)RoleEnum.StoreOwner,
-                                });
-                                await userRepository.Update(user);
-                                var elasticsearchUser = new ElasticsearchUser
-                                {
-                                    Id = user.Id,
-                                    Username = user.Username,
-                                    DisplayName = user.DisplayName,
-                                    Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
-                                };
+                            user.PhoneNumber = phoneNumber.Replace("+84", "0");
+                            var store = await CreateStoreForUser(request, user);
 
-                                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
-                                    x => x
-                                        .Index("users")
-                                        .Doc(elasticsearchUser)
-                                    );
-                                return Ok();
-                            }
-                            catch (Exception)
+                            var elasticsearchUser = new ElasticsearchUser
                             {
-                                return BadRequest();
-                            }
+                                Id = user.Id,
+                                Username = user.Username,
+                                DisplayName = user.DisplayName,
+                                Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+                            };
+
+                            var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
+                                x => x
+                                    .Index("users")
+                                    .Doc(elasticsearchUser)
+                                );
+
+                            var elasticsearchStore = new ElasticsearchStore
+                            {
+                                Id = store.Id,
+                                Name = store.Name,
+                                Rating = store.Rating,
+                            };
+
+                            var createResponse = await elasticClient.CreateAsync<ElasticsearchStore>(elasticsearchStore,
+                                x => x
+                                    .Id(store.Id)
+                                    .Index("stores")
+                                );
+
+                            return Ok();
                         }
                     }
-                    return BadRequest();
                 }
+                return BadRequest();
             }
             return Unauthorized();
         }
