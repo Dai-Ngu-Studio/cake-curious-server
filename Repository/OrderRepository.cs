@@ -15,22 +15,27 @@ namespace Repository
         {
             return orders.OrderBy(p => p.OrderDate).ToList();
         }
+
         public IEnumerable<Order> OrderDescOrderDate(IEnumerable<Order> orders)
         {
             return orders.OrderByDescending(p => p.OrderDate).ToList();
         }
+
         public IEnumerable<Order> FilterByStatusComplete(IEnumerable<Order> orders)
         {
             return orders.Where(p => p.Status == (int)OrderStatusEnum.Completed).ToList();
         }
+
         public IEnumerable<Order> FilterByStatusProcessing(IEnumerable<Order> orders)
         {
             return orders.Where(p => p.Status == (int)OrderStatusEnum.Processing).ToList();
         }
+
         public IEnumerable<Order> FilterByStatusCancelled(IEnumerable<Order> orders)
         {
             return orders.Where(p => p.Status == (int)OrderStatusEnum.Cancelled).ToList();
         }
+
         public IEnumerable<Order> FilterByStatusPending(IEnumerable<Order> orders)
         {
             return orders.Where(p => p.Status == (int)OrderStatusEnum.Pending).ToList();
@@ -140,6 +145,7 @@ namespace Repository
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task UpdateOrder(Order updateObj)
         {
             try
@@ -207,11 +213,13 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Orders.ProjectToType<StoreDashboardOrder>().FirstOrDefaultAsync(x => x.Id == guid);
         }
+
         public async Task<Order?> GetById(Guid guid)
         {
             var db = new CakeCuriousDbContext();
             return await db.Orders.FirstOrDefaultAsync(x => x.Id == guid);
         }
+
         public async Task AddOrder(Order order, string query)
         {
             var db = new CakeCuriousDbContext();
@@ -226,6 +234,29 @@ namespace Repository
                 await transaction.CommitAsync();
                 Console.WriteLine();
             }
+        }
+
+        public async Task<int> CountOrdersOfUser(string userId, int[] status)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Orders
+                .AsNoTracking()
+                .Where(x => x.UserId == userId)
+                .Where(x => status.Any(y => y == (int)x.Status!))
+                .CountAsync();
+        }
+
+        public IEnumerable<InfoOrder> GetOrdersOfUser(string userId, int[] status, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Orders
+                .AsNoTracking()
+                .OrderByDescending(x => x.OrderDate)
+                .Where(x => x.UserId == userId)
+                .Where(x => status.Any(y => y == (int)x.Status!))
+                .Skip(skip)
+                .Take(take)
+                .ProjectToType<InfoOrder>();
         }
 
         /// <summary>
