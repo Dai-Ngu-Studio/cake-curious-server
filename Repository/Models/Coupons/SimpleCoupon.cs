@@ -10,5 +10,6 @@
         public int? MaxUses { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public int? UsedCount { get; set; }
+        public int? Status { get; set; }
     }
 }
