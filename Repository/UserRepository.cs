@@ -199,6 +199,9 @@ namespace Repository
         public async Task Update(User obj)
         {
             var db = new CakeCuriousDbContext();
+            //Remove all role of current update user
+            IEnumerable<UserHasRole> uhr = db.UserHasRoles.Where(uhr => uhr.UserId == obj.Id);
+            if (uhr.Count() > 0) db.UserHasRoles.RemoveRange(uhr);
             db.Users.Update(obj);
             await db.SaveChangesAsync();
         }

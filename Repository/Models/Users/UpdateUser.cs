@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BusinessObject;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Repository.Models.Users
         public string? CitizenshipNumber { get; set; }
         public DateTime? CitizenshipDate { get; set; }
         public int? Status { get; set; }
-        public int? RoleId { get; set; }
+        public List<int>? Roles { get; set; }
 
     }
 }

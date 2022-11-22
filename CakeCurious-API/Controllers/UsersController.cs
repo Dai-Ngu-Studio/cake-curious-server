@@ -82,24 +82,24 @@ namespace CakeCurious_API.Controllers
                     Status = newUser.Status ?? user.Status,
                     Id = newUser.Id ?? user.Id,
                     CitizenshipNumber = newUser.CitizenshipNumber ?? user.CitizenshipNumber,
-                };
-                var roleExisted = user.HasRoles!.Any(x => x.RoleId == newUser.RoleId);
-                if (!roleExisted)
-                {
-                    try
+                };             
+                try
+                {   
+                    foreach(int role in newUser!.Roles!)
                     {
-                        // Add role to user
                         updateUser.HasRoles!.Add(new UserHasRole
                         {
                             UserId = newUser.Id,
-                            RoleId = newUser.RoleId,
+                            RoleId = role,
                         });
                     }
-                    catch (Exception)
-                    {
-                        return BadRequest();
-                    }
+                    // Add role to user
+                        
                 }
+                catch (Exception)
+                {
+                    return BadRequest();
+                }              
                 await userRepository.Update(updateUser);
 
                 var elasticsearchUser = new ElasticsearchUser
@@ -139,7 +139,7 @@ namespace CakeCurious_API.Controllers
                 }
                 throw;
             }
-            return NoContent();
+            return Ok("Update user successfully");
         }
 
         [HttpDelete("{id}")]
