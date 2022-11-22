@@ -42,7 +42,7 @@ namespace CakeCurious_API.Controllers
             elasticClient = _elasticClient;
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
         }
-        [HttpGet("Is-Repoted")]
+        [HttpGet("Is-Reported")]
         [Authorize]
         public async Task<ActionResult<ReportedRecipesPage>> GetReportedRecipes(string? s, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {

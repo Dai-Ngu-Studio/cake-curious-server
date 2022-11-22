@@ -24,7 +24,7 @@ namespace CakeCurious_API.Controllers
             commentRepository = _commentRepository;
             userRepository = _userRepository;
         }
-        [HttpGet("Is-Repoted")]
+        [HttpGet("Is-Reported")]
         [Authorize]
         public async Task<ActionResult<ReportedCommentsPage>> GetReportedComment(string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
