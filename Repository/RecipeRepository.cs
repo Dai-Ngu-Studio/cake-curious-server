@@ -348,7 +348,7 @@ namespace Repository
             if (reportsRecipeType.Count() > 0)
                 foreach (var report in reportsRecipeType)
                 {
-                    isReportedRecipes!.Add(await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId)!);
+                    isReportedRecipes!.Add((await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!);
                 }
             try
             {
@@ -393,7 +393,7 @@ namespace Repository
             if (reportsRecipeType.Count() > 0)
                 foreach (var report in reportsRecipeType)
                 {
-                    isReportedRecipes!.Add(await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId)!);
+                    isReportedRecipes!.Add((await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!);
                 }
             try
             {

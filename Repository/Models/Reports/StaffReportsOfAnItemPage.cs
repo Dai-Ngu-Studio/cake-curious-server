@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Repository.Models.Reports
 {
-    public class StaffDashboardReportPage
+    public class StaffReportsOfAnItemPage
     {
         public IEnumerable<StaffDashboardReport>? Reports { get; set; }
+        public int PendingReports { get; set; }
         public int TotalPage { get; set; }
     }
 }

@@ -35,6 +35,16 @@ namespace CakeCurious_API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("Of-An-Item/{guid}")]
+        [Authorize]
+        public async Task<ActionResult<StaffReportsOfAnItemPage>> GetReportsOfAnItem(Guid? guid, string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        {
+            var result = new StaffReportsOfAnItemPage();
+            result.Reports = await _ReportRepository.GetReportsOfAnItem(guid!.Value, search, sort, filter, page, size);
+            result.PendingReports = await _ReportRepository.CountPendingReportOfAnItem(guid!.Value);
+            result.TotalPage = (int)Math.Ceiling((decimal)await _ReportRepository.CountDashboardViolationReportsOfAnItem(guid!.Value, search, sort, filter) / size);
+            return Ok(result);
+        }
         [HttpGet("item-detail/{guid}")]
         [Authorize]
         public async Task<ActionResult<ItemReportContent>> GetItemDetail(Guid? guid)

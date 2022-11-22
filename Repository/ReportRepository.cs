@@ -250,5 +250,108 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.ViolationReports.FirstOrDefaultAsync(r => r.Id == id);
         }
+
+        public async Task<IEnumerable<StaffDashboardReport>?> GetReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter_status, int PageIndex, int PageSize)
+        {
+            var db = new CakeCuriousDbContext();
+            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Where(r => r.ItemId == itemId).Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
+            foreach (var report in reports)
+            {
+                if (report.ItemType.HasValue && report.ItemId.HasValue)
+                    report.ReportedUser = await getReportedUser(report.ItemId, report.ItemType)!;
+            }
+            try
+            {
+                //search
+                if (s != null)
+                {
+                    reports = SearchViolationReport(s, reports);
+                }
+                //filter status
+                if (filter_status != null && filter_status == ReportStatusEnum.Censored.ToString())
+                {
+                    reports = FilterByCensoredStatus(reports);
+                }
+                else if (filter_status != null && filter_status == ReportStatusEnum.Pending.ToString())
+                {
+                    reports = FilterByPendingStatus(reports);
+                }
+                else if (filter_status != null && filter_status == ReportStatusEnum.Rejected.ToString())
+                {
+                    reports = FilterByRejectedStatus(reports);
+                }
+                //sort
+                if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
+                {
+                    reports = OrderByDescTitle(reports);
+                }
+                else if (order_by != null && order_by == ReportSortEnum.AscTitle.ToString())
+                {
+                    reports = OrderByAscTitle(reports);
+                }
+                return reports.Skip((PageIndex - 1) * PageSize)
+                            .Take(PageSize).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return null;
+        }
+
+        public async Task<int> CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter)
+        {
+            var db = new CakeCuriousDbContext();
+            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Where(r => r.ItemId == itemId).Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
+            foreach (var report in reports)
+            {
+                if (report.ItemType.HasValue && report.ItemId.HasValue)
+                    report.ReportedUser = await getReportedUser(report.ItemId, report.ItemType)!;
+            }
+            try
+            {
+                //search
+                if (s != null)
+                {
+                    reports = SearchViolationReport(s, reports);
+                }
+                //filter status
+                if (filter != null && filter == ReportStatusEnum.Censored.ToString())
+                {
+                    reports = FilterByCensoredStatus(reports);
+                }
+                else if (filter != null && filter == ReportStatusEnum.Pending.ToString())
+                {
+                    reports = FilterByPendingStatus(reports);
+                }
+                else if (filter != null && filter == ReportStatusEnum.Rejected.ToString())
+                {
+                    reports = FilterByRejectedStatus(reports);
+                }
+                //sort
+                if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
+                {
+                    reports = OrderByDescTitle(reports);
+                }
+                else if (order_by != null && order_by == ReportSortEnum.AscTitle.ToString())
+                {
+                    reports = OrderByAscTitle(reports);
+                }
+                return reports.Count();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return 0;
+        }
+
+
+        public async Task<int> CountPendingReportOfAnItem(Guid itemId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.ViolationReports.Where(r => r.ItemId == itemId && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
+        }
+
     }
 }

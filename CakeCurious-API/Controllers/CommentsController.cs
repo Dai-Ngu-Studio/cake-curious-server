@@ -7,6 +7,7 @@ using Repository.Constants.Comments;
 using Repository.Constants.Roles;
 using Repository.Interfaces;
 using Repository.Models.Comments;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
@@ -23,7 +24,15 @@ namespace CakeCurious_API.Controllers
             commentRepository = _commentRepository;
             userRepository = _userRepository;
         }
-
+        [HttpGet("Is-Repoted")]
+        [Authorize]
+        public async Task<ActionResult<ReportedCommentsPage>> GetReportedComment(string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        {
+            ReportedCommentsPage reportedCommentsPage = new ReportedCommentsPage();
+            reportedCommentsPage.Comments = await commentRepository.GetReportedCommments(filter, page, size);
+            reportedCommentsPage.TotalPage = (int)Math.Ceiling((decimal)await commentRepository.CountReportedCommmentsTotalPage(filter) / size);
+            return Ok(reportedCommentsPage);
+        }
         [HttpPut("{id:guid}")]
         [Authorize]
         public async Task<ActionResult<RecipeComment>> UpdateComment(Guid id, UpdateComment updateComment)
