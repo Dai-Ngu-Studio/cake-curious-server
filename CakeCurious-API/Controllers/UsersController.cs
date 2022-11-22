@@ -82,10 +82,10 @@ namespace CakeCurious_API.Controllers
                     Status = newUser.Status ?? user.Status,
                     Id = newUser.Id ?? user.Id,
                     CitizenshipNumber = newUser.CitizenshipNumber ?? user.CitizenshipNumber,
-                };             
+                };
                 try
-                {   
-                    foreach(int role in newUser!.Roles!)
+                {
+                    foreach (int role in newUser!.Roles!)
                     {
                         updateUser.HasRoles!.Add(new UserHasRole
                         {
@@ -94,12 +94,12 @@ namespace CakeCurious_API.Controllers
                         });
                     }
                     // Add role to user
-                        
+
                 }
                 catch (Exception)
                 {
                     return BadRequest();
-                }              
+                }
                 await userRepository.Update(updateUser);
 
                 var elasticsearchUser = new ElasticsearchUser
