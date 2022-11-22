@@ -48,11 +48,11 @@ namespace CakeCurious_API.Controllers
             {
                 _couponRepository.CreateCoupon(obj);
             }
-            catch (DbUpdateException )
+            catch (DbUpdateException)
             {
                 if (_couponRepository.GetById(obj.Id.Value) != null)
                     return Conflict();
-            }          
+            }
             return Ok(obj);
         }
         [HttpGet]
@@ -65,12 +65,14 @@ namespace CakeCurious_API.Controllers
             result.TotalPage = (int)Math.Ceiling((decimal)_couponRepository.CountCouponPage(uid!, search!, sort!, filter!)! / size);
             return Ok(result);
         }
+
         [HttpGet("{guid}")]
         [Authorize]
-        public ActionResult<SimpleCoupon> GetCouponById(Guid guid)
+        public async Task<ActionResult<SimpleCoupon>> GetCouponById(Guid guid)
         {
-            return Ok(_couponRepository.GetById(guid).Adapt<SimpleCoupon>());
+            return Ok(await _couponRepository.GetByIdForWeb(guid));
         }
+
         [HttpPut("{guid}")]
         [Authorize]
         public async Task<ActionResult> PutCoupon(Guid guid, Coupon coupon)

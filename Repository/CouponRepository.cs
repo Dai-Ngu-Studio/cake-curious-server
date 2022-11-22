@@ -138,6 +138,12 @@ namespace Repository
             return await db.Coupons.FirstOrDefaultAsync(x => x.Id == guid);
         }
 
+        public async Task<SimpleCoupon?> GetByIdForWeb(Guid guid)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Coupons.ProjectToType<SimpleCoupon>().FirstOrDefaultAsync(x => x.Id == guid);
+        }
+
         public async Task<SimpleCoupon?> GetSimpleCouponOfStoreByCode(Guid storeId, string code)
         {
             var db = new CakeCuriousDbContext();

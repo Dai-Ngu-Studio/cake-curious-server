@@ -63,12 +63,13 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult> UpdateUser(UpdateUser newUser, string id)
         {
+            User updateUser;
             try
             {
                 if (id != newUser.Id) return BadRequest("Input id must match with id of input user obj");
                 User? user = await userRepository.Get(newUser.Id);
                 if (user == null) return BadRequest("user that need to update does not exist");
-                User updateUser = new User()
+                updateUser = new User()
                 {
                     Address = newUser.Address ?? user.Address,
                     CitizenshipDate = newUser.CitizenshipDate ?? user.CitizenshipDate,
@@ -94,7 +95,6 @@ namespace CakeCurious_API.Controllers
                         });
                     }
                     // Add role to user
-
                 }
                 catch (Exception)
                 {
@@ -139,7 +139,7 @@ namespace CakeCurious_API.Controllers
                 }
                 throw;
             }
-            return Ok("Update user successfully");
+            return Ok(updateUser);
         }
 
         [HttpDelete("{id}")]
