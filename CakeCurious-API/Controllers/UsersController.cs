@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nest;
+using Repository.Constants.Orders;
 using Repository.Constants.Products;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
+using Repository.Models.Orders;
 using Repository.Models.Recipes;
 using Repository.Models.Roles;
 using Repository.Models.Stores;
@@ -26,16 +28,18 @@ namespace CakeCurious_API.Controllers
         private readonly IUserFollowRepository userFollowRepository;
         private readonly IRecipeRepository recipeRepository;
         private readonly IStoreRepository storeRepository;
+        private readonly IOrderRepository orderRepository;
         private readonly IElasticClient elasticClient;
 
         public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository,
-            IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IStoreRepository _storeRepository, IElasticClient _elasticClient)
+            IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IStoreRepository _storeRepository, IOrderRepository _orderRepository, IElasticClient _elasticClient)
         {
             userRepository = _userRepository;
             userDeviceRepository = _userDeviceRepository;
             userFollowRepository = _userFollowRepository;
             recipeRepository = _recipeRepository;
             storeRepository = _storeRepository;
+            orderRepository = _orderRepository;
             elasticClient = _elasticClient;
         }
 
@@ -569,6 +573,35 @@ namespace CakeCurious_API.Controllers
             }
             return Unauthorized();
         }
+
+        [HttpGet("{id:length(1,128)}/orders")]
+        [Authorize]
+        public async Task<ActionResult<InfoOrderPage>> GetOrdersOfUser(
+            string id,
+            [FromQuery] int[] status,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    if (id == "current")
+                    {
+                        id = uid;
+                    }
+                    var orderPage = new InfoOrderPage();
+                    orderPage.TotalPages = (int)Math.Ceiling((decimal)await orderRepository.CountOrdersOfUser(id, status) / take);
+                    orderPage.Orders = orderRepository.GetOrdersOfUser(id, status, (page - 1) * take, take);
+                    return Ok(orderPage);
+                }
+                return BadRequest();
+            }
+            return Unauthorized();
+        }
+
 
         private async Task CheckAndAddDevice(string? FcmToken, string uid)
         {

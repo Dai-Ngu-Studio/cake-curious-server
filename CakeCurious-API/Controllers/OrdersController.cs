@@ -162,7 +162,7 @@ namespace CakeCurious_API.Controllers
                                     {
                                         ProductId = product.Id,
                                         ProductName = product.Name,
-                                        Price = (product.Discount != null) ? product.Price * product.Discount : product.Price,
+                                        Price = (product.Discount != null) ? product.Price - product.Price * product.Discount : product.Price,
                                         Quantity = (checkoutProduct.Quantity! > product.Quantity) ? product.Quantity : checkoutProduct.Quantity!,
                                     };
                                     orderDetails.Add(orderDetail);
