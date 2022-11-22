@@ -85,7 +85,7 @@ namespace Repository
             foreach (var report in reports)
             {
                 if (report.ItemType.HasValue && report.ItemId.HasValue)
-                    report.ReportedUser = await getReportedUser(report.ItemId, report.ItemType);
+                    report.ReportedUser = await getReportedUser(report.ItemId, report.ItemType)!;
             }
             try
             {

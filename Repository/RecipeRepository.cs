@@ -3,6 +3,7 @@ using Mapster;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Recipes;
+using Repository.Constants.Reports;
 using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Recipes;
@@ -315,6 +316,116 @@ namespace Repository
                 .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                 .ProjectToType<HomeRecipe>()
                 .ToListAsync();
+        }
+        public List<SimpleRecipeForReportList>? OrderByAscName(List<SimpleRecipeForReportList>? isReportedRecipes)
+        {
+            return isReportedRecipes!.OrderBy(p => p.Name).ToList();
+        }
+        public List<SimpleRecipeForReportList>? OrderByDescName(List<SimpleRecipeForReportList>? isReportedRecipes)
+        {
+            return isReportedRecipes!.OrderByDescending(p => p.Name).ToList();
+        }
+        public List<SimpleRecipeForReportList>? FilterByStatusActiveList(List<SimpleRecipeForReportList>? isReportedRecipes)
+        {
+            return isReportedRecipes!.Where(p => p.Status == (int)RecipeStatusEnum.Active).ToList();
+        }
+
+        public List<SimpleRecipeForReportList>? FilterByStatusInactive(List<SimpleRecipeForReportList>? isReportedRecipes)
+        {
+            return isReportedRecipes!.Where(p => p.Status == (int)RecipeStatusEnum.Inactive).ToList();
+        }
+
+        public List<SimpleRecipeForReportList>? SearchRecipes(string? keyWord, List<SimpleRecipeForReportList>? reportsRecipeType)
+        {
+
+            return reportsRecipeType!.Where(p => p.Name!.Contains(keyWord!)).ToList();
+        }
+        public async Task<IEnumerable<SimpleRecipeForReportList>> GetReportedRecipes(string? s, string? sort, string? filter, int page, int size)
+        {
+            var db = new CakeCuriousDbContext();
+            IEnumerable<ViolationReport> reportsRecipeType = await db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Recipe).GroupBy(x => x.ItemId).Select(d => d.First()).ToListAsync();
+            List<SimpleRecipeForReportList>? isReportedRecipes = new List<SimpleRecipeForReportList>();
+            if (reportsRecipeType.Count() > 0)
+                foreach (var report in reportsRecipeType)
+                {
+                    isReportedRecipes!.Add(await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId)!);
+                }
+            try
+            {
+                //search
+                if (s != null)
+                {
+                    isReportedRecipes = SearchRecipes(s, isReportedRecipes);
+                }
+                //filter
+                if (filter != null && filter == RecipeStatusEnum.Active.ToString())
+                {
+                    isReportedRecipes = FilterByStatusActiveList(isReportedRecipes);
+                }
+                else if (filter != null && filter == RecipeStatusEnum.Inactive.ToString())
+                {
+                    isReportedRecipes = FilterByStatusInactive(isReportedRecipes);
+                }
+                //orderby
+                if (sort != null && sort == RecipeOrderByEnum.DescName.ToString())
+                {
+                    isReportedRecipes = OrderByDescName(isReportedRecipes);
+                }
+                else if (sort != null && sort == RecipeOrderByEnum.AscName.ToString())
+                {
+                    isReportedRecipes = OrderByAscName(isReportedRecipes);
+                }
+                return isReportedRecipes!.Skip((page - 1) * size)
+                                .Take(size).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return isReportedRecipes!;
+        }
+
+        public async Task<int?> CountTotalReportedRecipes(string? s, string? sort, string? filter)
+        {
+            var db = new CakeCuriousDbContext();
+            IEnumerable<ViolationReport> reportsRecipeType = await db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Recipe).GroupBy(x => x.ItemId).Select(d => d.First()).ToListAsync();
+            List<SimpleRecipeForReportList>? isReportedRecipes = new List<SimpleRecipeForReportList>();
+            if (reportsRecipeType.Count() > 0)
+                foreach (var report in reportsRecipeType)
+                {
+                    isReportedRecipes!.Add(await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId)!);
+                }
+            try
+            {
+                //search
+                if (s != null)
+                {
+                    isReportedRecipes = SearchRecipes(s, isReportedRecipes);
+                }
+                //filter
+                if (filter != null && filter == RecipeStatusEnum.Active.ToString())
+                {
+                    isReportedRecipes = FilterByStatusActiveList(isReportedRecipes);
+                }
+                else if (filter != null && filter == RecipeStatusEnum.Inactive.ToString())
+                {
+                    isReportedRecipes = FilterByStatusInactive(isReportedRecipes);
+                }
+                //orderby
+                if (sort != null && sort == RecipeOrderByEnum.DescName.ToString())
+                {
+                    isReportedRecipes = OrderByDescName(isReportedRecipes);
+                }
+                else if (sort != null && sort == RecipeOrderByEnum.AscName.ToString())
+                {
+                    isReportedRecipes = OrderByAscName(isReportedRecipes);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return isReportedRecipes!.Count();
         }
     }
 }
