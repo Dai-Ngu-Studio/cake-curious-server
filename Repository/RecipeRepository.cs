@@ -349,7 +349,7 @@ namespace Repository
                 foreach (var report in reportsRecipeType)
                 {
                     SimpleRecipeForReportList recipe = (await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!;
-                    recipe.TotalPendingReports = await db.ViolationReports.Where(report => report.Status == (int)ReportStatusEnum.Pending && report.Id == recipe.Id).CountAsync();
+                    recipe.TotalPendingReports = await db.ViolationReports.Where(report => report.Status == (int)ReportStatusEnum.Pending && report.ItemId == recipe.Id).CountAsync();
                     isReportedRecipes!.Add(recipe);
                 }
             try
