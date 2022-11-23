@@ -16,7 +16,7 @@ namespace Repository.Models.Comments
         public string? Content { get; set; }
         public DateTime? SubmittedDate { get; set; }
         public int? Status { get; set; }
-        public int? TotalPendingReport { get; set; }
+        public int? TotalPendingReports { get; set; }
         public ICollection<SimpleCommentMedia>? Images { get; set; }
 
     }

@@ -34,7 +34,7 @@ namespace Repository.Models.Recipes
 
         public int? Status { get; set; }
 
-        public int? TotalPendingReport { get; set; }
+        public int? TotalPendingReports { get; set; }
 
         public ICollection<SimpleRecipeHasCategory>? HasCategories { get; set; }
 
