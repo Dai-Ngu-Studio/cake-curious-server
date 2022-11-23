@@ -137,7 +137,7 @@ namespace Repository
                 foreach (var report in reportsCommentType)
                 {
                     SimpleCommentForReportList comment = (await db.Comments.ProjectToType<SimpleCommentForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!;
-                    comment.TotalPendingReport = await db.ViolationReports.Where(report => report.Status == (int)ReportStatusEnum.Pending && report.ItemId == comment.Id).CountAsync();
+                    comment.TotalPendingReports = await db.ViolationReports.Where(report => report.Status == (int)ReportStatusEnum.Pending && report.ItemId == comment.Id).CountAsync();
                     isReportedComments!.Add(comment);
                 }
             //filter
