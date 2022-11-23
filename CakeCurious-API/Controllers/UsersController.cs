@@ -1,10 +1,13 @@
 ﻿using BusinessObject;
+using CakeCurious_API.Utilities;
 using FirebaseAdmin.Auth;
+using Google.Apis.FirebaseDynamicLinks.v1;
+using Google.Apis.FirebaseDynamicLinks.v1.Data;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nest;
-using Repository.Constants.Orders;
 using Repository.Constants.Products;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
@@ -30,9 +33,11 @@ namespace CakeCurious_API.Controllers
         private readonly IStoreRepository storeRepository;
         private readonly IOrderRepository orderRepository;
         private readonly IElasticClient elasticClient;
+        private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
 
         public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository,
-            IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IStoreRepository _storeRepository, IOrderRepository _orderRepository, IElasticClient _elasticClient)
+            IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IStoreRepository _storeRepository, IOrderRepository _orderRepository,
+            IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService)
         {
             userRepository = _userRepository;
             userDeviceRepository = _userDeviceRepository;
@@ -41,6 +46,7 @@ namespace CakeCurious_API.Controllers
             storeRepository = _storeRepository;
             orderRepository = _orderRepository;
             elasticClient = _elasticClient;
+            firebaseDynamicLinksService = _firebaseDynamicLinksService;
         }
 
         [HttpGet]
@@ -104,6 +110,10 @@ namespace CakeCurious_API.Controllers
                 {
                     return BadRequest();
                 }
+
+                var dynamicLinkResponse = await CreateUserDynamicLink(updateUser);
+                updateUser.ShareUrl = dynamicLinkResponse.ShortLink;
+
                 await userRepository.Update(updateUser);
 
                 var elasticsearchUser = new ElasticsearchUser
@@ -259,6 +269,9 @@ namespace CakeCurious_API.Controllers
                 Status = (int)StoreStatusEnum.Active,
             };
 
+            var dynamicLinkResponse = await CreateStoreDynamicLink(store);
+            store.ShareUrl = dynamicLinkResponse.ShortLink;
+
             // Save changes to database
             store = await storeRepository.CreateStoreForUser(user, store);
             return store;
@@ -397,6 +410,16 @@ namespace CakeCurious_API.Controllers
                 {
                     // User already exists in database, check if device needed to be added
                     await CheckAndAddDevice(FcmToken, uid);
+
+                    // Check if user has shareUrl
+                    if (string.IsNullOrWhiteSpace(user.ShareUrl))
+                    {
+                        // Create share_url for user
+                        var baseUser = user.Adapt<User>();
+                        var dynamicLinkResponse = await CreateUserDynamicLink(baseUser);
+                        await userRepository.UpdateShareUrl(user.Id!, dynamicLinkResponse.ShortLink);
+                    }
+
                     // Check if user existed in Elasticsearch
                     var existsResponse = await elasticClient
                         .DocumentExistsAsync(new DocumentExistsRequest(index: "users", user.Id));
@@ -450,6 +473,10 @@ namespace CakeCurious_API.Controllers
                             CreatedDate = DateTime.Now,
                             Status = (int)UserStatusEnum.Active,
                         };
+
+                        var dynamicLinkResponse = await CreateUserDynamicLink(newUser);
+                        newUser.ShareUrl = dynamicLinkResponse.ShortLink;
+
                         await userRepository.Add(newUser);
                         // Add user to Elasticsearch
                         var elasticsearchUser = new ElasticsearchUser
@@ -620,7 +647,7 @@ namespace CakeCurious_API.Controllers
                         id = uid;
                     }
                     var addressPage = new OrderAddressPage();
-                    addressPage.Addresses= orderRepository.GetAddressesOfUser(id, (page - 1) * take, take);
+                    addressPage.Addresses = orderRepository.GetAddressesOfUser(id, (page - 1) * take, take);
                     return Ok(addressPage);
                 }
                 return BadRequest();
@@ -652,6 +679,32 @@ namespace CakeCurious_API.Controllers
             {
                 Console.WriteLine(e.Message);
             }
+        }
+
+        private async Task<CreateShortDynamicLinkResponse> CreateUserDynamicLink(User user)
+        {
+            return await DynamicLinkHelper.CreateDynamicLink(
+                path: "profile",
+                linkService: firebaseDynamicLinksService,
+                id: user.Id!,
+                name: user.DisplayName!,
+                description: "",
+                photoUrl: user.PhotoUrl ?? "",
+                thumbnailUrl: null
+            );
+        }
+
+        private async Task<CreateShortDynamicLinkResponse> CreateStoreDynamicLink(Store store)
+        {
+            return await DynamicLinkHelper.CreateDynamicLink(
+                path: "store-details",
+                linkService: firebaseDynamicLinksService,
+                id: store.Id.ToString()!,
+                name: store.Name!,
+                description: store.Description ?? "",
+                photoUrl: store.PhotoUrl ?? "",
+                thumbnailUrl: null
+            );
         }
 
         [HttpGet("search")]

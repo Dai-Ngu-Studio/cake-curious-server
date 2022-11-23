@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BusinessObject;
+﻿using BusinessObject;
+using CakeCurious_API.Utilities;
+using Google.Apis.FirebaseDynamicLinks.v1;
+using Google.Apis.FirebaseDynamicLinks.v1.Data;
 using Microsoft.AspNetCore.Authorization;
-using Repository.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Nest;
+using Repository.Constants.Products;
+using Repository.Interfaces;
 using Repository.Models.Product;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using Nest;
-using Repository.Constants.Products;
 
 namespace CakeCurious_API.Controllers
 {
@@ -18,13 +21,15 @@ namespace CakeCurious_API.Controllers
         private readonly IProductRepository productRepository;
         private readonly IStoreRepository storeRepository;
         private readonly IElasticClient elasticClient;
+        private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
 
-
-        public ProductsController(IProductRepository _productRepository, IStoreRepository _storeRepository, IElasticClient _elasticClient)
+        public ProductsController(IProductRepository _productRepository, IStoreRepository _storeRepository, IElasticClient _elasticClient,
+            FirebaseDynamicLinksService _firebaseDynamicLinksService)
         {
             productRepository = _productRepository;
             storeRepository = _storeRepository;
             elasticClient = _elasticClient;
+            firebaseDynamicLinksService = _firebaseDynamicLinksService;
         }
 
         [HttpGet]
@@ -107,6 +112,9 @@ namespace CakeCurious_API.Controllers
 
             try
             {
+                var dynamicLinkResponse = await CreateDynamicLink(prod);
+                prod.ShareUrl = dynamicLinkResponse.ShortLink;
+
                 await productRepository.Add(prod);
 
                 var elasticsearchProduct = new ElasticsearchProduct
@@ -165,6 +173,10 @@ namespace CakeCurious_API.Controllers
                     StoreId = product.StoreId == null ? beforeUpdateObj.StoreId : product.StoreId,
                     ProductCategoryId = product.ProductCategoryId == null ? beforeUpdateObj.ProductCategoryId : product.ProductCategoryId,
                 };
+
+                var dynamicLinkResponse = await CreateDynamicLink(updateProd);
+                updateProd.ShareUrl = dynamicLinkResponse.ShortLink;
+
                 await productRepository.Update(updateProd);
 
                 var elasticsearchProduct = new ElasticsearchProduct
@@ -235,6 +247,19 @@ namespace CakeCurious_API.Controllers
                 return Ok(orders);
             }
             return BadRequest();
+        }
+
+        private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Product product)
+        {
+            return await DynamicLinkHelper.CreateDynamicLink(
+                path: "product-details",
+                linkService: firebaseDynamicLinksService,
+                id: product.Id.ToString()!,
+                name: product.Name!,
+                description: product.Description ?? "",
+                photoUrl: product.PhotoUrl ?? "",
+                thumbnailUrl: null
+            );
         }
 
         [HttpGet("search")]

@@ -1,6 +1,8 @@
 ﻿using BusinessObject;
+using CakeCurious_API.Utilities;
+using Google.Apis.FirebaseDynamicLinks.v1;
+using Google.Apis.FirebaseDynamicLinks.v1.Data;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nest;
@@ -10,7 +12,6 @@ using Repository.Models.Coupons;
 using Repository.Models.Product;
 using Repository.Models.Stores;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Mime;
 using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
@@ -24,14 +25,16 @@ namespace CakeCurious_API.Controllers
         private readonly IOrderRepository orderRepository;
         private readonly IProductRepository productRepository;
         private readonly IElasticClient elasticClient;
+        private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
 
-        public StoresController(IStoreRepository _storeRepository, ICouponRepository _couponRepository, IOrderRepository _orderRepository, IProductRepository _productRepository, IElasticClient _elasticClient)
+        public StoresController(IStoreRepository _storeRepository, ICouponRepository _couponRepository, IOrderRepository _orderRepository, IProductRepository _productRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService)
         {
             storeRepository = _storeRepository;
             couponRepository = _couponRepository;
             orderRepository = _orderRepository;
             productRepository = _productRepository;
             elasticClient = _elasticClient;
+            firebaseDynamicLinksService = _firebaseDynamicLinksService;
         }
 
         [HttpGet]
@@ -148,6 +151,10 @@ namespace CakeCurious_API.Controllers
                     Rating = Store.Rating == null ? beforeUpdateObj.Rating : Store.Rating,
                     Status = Store.Status == null ? beforeUpdateObj.Status : Store.Status,
                 };
+
+                var dynamicLinkResponse = await CreateDynamicLink(updateObj);
+                updateObj.ShareUrl = dynamicLinkResponse.ShortLink;
+
                 await storeRepository.Update(updateObj);
 
                 var elasticsearchStore = new ElasticsearchStore
@@ -248,6 +255,19 @@ namespace CakeCurious_API.Controllers
             var products = new GroceryProductPage();
             products.Products = await productRepository.Explore((int)ProductTypeEnum.Tool, seed, take, lastKey, id);
             return products;
+        }
+
+        private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Store store)
+        {
+            return await DynamicLinkHelper.CreateDynamicLink(
+                path: "store-details",
+                linkService: firebaseDynamicLinksService,
+                id: store.Id.ToString()!,
+                name: store.Name!,
+                description: store.Description ?? "",
+                photoUrl: store.PhotoUrl ?? "",
+                thumbnailUrl: null
+            );
         }
     }
 }
