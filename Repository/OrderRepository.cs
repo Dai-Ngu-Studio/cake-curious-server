@@ -272,6 +272,15 @@ namespace Repository
                 .Distinct();
         }
 
+        public async Task<DetailOrder?> GetOrderDetails(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Orders
+                .AsNoTracking()
+                .ProjectToType<DetailOrder>()
+                .FirstOrDefaultAsync(x => (Guid)x.Id! == id);
+        }
+
         /// <summary>
         /// Find if coupon were used by user in pending or processing or finished order.
         /// </summary>
