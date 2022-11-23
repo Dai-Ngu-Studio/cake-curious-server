@@ -252,7 +252,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                string query = $"update [User] set [User].[share_url] = {0} where [User].[id] = {1}";
+                string query = "update [User] set [User].[share_url] = {0} where [User].[id] = {1}";
                 var rows = await db.Database.ExecuteSqlRawAsync(query, shareUrl, id);
                 await transaction.CommitAsync();
                 return rows;
