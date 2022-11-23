@@ -1,6 +1,7 @@
 ﻿using BusinessObject;
 using Google.Apis.FirebaseDynamicLinks.v1;
 using Google.Apis.FirebaseDynamicLinks.v1.Data;
+using System.Web;
 
 namespace CakeCurious_API.Utilities
 {
@@ -17,11 +18,13 @@ namespace CakeCurious_API.Utilities
             var androidFallbackLink = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidFallbackLink);
             var suffixOption = Environment.GetEnvironmentVariable(EnvironmentHelper.SuffixOption);
 
+            var nameEncoded = HttpUtility.UrlEncode(name);
+
             var linkRequest = linkService.ShortLinks.Create(new CreateShortDynamicLinkRequest
             {
                 DynamicLinkInfo = new DynamicLinkInfo
                 {
-                    Link = $"{webAppUri}/{path}/{id}/?name={name}&photoUrl={photoUrl}",
+                    Link = $"{webAppUri}/{path}/{id}/?name={nameEncoded}&photoUrl={photoUrl}",
                     DomainUriPrefix = sharePrefixUri,
                     AndroidInfo = new AndroidInfo
                     {
