@@ -36,8 +36,8 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                string query = $"update [Recipe] set [Recipe].[share_url] = '{shareUrl}' where [Recipe].[id] = '{id}'";
-                var rows = await db.Database.ExecuteSqlRawAsync(query);
+                string query = "update [Recipe] set [Recipe].[share_url] = {0} where [Recipe].[id] = {1}";
+                var rows = await db.Database.ExecuteSqlRawAsync(query, shareUrl, id);
                 await transaction.CommitAsync();
                 return rows;
             }
@@ -48,8 +48,8 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                string query = $"update [Recipe] set [Recipe].status = {(int)RecipeStatusEnum.Inactive} where [Recipe].id = '{id}'";
-                var rows = await db.Database.ExecuteSqlRawAsync(query);
+                string query = "update [Recipe] set [Recipe].[status] = {0} where [Recipe].[id] = {1}";
+                var rows = await db.Database.ExecuteSqlRawAsync(query, (int)RecipeStatusEnum.Inactive, id);
                 await transaction.CommitAsync();
                 return rows;
             }

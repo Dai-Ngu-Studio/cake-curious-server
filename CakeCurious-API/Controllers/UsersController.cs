@@ -418,6 +418,7 @@ namespace CakeCurious_API.Controllers
                         var baseUser = user.Adapt<User>();
                         var dynamicLinkResponse = await CreateUserDynamicLink(baseUser);
                         await userRepository.UpdateShareUrl(user.Id!, dynamicLinkResponse.ShortLink);
+                        user.ShareUrl = dynamicLinkResponse.ShortLink;
                     }
 
                     // Check if user existed in Elasticsearch
