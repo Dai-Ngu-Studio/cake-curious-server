@@ -348,7 +348,9 @@ namespace Repository
             if (reportsRecipeType.Count() > 0)
                 foreach (var report in reportsRecipeType)
                 {
-                    isReportedRecipes!.Add((await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!);
+                    SimpleRecipeForReportList recipe = (await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!;
+                    recipe.TotalPendingReport = await db.ViolationReports.Where(report => report.Status == (int)ReportStatusEnum.Pending && report.ItemId == recipe.Id).CountAsync();
+                    isReportedRecipes!.Add(recipe);
                 }
             try
             {

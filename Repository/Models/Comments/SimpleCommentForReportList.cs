@@ -11,17 +11,12 @@ namespace Repository.Models.Comments
     public class SimpleCommentForReportList
     {
         public Guid? Id { get; set; }
-
         public string? UserId { get; set; }
-
         public StoreDetailUser? User { get; set; }
-
         public string? Content { get; set; }
-
         public DateTime? SubmittedDate { get; set; }
-
         public int? Status { get; set; }
-
+        public int? TotalPendingReport { get; set; }
         public ICollection<SimpleCommentMedia>? Images { get; set; }
 
     }
