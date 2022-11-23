@@ -41,11 +41,23 @@ namespace CakeCurious_API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{guid}")]
+        [HttpGet("{id:guid}")]
         [Authorize]
-        public async Task<ActionResult<StoreDashboardOrder>> GetOrderById(Guid guid)
+        public async Task<ActionResult<StoreDashboardOrder>> GetOrderById(Guid id)
         {
-            return Ok(await orderRepository.GetOrderDetailById(guid));
+            return Ok(await orderRepository.GetOrderDetailById(id));
+        }
+
+        [HttpGet("{id:guid}/details")]
+        [Authorize]
+        public async Task<ActionResult<DetailOrder>> GetOrderDetails(Guid id)
+        {
+            var order = await orderRepository.GetOrderDetails(id);
+            if (order != null)
+            {
+                return Ok(order);
+            }
+            return NotFound();
         }
 
         [HttpGet("store-order-detail/{guid}")]

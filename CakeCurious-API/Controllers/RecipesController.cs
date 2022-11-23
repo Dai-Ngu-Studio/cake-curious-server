@@ -320,25 +320,18 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult<DetailRecipe>> GetRecipeDetails(Guid id)
         {
-            try
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                // Get ID Token
-                string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrWhiteSpace(uid))
+                var recipe = await recipeRepository.GetRecipeDetails(id, uid);
+                if (recipe != null)
                 {
-                    var recipe = await recipeRepository.GetRecipeDetails(id, uid);
-                    if (recipe != null)
-                    {
-                        return Ok(recipe);
-                    }
-                    return NotFound();
+                    return Ok(recipe);
                 }
-                return Unauthorized();
+                return NotFound();
             }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            return Unauthorized();
         }
 
         [HttpGet("{id:guid}/steps")]
