@@ -19,5 +19,6 @@ namespace Repository.Interfaces
         public Task<User?> DeleteUser(string? id);
         public Task<ProfileUser?> GetProfileUser(string? id, string currentUserId);
         public Task<ICollection<SimpleUser>> GetSuggestedUsers(List<string> userIds);
+        public Task<int> UpdateShareUrl(string id, string shareUrl);
     }
 }

@@ -21,5 +21,6 @@ namespace Repository.Models.Users
         public GroceryStore? Store { get; set; }
         public int? Status { get; set; }
         public IEnumerable<UserHasRole>? HasRoles { get; set; }
+        public string? ShareUrl { get; set; }
     }
 }
