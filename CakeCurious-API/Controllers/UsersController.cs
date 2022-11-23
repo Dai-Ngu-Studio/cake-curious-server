@@ -602,6 +602,31 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
+        [HttpGet("{id:length(1,128)}/addresses")]
+        [Authorize]
+        public ActionResult<OrderAddressPage> GetAddressesOfUser(
+            string id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    if (id == "current")
+                    {
+                        id = uid;
+                    }
+                    var addressPage = new OrderAddressPage();
+                    addressPage.Addresses= orderRepository.GetAddressesOfUser(id, (page - 1) * take, take);
+                    return Ok(addressPage);
+                }
+                return BadRequest();
+            }
+            return Unauthorized();
+        }
 
         private async Task CheckAndAddDevice(string? FcmToken, string uid)
         {

@@ -17,5 +17,6 @@ namespace Repository.Interfaces
         public Task AddOrder(Order order, string query);
         public IEnumerable<InfoOrder> GetOrdersOfUser(string userId, int[] status, int skip, int take);
         public Task<int> CountOrdersOfUser(string userId, int[] status);
+        public IEnumerable<string?> GetAddressesOfUser(string userId, int skip, int take);
     }
 }
