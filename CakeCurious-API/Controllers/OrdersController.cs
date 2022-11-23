@@ -217,7 +217,7 @@ namespace CakeCurious_API.Controllers
                                 StoreId = checkoutOrder.StoreId,
                                 UserId = uid,
                                 CouponId = checkoutOrder.CouponId ?? null,
-                                Address = checkoutOrders.Address,
+                                Address = checkoutOrders.Address!.Trim(),
                                 OrderDetails = orderDetails,
                                 Total = total,
                                 DiscountedTotal = discountedTotal <= 0.0M ? 0.0M : discountedTotal,

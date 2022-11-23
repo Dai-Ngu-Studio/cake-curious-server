@@ -259,6 +259,19 @@ namespace Repository
                 .ProjectToType<InfoOrder>();
         }
 
+        public IEnumerable<string?> GetAddressesOfUser(string userId, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Orders
+                .AsNoTracking()
+                .OrderByDescending(x => x.OrderDate)
+                .Skip(skip)
+                .Take(take)
+                .Where(x => x.UserId == userId)
+                .Select(x => x.Address)
+                .Distinct();
+        }
+
         /// <summary>
         /// Find if coupon were used by user in pending or processing or finished order.
         /// </summary>
