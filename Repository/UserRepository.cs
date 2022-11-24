@@ -12,30 +12,30 @@ namespace Repository
     {
         public IEnumerable<User> searchUserByDisplayName(string key, IEnumerable<User> users)
         {
-            return users.Where(x => x!.DisplayName!.Contains(key)).ToList();
+            return users.Where(x => x!.DisplayName!.ToLower().Contains(key.ToLower()));
         }
         public IEnumerable<User> filterByInactiveStatus(IEnumerable<User> users)
         {
-            return users.Where(x => x.Status == (int)UserStatusEnum.Inactive).ToList();
+            return users.Where(x => x.Status == (int)UserStatusEnum.Inactive);
         }
         public IEnumerable<User> filterByActiveStatus(IEnumerable<User> users)
         {
-            return users.Where(x => x.Status == (int)UserStatusEnum.Active).ToList();
+            return users.Where(x => x.Status == (int)UserStatusEnum.Active);
         }
         public IEnumerable<User> orderByDescDisplayName(IEnumerable<User> users)
         {
-            return users.OrderByDescending(u => u.DisplayName).ToList();
+            return users.OrderByDescending(u => u.DisplayName);
         }
         public IEnumerable<User> orderByAscDisplayName(IEnumerable<User> users)
         {
-            return users.OrderBy(u => u.DisplayName).ToList();
+            return users.OrderBy(u => u.DisplayName);
         }
-        public async Task<IEnumerable<AdminDashboardUser>?> GetList(string? search, string? order_by, string? filter, int page, int size)
+        public IEnumerable<AdminDashboardUser>? GetList(string? search, string? order_by, string? filter, int page, int size)
         {
             try
             {
                 var db = new CakeCuriousDbContext();
-                IEnumerable<User> users = await db.Users!.Include(u => u.HasRoles)!.ThenInclude(hr => hr.Role).ToListAsync();
+                IEnumerable<User> users = db.Users!.Include(u => u.HasRoles)!;
                 IEnumerable<AdminDashboardUser> result;
                 //Search
                 if (search != null)
@@ -66,7 +66,7 @@ namespace Repository
                 {
                     foreach (var hasRole in users!.FirstOrDefault(u => u.Id == r.Id)!.HasRoles!)
                     {
-                        r!.Roles!.Add(hasRole!.Role!.Id!.Value);
+                        r!.Roles!.Add(hasRole!.RoleId!.Value);
                     }
                 }
                 return result;

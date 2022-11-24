@@ -5,7 +5,7 @@ namespace Repository.Interfaces
 {
     public interface IUserRepository
     {
-        public Task<IEnumerable<AdminDashboardUser>?> GetList(string? search, string? order_by, string? filter, int page, int size);
+        public IEnumerable<AdminDashboardUser>? GetList(string? search, string? order_by, string? filter, int page, int size);
         public Task<User?> Get(string uid);
         public Task<DetachedUser?> GetDetached(string uid);
         public Task Add(User obj);
