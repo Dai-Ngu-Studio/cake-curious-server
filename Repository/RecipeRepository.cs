@@ -59,11 +59,15 @@ namespace Repository
         {
             var result = new List<ExploreRecipe>();
             var db = new CakeCuriousDbContext();
-            string query = $"select top {take} [Recipe].id, [Recipe].name, [Recipe].photo_url, abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Recipe] where abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed))) > @key and [Recipe].status = {(int)RecipeStatusEnum.Active} order by abs(checksum([Recipe].id, rand(@randSeed)*rand(@randSeed)))";
+            string query = $"select top {take} [r].id, [R].[name], [r].[photo_url], abs(checksum([r].[id], rand(@randSeed)*rand(@randSeed))) as [key] from [Recipe] as [r] left join [User] as [u] on [r].[user_id] = [u].[id] where abs(checksum([r].[id], rand(@randSeed)*rand(@randSeed))) > @key and [r].[status] = @recipeStatus and [u].[status] = @userStatus order by abs(checksum([r].[id], rand(@randSeed)*rand(@randSeed)))";
             var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = query;
+            var recipeStatus = (int)RecipeStatusEnum.Active;
+            var userStatus = (int)UserStatusEnum.Active;
             cmd.Parameters.Add(new SqlParameter("@randSeed", randSeed));
             cmd.Parameters.Add(new SqlParameter("@key", key));
+            cmd.Parameters.Add(new SqlParameter("@recipeStatus", recipeStatus));
+            cmd.Parameters.Add(new SqlParameter("@userStatus", userStatus));
             if (cmd.Connection!.State != System.Data.ConnectionState.Open)
             {
                 await cmd.Connection.OpenAsync();
