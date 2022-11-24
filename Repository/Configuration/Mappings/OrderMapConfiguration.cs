@@ -11,6 +11,10 @@ namespace Repository.Configuration.Mappings
             TypeAdapterConfig<Order, InfoOrder>
                 .NewConfig()
                 .Map(dest => dest.Products, src => src.OrderDetails!.Count);
+
+            TypeAdapterConfig<Order, DetailOrder>
+                .NewConfig()
+                .Map(dest => dest.Products, src => src.OrderDetails!.Count);
         }
     }
 }

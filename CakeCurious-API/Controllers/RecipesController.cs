@@ -42,6 +42,7 @@ namespace CakeCurious_API.Controllers
             elasticClient = _elasticClient;
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
         }
+
         [HttpGet("Is-Reported")]
         [Authorize]
         public async Task<ActionResult<ReportedRecipesPage>> GetReportedRecipes(string? s, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
@@ -50,41 +51,6 @@ namespace CakeCurious_API.Controllers
             reportedRecipesPage.Recipes = await recipeRepository.GetReportedRecipes(s, sort, filter, page, size);
             reportedRecipesPage.TotalPage = (int)Math.Ceiling((decimal)await recipeRepository.CountTotalReportedRecipes(s, sort, filter) / size);
             return Ok(reportedRecipesPage);
-        }
-        private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Recipe recipe)
-        {
-            var webAppUri = Environment.GetEnvironmentVariable(EnvironmentHelper.WebAppUri);
-            var sharePrefixUri = Environment.GetEnvironmentVariable(EnvironmentHelper.ShareUriPrefix);
-            var androidPackageName = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidPackageName);
-            var androidMinPackageVersion = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidMinPackageVersionCode);
-            var androidFallbackLink = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidFallbackLink);
-            var suffixOption = Environment.GetEnvironmentVariable(EnvironmentHelper.SuffixOption);
-
-            var linkRequest = firebaseDynamicLinksService.ShortLinks.Create(new CreateShortDynamicLinkRequest
-            {
-                DynamicLinkInfo = new DynamicLinkInfo
-                {
-                    Link = $"{webAppUri}/recipe-details/{recipe.Id}/?name={recipe.Name}&photoUrl={recipe.PhotoUrl}",
-                    DomainUriPrefix = sharePrefixUri,
-                    AndroidInfo = new AndroidInfo
-                    {
-                        AndroidPackageName = androidPackageName,
-                        AndroidMinPackageVersionCode = androidMinPackageVersion,
-                        AndroidFallbackLink = androidFallbackLink,
-                    },
-                    SocialMetaTagInfo = new SocialMetaTagInfo
-                    {
-                        SocialTitle = recipe.Name,
-                        SocialImageLink = !string.IsNullOrWhiteSpace(recipe.ThumbnailUrl) ? recipe.ThumbnailUrl : recipe.PhotoUrl,
-                        SocialDescription = recipe.Description,
-                    }
-                },
-                Suffix = new Suffix
-                {
-                    Option = suffixOption
-                }
-            });
-            return await linkRequest.ExecuteAsync();
         }
 
         [HttpDelete("{id:guid}")]
@@ -288,7 +254,6 @@ namespace CakeCurious_API.Controllers
                         }
 
                         var dynamicLinkResponse = await CreateDynamicLink(recipe);
-
                         await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
 
                         return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
@@ -331,7 +296,6 @@ namespace CakeCurious_API.Controllers
                 var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
 
                 var dynamicLinkResponse = await CreateDynamicLink(recipe);
-
                 await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
 
                 return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
@@ -356,25 +320,18 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult<DetailRecipe>> GetRecipeDetails(Guid id)
         {
-            try
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                // Get ID Token
-                string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrWhiteSpace(uid))
+                var recipe = await recipeRepository.GetRecipeDetails(id, uid);
+                if (recipe != null)
                 {
-                    var recipe = await recipeRepository.GetRecipeDetails(id, uid);
-                    if (recipe != null)
-                    {
-                        return Ok(recipe);
-                    }
-                    return NotFound();
+                    return Ok(recipe);
                 }
-                return Unauthorized();
+                return NotFound();
             }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            return Unauthorized();
         }
 
         [HttpGet("{id:guid}/steps")]
@@ -434,6 +391,19 @@ namespace CakeCurious_API.Controllers
             commentPage.TotalPages = (int)Math.Ceiling((decimal)await commentRepository.CountCommentsForRecipe(id) / take);
             commentPage.Comments = commentRepository.GetCommentsForRecipe(id, (page - 1) * take, take);
             return Ok(commentPage);
+        }
+
+        private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Recipe recipe)
+        {
+            return await DynamicLinkHelper.CreateDynamicLink(
+                path: "recipe-details",
+                linkService: firebaseDynamicLinksService,
+                id: recipe.Id.ToString()!,
+                name: recipe.Name!,
+                description: recipe.Description ?? "",
+                photoUrl: recipe.PhotoUrl ?? "",
+                thumbnailUrl: recipe.ThumbnailUrl
+            );
         }
 
         [HttpGet("search")]
