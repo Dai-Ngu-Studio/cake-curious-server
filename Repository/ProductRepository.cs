@@ -217,13 +217,13 @@ namespace Repository
                 : $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[discount], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] left join [Store] as [s] on [p].[store_id] = [s].[id] where abs(checksum([p].id, rand(@randSeed)* rand(@randSeed))) > @key and ([p].[product_type] = @productType) and ([p].[status] = @productStatus ) and ([s].[status] = @storeStatus ) order by abs(checksum([p].id, rand(@randSeed) * rand(@randSeed)))";
             var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = query;
+            var productStatus = (int)ProductStatusEnum.Active;
+            var storeStatus = (int)StoreStatusEnum.Active;
             cmd.Parameters.Add(new SqlParameter("@take", take));
             cmd.Parameters.Add(new SqlParameter("@randSeed", randSeed));
             cmd.Parameters.Add(new SqlParameter("@key", key));
             cmd.Parameters.Add(new SqlParameter("@productType", productType));
-            var productStatus = (int)ProductStatusEnum.Active;
             cmd.Parameters.Add(new SqlParameter("@productStatus", productStatus));
-            var storeStatus = (int)StoreStatusEnum.Active;
             cmd.Parameters.Add(new SqlParameter("@storeStatus", storeStatus));
             if (storeId != null)
             {
