@@ -17,6 +17,6 @@ namespace Repository.Models.Orders
         public DateTime? CompletedDate { get; set; }
         public SimpleCoupon? Coupon { get; set; }
         public int? Status { get; set; }
-        public IEnumerable<SimpleOrderDetail>? OrderDetails { get; set; }
+        public IEnumerable<DetailOrderDetail>? OrderDetails { get; set; }
     }
 }
