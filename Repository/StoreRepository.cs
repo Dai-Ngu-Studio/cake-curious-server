@@ -20,32 +20,32 @@ namespace Repository
 
         public IEnumerable<Store> OrderByAscName(IEnumerable<Store> stores)
         {
-            return stores.OrderBy(p => p.Name).ToList();
+            return stores.OrderBy(p => p.Name);
         }
         public IEnumerable<Store> OrderByDescName(IEnumerable<Store> stores)
         {
-            return stores.OrderByDescending(p => p.Name).ToList();
+            return stores.OrderByDescending(p => p.Name);
         }
         public IEnumerable<Store> FilterByStatusActive(IEnumerable<Store> stores)
         {
-            return stores.Where(p => p.Status == (int)StoreStatusEnum.Active).ToList();
+            return stores.Where(p => p.Status == (int)StoreStatusEnum.Active);
         }
 
         public IEnumerable<Store> FilterByStatusInactive(IEnumerable<Store> stores)
         {
-            return stores.Where(p => p.Status == (int)StoreStatusEnum.Inactive).ToList();
+            return stores.Where(p => p.Status == (int)StoreStatusEnum.Inactive);
         }
 
         public IEnumerable<Store> SearchStore(string? keyWord, IEnumerable<Store> stores)
         {
 
-            return stores.Where(p => p.Name!.Contains(keyWord!)).ToList();
+            return stores.Where(p => p.Name!.ToLower().Contains(keyWord!.ToLower()));
         }
 
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int pageSize, int pageIndex)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Store> stores = db.Stores.Include(s => s.User).ToList();
+            IEnumerable<Store> stores = db.Stores.Include(s => s.User);
             try
             {
                 //search
@@ -185,7 +185,7 @@ namespace Repository
         public int CountDashboardStores(string? s, string? order_by, string? filter_Store)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Store> stores = db.Stores.ToList();
+            IEnumerable<Store> stores = db.Stores;
             try
             {
                 //search

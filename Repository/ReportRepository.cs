@@ -61,7 +61,7 @@ namespace Repository
 
         public IEnumerable<StaffDashboardReport> SearchViolationReport(string? keyWord, IEnumerable<StaffDashboardReport> reports)
         {
-            return reports.Where(p => p.Title!.Contains(keyWord!));
+            return reports.Where(p => p.Title!.ToLower().Contains(keyWord!.ToLower()));
         }
         public async Task<SimpleUser?> getReportedUser(Guid? itemId, int? ItemType)
         {
@@ -191,15 +191,10 @@ namespace Repository
             return null;
         }
 
-        public async Task<int> CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter)
+        public int CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Where(r => r.ItemId == itemId).Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
-            foreach (var report in reports)
-            {
-                if (report.ItemType.HasValue && report.ItemId.HasValue)
-                    report.ReportedUser = await getReportedUser(report.ItemId, report.ItemType)!;
-            }
+            IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Where(r => r.ItemId == itemId).Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>();
             try
             {
                 //search

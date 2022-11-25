@@ -11,30 +11,30 @@ namespace Repository
     {
         public IEnumerable<Coupon> SearchCoupon(string? keyWord, IEnumerable<Coupon> coupons)
         {
-            coupons = coupons.Where(p => p!.Name!.Contains(keyWord!)).ToList();
+            coupons = coupons.Where(p => p!.Name!.ToLower().Contains(keyWord!.ToLower()));
             return coupons;
         }
         public IEnumerable<Coupon> OrderByAscName(IEnumerable<Coupon> coupons)
         {
 
-            return coupons.OrderBy(p => p.Name).ToList();
+            return coupons.OrderBy(p => p.Name);
         }
         public IEnumerable<Coupon> OrderByDescName(IEnumerable<Coupon> coupons)
         {
-            return coupons.OrderByDescending(p => p.Name).ToList();
+            return coupons.OrderByDescending(p => p.Name);
         }
         public IEnumerable<Coupon> FilterByActiveStatus(IEnumerable<Coupon> coupons)
         {
-            return coupons.Where(p => p.Status == (int)CouponStatusEnum.Active).ToList();
+            return coupons.Where(p => p.Status == (int)CouponStatusEnum.Active);
         }
         public IEnumerable<Coupon> FilterByInActiveStatus(IEnumerable<Coupon> coupons)
         {
-            return coupons.Where(p => p.Status == (int)CouponStatusEnum.Active).ToList();
+            return coupons.Where(p => p.Status == (int)CouponStatusEnum.Active);
         }
         public IEnumerable<StoreDashboardCoupon>? GetCouponsOfAStore(string uid, string? s, string? order_by, string? filter_Coupon, int pageSize, int pageIndex)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Coupon> coupons = db.Coupons.Include(c => c.Store).Where(c => c!.Store!.UserId == uid).ToList();
+            IEnumerable<Coupon> coupons = db.Coupons.Include(c => c.Store).Where(c => c!.Store!.UserId == uid);
             try
             {   //Search
                 if (s != null)
@@ -68,10 +68,10 @@ namespace Repository
             }
             return null;
         }
-        public int? CountCouponPage(string uid, string? s, string? order_by, string? filter_Coupon)
+        public int CountCouponPage(string uid, string? s, string? order_by, string? filter_Coupon)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Coupon> coupons = db.Coupons.Include(c => c.Store).Where(c => c!.Store!.UserId == uid).ToList();
+            IEnumerable<Coupon> coupons = db.Coupons.Where(c => c!.Store!.UserId == uid);
             try
             {   //Search
                 if (s != null)
@@ -95,14 +95,13 @@ namespace Repository
                 else if (order_by != null && order_by == CouponOrderByEnum.DescName.ToString())
                 {
                     coupons = OrderByDescName(coupons);
-                }
-                return coupons.Count();
+                }               
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            return null;
+            return coupons.Count();
         }
 
         public async Task CreateCoupon(Coupon obj)

@@ -13,43 +13,43 @@ namespace Repository
     {
         public IEnumerable<Order> OrderAscOrderDate(IEnumerable<Order> orders)
         {
-            return orders.OrderBy(p => p.OrderDate).ToList();
+            return orders.OrderBy(p => p.OrderDate);
         }
 
         public IEnumerable<Order> OrderDescOrderDate(IEnumerable<Order> orders)
         {
-            return orders.OrderByDescending(p => p.OrderDate).ToList();
+            return orders.OrderByDescending(p => p.OrderDate);
         }
 
         public IEnumerable<Order> FilterByStatusComplete(IEnumerable<Order> orders)
         {
-            return orders.Where(p => p.Status == (int)OrderStatusEnum.Completed).ToList();
+            return orders.Where(p => p.Status == (int)OrderStatusEnum.Completed);
         }
 
         public IEnumerable<Order> FilterByStatusProcessing(IEnumerable<Order> orders)
         {
-            return orders.Where(p => p.Status == (int)OrderStatusEnum.Processing).ToList();
+            return orders.Where(p => p.Status == (int)OrderStatusEnum.Processing);
         }
 
         public IEnumerable<Order> FilterByStatusCancelled(IEnumerable<Order> orders)
         {
-            return orders.Where(p => p.Status == (int)OrderStatusEnum.Cancelled).ToList();
+            return orders.Where(p => p.Status == (int)OrderStatusEnum.Cancelled);
         }
 
         public IEnumerable<Order> FilterByStatusPending(IEnumerable<Order> orders)
         {
-            return orders.Where(p => p.Status == (int)OrderStatusEnum.Pending).ToList();
+            return orders.Where(p => p.Status == (int)OrderStatusEnum.Pending);
         }
 
         public IEnumerable<Order> SearchOrder(string? keyWord, IEnumerable<Order> orders)
         {
-            return orders.Where(p => p.User!.DisplayName!.Contains(keyWord!)).ToList();
+            return orders.Where(p => p.User!.DisplayName!.ToLower().Contains(keyWord!.ToLower()));
         }
 
         public IEnumerable<StoreDashboardOrder>? GetOrdersOfAStore(string uid, string? s, string? order_by, string? filter_Order, int pageSize, int pageIndex)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid).ToList();
+            IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid);
             try
             {
                 if (s != null)
@@ -174,7 +174,7 @@ namespace Repository
         public int CountDashboardOrders(string uid, string? s, string? order_by, string? filter_Order)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid).ToList();
+            IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid);
             try
             {
                 if (s != null)
@@ -198,14 +198,13 @@ namespace Repository
                 else if (order_by != null && order_by == OrderSortEnum.AscOrderDate.ToString())
                 {
                     orders = OrderAscOrderDate(orders);
-                }
-                return orders.Count();
+                }              
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            return 0;
+            return orders.Count();
         }
 
         public async Task<StoreDashboardOrder?> GetOrderDetailById(Guid guid)

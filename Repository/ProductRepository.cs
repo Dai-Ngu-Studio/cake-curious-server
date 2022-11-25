@@ -18,42 +18,42 @@ namespace Repository
         }
         public IEnumerable<Product> FilterByIngredient(IEnumerable<Product> prods)
         {
-            return prods.Where(p => p.ProductType == (int)ProductTypeEnum.Ingredient).ToList();
+            return prods.Where(p => p.ProductType == (int)ProductTypeEnum.Ingredient);
         }
         public IEnumerable<Product> FilterByTool(IEnumerable<Product> prods)
         {
-            return prods.Where(p => p.ProductType == (int)ProductTypeEnum.Tool).ToList();
+            return prods.Where(p => p.ProductType == (int)ProductTypeEnum.Tool);
         }
         public IEnumerable<Product> OrderByAscPrice(IEnumerable<Product> prods)
         {
-            return prods.OrderBy(p => p.Price).ToList();
+            return prods.OrderBy(p => p.Price);
         }
 
         public IEnumerable<Product> OrderbyByDescPrice(IEnumerable<Product> prods)
         {
 
-            return prods.OrderByDescending(p => p.Price).ToList();
+            return prods.OrderByDescending(p => p.Price);
         }
 
         public IEnumerable<Product> OrderByAscName(IEnumerable<Product> prods)
         {
 
-            return prods.OrderBy(p => p.Name).ToList();
+            return prods.OrderBy(p => p.Name);
         }
         public IEnumerable<Product> OrderByDescName(IEnumerable<Product> prods)
         {
-            return prods.OrderByDescending(p => p.Name).ToList();
+            return prods.OrderByDescending(p => p.Name);
         }
 
         public IEnumerable<Product> SearchProduct(string? keyWord, IEnumerable<Product> prods)
         {
-            prods = prods.Where(p => p!.Name!.Contains(keyWord!)).ToList();
+            prods = prods.Where(p => p!.Name!.ToLower().Contains(keyWord!.ToLower()));
             return prods;
         }
         public IEnumerable<StoreProductDetail>? GetProducts(Guid? id, string? s, string? order_by, string? product_type, int pageIndex, int pageSize)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Product> prods = db.Products.Include(p => p.ProductCategory).Where(p => p.StoreId == id).ToList();
+            IEnumerable<Product> prods = db.Products.Include(p => p.ProductCategory).Where(p => p.StoreId == id);
             try
             {   //Search
                 if (s != null)
@@ -143,7 +143,7 @@ namespace Repository
         public int CountDashboardProducts(Guid? id, string? s, string? order_by, string? product_type)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Product> prods = db.Products.Where(p => p.StoreId == id).ToList();
+            IEnumerable<Product> prods = db.Products.Where(p => p.StoreId == id);
             try
             {   //Search
                 if (s != null)
@@ -175,15 +175,14 @@ namespace Repository
                 else if (order_by != null && order_by == ProductOrderByEnum.DescName.ToString())
                 {
                     prods = OrderbyByDescPrice(prods);
-                }
-                return prods.Count();
+                }               
             }
             catch (Exception ex)
             {
 
                 Console.WriteLine(ex.Message);
             }
-            return 0;
+            return prods.Count();
         }
 
         public async Task<Product?> GetProductReadonly(Guid id)
