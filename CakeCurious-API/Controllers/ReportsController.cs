@@ -25,16 +25,6 @@ namespace CakeCurious_API.Controllers
             _ReportRepository = ReportRepository;
         }
 
-        [HttpGet]
-        [Authorize]
-        public async Task<ActionResult<IEnumerable<StaffDashboardReportPage>>> GetReports(string? search, string? sort, string? type, string? status, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
-        {
-            var result = new StaffDashboardReportPage();
-            result.Reports = await _ReportRepository.GetViolationReports(search, sort, type, status, page, size);
-            result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReports(search, sort, type, status) / size);
-            return Ok(result);
-        }
-
         [HttpGet("Of-An-Item/{guid}")]
         [Authorize]
         public async Task<ActionResult<StaffReportsOfAnItemPage>> GetReportsOfAnItem(Guid? guid, string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
@@ -45,6 +35,7 @@ namespace CakeCurious_API.Controllers
             result.TotalPage = (int)Math.Ceiling((decimal)await _ReportRepository.CountDashboardViolationReportsOfAnItem(guid!.Value, search, sort, filter) / size);
             return Ok(result);
         }
+
         [HttpGet("item-detail/{guid}")]
         [Authorize]
         public async Task<ActionResult<ItemReportContent>> GetItemDetail(Guid? guid)

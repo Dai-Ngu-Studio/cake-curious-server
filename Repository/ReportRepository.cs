@@ -27,41 +27,41 @@ namespace Repository
 
         public IEnumerable<StaffDashboardReport> FilterByComment(IEnumerable<StaffDashboardReport> reports)
         {
-            return reports.Where(p => p.ItemType == (int)ItemTypeEnum.Comment).ToList();
+            return reports.Where(p => p.ItemType == (int)ItemTypeEnum.Comment);
         }
 
         public IEnumerable<StaffDashboardReport> FilterByRecipe(IEnumerable<StaffDashboardReport> reports)
         {
 
-            return reports.Where(p => p.ItemType == (int)ItemTypeEnum.Recipe).ToList();
+            return reports.Where(p => p.ItemType == (int)ItemTypeEnum.Recipe);
         }
 
         public IEnumerable<StaffDashboardReport> OrderByAscTitle(IEnumerable<StaffDashboardReport> reports)
         {
 
-            return reports.OrderBy(p => p.Title).ToList();
+            return reports.OrderBy(p => p.Title);
         }
         public IEnumerable<StaffDashboardReport> OrderByDescTitle(IEnumerable<StaffDashboardReport> reports)
         {
-            return reports.OrderByDescending(p => p.Title).ToList();
+            return reports.OrderByDescending(p => p.Title);
         }
 
         public IEnumerable<StaffDashboardReport> FilterByPendingStatus(IEnumerable<StaffDashboardReport> reports)
         {
-            return reports.Where(p => p.Status == (int)ReportStatusEnum.Pending).ToList();
+            return reports.Where(p => p.Status == (int)ReportStatusEnum.Pending);
         }
         public IEnumerable<StaffDashboardReport> FilterByRejectedStatus(IEnumerable<StaffDashboardReport> reports)
         {
-            return reports.Where(p => p.Status == (int)ReportStatusEnum.Rejected).ToList();
+            return reports.Where(p => p.Status == (int)ReportStatusEnum.Rejected);
         }
         public IEnumerable<StaffDashboardReport> FilterByCensoredStatus(IEnumerable<StaffDashboardReport> reports)
         {
-            return reports.Where(p => p.Status == (int)ReportStatusEnum.Censored).ToList();
+            return reports.Where(p => p.Status == (int)ReportStatusEnum.Censored);
         }
 
         public IEnumerable<StaffDashboardReport> SearchViolationReport(string? keyWord, IEnumerable<StaffDashboardReport> reports)
         {
-            return reports.Where(p => p.Title!.Contains(keyWord!)).ToList();
+            return reports.Where(p => p.Title!.Contains(keyWord!));
         }
         public async Task<SimpleUser?> getReportedUser(Guid? itemId, int? ItemType)
         {
@@ -78,63 +78,6 @@ namespace Repository
             }
             return null;
         }
-        public async Task<IEnumerable<StaffDashboardReport>?> GetViolationReports(string? s, string? order_by, string? filter_type, string? filter_status, int pageIndex, int pageSize)
-        {
-            var db = new CakeCuriousDbContext();
-            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
-            foreach (var report in reports)
-            {
-                if (report.ItemType.HasValue && report.ItemId.HasValue)
-                    report.ReportedUser = await getReportedUser(report.ItemId, report.ItemType)!;
-            }
-            try
-            {
-                //search
-                if (s != null)
-                {
-                    reports = SearchViolationReport(s, reports);
-                }
-                //filter type
-                if (filter_type != null && filter_type == ReportTypeEnum.Comment.ToString())
-                {
-                    reports = FilterByComment(reports);
-                }
-                else if (filter_type != null && filter_type == ReportTypeEnum.Recipe.ToString())
-                {
-                    reports = FilterByRecipe(reports);
-                }
-                //filter status
-                if (filter_status != null && filter_status == ReportStatusEnum.Censored.ToString())
-                {
-                    reports = FilterByCensoredStatus(reports);
-                }
-                else if (filter_status != null && filter_status == ReportStatusEnum.Pending.ToString())
-                {
-                    reports = FilterByPendingStatus(reports);
-                }
-                else if (filter_status != null && filter_status == ReportStatusEnum.Rejected.ToString())
-                {
-                    reports = FilterByRejectedStatus(reports);
-                }
-                //sort
-                if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
-                {
-                    reports = OrderByDescTitle(reports);
-                }
-                else if (order_by != null && order_by == ReportSortEnum.AscTitle.ToString())
-                {
-                    reports = OrderByAscTitle(reports);
-                }
-                return reports.Skip((pageIndex - 1) * pageSize)
-                            .Take(pageSize).ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            return null;
-        }
-
         public async Task<StaffReportDetail?> GetReportDetailById(Guid id)
         {
             var db = new CakeCuriousDbContext();
@@ -163,57 +106,6 @@ namespace Repository
                 Console.WriteLine(ex.Message);
             }
         }
-
-        public int CountDashboardViolationReports(string? s, string? order_by, string? filter_type, string? filter_status)
-        {
-            var db = new CakeCuriousDbContext();
-            IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Adapt<IEnumerable<StaffDashboardReport>>().ToList();
-            try
-            {
-                if (s != null)
-                {
-                    reports = SearchViolationReport(s, reports);
-                }
-                //filter type
-                if (filter_type != null && filter_type == ReportTypeEnum.Comment.ToString())
-                {
-                    reports = FilterByComment(reports);
-                }
-                else if (filter_type != null && filter_type == ReportTypeEnum.Recipe.ToString())
-                {
-                    reports = FilterByRecipe(reports);
-                }
-                //filter status
-                if (filter_status != null && filter_status == ReportStatusEnum.Censored.ToString())
-                {
-                    reports = FilterByCensoredStatus(reports);
-                }
-                else if (filter_status != null && filter_status == ReportStatusEnum.Pending.ToString())
-                {
-                    reports = FilterByPendingStatus(reports);
-                }
-                else if (filter_status != null && filter_status == ReportStatusEnum.Rejected.ToString())
-                {
-                    reports = FilterByPendingStatus(reports);
-                }
-                if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
-                {
-                    reports = OrderByDescTitle(reports);
-                }
-                else if (order_by != null && order_by == ReportSortEnum.AscTitle.ToString())
-                {
-                    reports = OrderByAscTitle(reports);
-                }
-                return reports.Count();
-            }
-            catch (Exception ex)
-            {
-
-                Console.WriteLine(ex.Message);
-            }
-            return 0;
-        }
-
         public async Task<ItemReportContent?> GetReportedItemDetail(Guid? itemId)
         {
             var db = new CakeCuriousDbContext();
@@ -254,7 +146,7 @@ namespace Repository
         public async Task<IEnumerable<StaffDashboardReport>?> GetReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter_status, int PageIndex, int PageSize)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<StaffDashboardReport> reports = await db.ViolationReports.Where(r => r.ItemId == itemId).Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>().ToListAsync();
+            IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Where(r => r.ItemId == itemId).Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>();
             foreach (var report in reports)
             {
                 if (report.ItemType.HasValue && report.ItemId.HasValue)
@@ -345,7 +237,6 @@ namespace Repository
             }
             return 0;
         }
-
 
         public async Task<int> CountPendingReportOfAnItem(Guid itemId)
         {
