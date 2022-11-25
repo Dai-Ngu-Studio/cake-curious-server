@@ -107,6 +107,22 @@ namespace Repository
 
         public async Task CreateCoupon(Coupon obj)
         {
+            if (obj.Discount != null && obj.Discount > 0)
+            {
+                if (obj.DiscountType == (int)CouponDiscountTypeEnum.PercentOff)
+                {
+                    if (obj.Discount >= 1 && obj.Discount <= 100)
+                    {
+                        obj.Discount /= 100;
+                    }
+                    else if (obj.Discount < 1)
+                    {
+
+                    }
+                    else throw new Exception("Discount value of PercentOff discount type must less than or equal 100");
+                }
+            }
+            else throw new Exception("Discount value must greater than 0");
             var db = new CakeCuriousDbContext();
             db.Coupons.Add(obj);
             await db.SaveChangesAsync();

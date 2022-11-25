@@ -28,15 +28,14 @@ namespace CakeCurious_API.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Authorize]
-        public ActionResult<Coupon> PostCoupon(Coupon coupon)
+        public async Task<ActionResult<Coupon>> PostCoupon(Coupon coupon)
         {
             Guid id = Guid.NewGuid();
             Coupon obj = new Coupon()
             {
                 Id = id,
                 Code = coupon.Code,
-                Discount = coupon.DiscountType == (int)CouponDiscountTypeEnum.PercentOff ? coupon.Discount >= 1 && coupon.Discount <= 100 ? coupon.Discount / 100 : throw new Exception("Min value is 1 and max value is 100 for PercentOff discount type")
-                : coupon.Discount < 1 ? throw new Exception("Min value for FixedDecrease discount type is 1") : coupon.Discount,
+                Discount = coupon.Discount,
                 ExpiryDate = coupon.ExpiryDate,
                 DiscountType = coupon.DiscountType,
                 MaxUses = coupon.MaxUses,
@@ -46,12 +45,16 @@ namespace CakeCurious_API.Controllers
             };
             try
             {
-                _couponRepository.CreateCoupon(obj);
+                await _couponRepository.CreateCoupon(obj);
             }
             catch (DbUpdateException)
             {
                 if (_couponRepository.GetById(obj.Id.Value) != null)
                     return Conflict();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
             return Ok(obj);
         }
