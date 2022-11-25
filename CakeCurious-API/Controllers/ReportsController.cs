@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -53,35 +54,21 @@ namespace CakeCurious_API.Controllers
         }
 
         [HttpPost]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<ViolationReport> PostReport(ViolationReport inputReport)
+        [Authorize]
+        public async Task<ActionResult> CreateReport(CreateReport createReport)
         {
-            Guid id = Guid.NewGuid();
-            ViolationReport report = new ViolationReport()
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                Id = id,
-                Content = inputReport.Content,
-                ItemType = inputReport.ItemType,
-                ReporterId = inputReport.ReporterId,
-                StaffId = inputReport.StaffId,
-                ItemId = inputReport.ItemId,
-                ReportCategoryId = inputReport.ReportCategoryId,
-                Title = inputReport.Title,
-                Status = inputReport.Status,
-                SubmittedDate = inputReport.SubmittedDate,
-            };
-            try
-            {
-                _ReportRepository.Add(report);
+                var report = createReport.Adapt<ViolationReport>();
+                report.ReporterId = uid;
+                report.SubmittedDate = DateTime.Now;
+                report.Status = (int)ReportStatusEnum.Pending;
+                await _ReportRepository.Add(report);
+                return Ok();
             }
-            catch (DbUpdateException)
-            {
-                if (_ReportRepository.GetById(inputReport.Id!.Value) != null)
-                    return Conflict();
-            }
-            return Ok(report);
+            return Unauthorized();
         }
 
         [HttpPut("{guid}")]

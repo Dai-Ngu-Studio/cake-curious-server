@@ -21,7 +21,7 @@ namespace Repository
         public async Task Add(ViolationReport obj)
         {
             var db = new CakeCuriousDbContext();
-            db.ViolationReports.Add(obj);
+            await db.ViolationReports.AddAsync(obj);
             await db.SaveChangesAsync();
         }
 

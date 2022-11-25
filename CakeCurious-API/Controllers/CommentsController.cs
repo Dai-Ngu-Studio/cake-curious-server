@@ -64,19 +64,12 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                try
-                {
-                    var comment = createComment.Adapt<Comment>();
-                    comment.UserId = uid;
-                    comment.SubmittedDate = DateTime.Now;
-                    comment.Status = (int)CommentStatusEnum.Active;
-                    await commentRepository.Add(comment);
-                    return Ok(await commentRepository.GetRecipeComment((Guid)comment.Id!));
-                }
-                catch (Exception)
-                {
-                    return StatusCode(500);
-                }
+                var comment = createComment.Adapt<Comment>();
+                comment.UserId = uid;
+                comment.SubmittedDate = DateTime.Now;
+                comment.Status = (int)CommentStatusEnum.Active;
+                await commentRepository.Add(comment);
+                return Ok(await commentRepository.GetRecipeComment((Guid)comment.Id!));
             }
             return Unauthorized();
         }
