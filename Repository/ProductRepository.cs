@@ -271,11 +271,12 @@ namespace Repository
                 .ToListAsync();
         }
 
-        public async Task<ICollection<CartOrder>> GetCartOrders(List<Guid> storeIds, List<Guid> productIds)
+        public async Task<ICollection<CartOrder>> GetCartOrders(List<Guid> storeIds, List<Guid> productIds, List<Guid?> couponIds)
         {
             using (var scope = new MapContextScope())
             {
                 scope.Context.Parameters.Add("productIds", productIds);
+                scope.Context.Parameters.Add("couponIds", couponIds);
 
                 var db = new CakeCuriousDbContext();
                 return await db.Stores
