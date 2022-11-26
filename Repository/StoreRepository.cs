@@ -264,6 +264,18 @@ namespace Repository
             }
         }
 
+        public async Task<ICollection<GroceryStore>> GetSuggestedStores(List<Guid> storeIds)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Stores
+                .AsNoTracking()
+                .Where(x => storeIds.Any(y => y == (Guid)x.Id!))
+                .Where(x => x.Status == (int)StoreStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                .ProjectToType<GroceryStore>()
+                .ToListAsync();
+        }
+
         public async Task<ICollection<GroceryStore>> Explore(int randSeed, int take, int key)
         {
             var result = new List<GroceryStore>();

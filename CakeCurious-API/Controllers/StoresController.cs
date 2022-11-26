@@ -280,5 +280,81 @@ namespace CakeCurious_API.Controllers
                 thumbnailUrl: null
             );
         }
+
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<ActionResult<GroceryStorePage>> SearchStores(
+            [FromQuery] string? query,
+            [FromQuery] string? lastId,
+            [FromQuery] double? lastScore,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            var searchDescriptor = new SearchDescriptor<ElasticsearchStore>();
+            var descriptor = new QueryContainerDescriptor<ElasticsearchStore>();
+            var shouldContainer = new List<QueryContainer>();
+            var filterContainer = new List<QueryContainer>();
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                var emptyPage = new GroceryStorePage();
+                emptyPage.TotalPages = 0;
+                emptyPage.Stores = new List<GroceryStore>();
+
+                return Ok(emptyPage);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                shouldContainer.Add(descriptor
+                    .Match(m => m
+                        .Field(f => f.Name)
+                        .Query(query)
+                        .Fuzziness(Fuzziness.EditDistance(2))
+                    )
+                );
+            }
+
+            if (lastId != null && lastScore != null)
+            {
+                searchDescriptor = searchDescriptor.SearchAfter(lastScore, lastId);
+            }
+
+            searchDescriptor = searchDescriptor.Index("stores")
+                .Size(take)
+                .MinScore(0.01D)
+                .Sort(ss => ss
+                    .Descending(SortSpecialField.Score)
+                    .Descending(f => f.Id.Suffix("keyword"))
+                )
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
+                    )
+                );
+
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchStore>(searchDescriptor);
+
+            var elasticsearchStores = new List<KeyValuePair<Guid, double>>();
+
+            foreach (var hit in searchResponse.Hits)
+            {
+                elasticsearchStores.Add(
+                    new KeyValuePair<Guid, double>((Guid)hit.Source.Id!, (double)hit.Score!)
+                );
+            }
+
+            var storeIds = elasticsearchStores.Select(x => x.Key).ToList();
+            var suggestedStores = await storeRepository.GetSuggestedStores(storeIds);
+
+            var stores = elasticsearchStores
+                .Join(suggestedStores, es => es.Key, pd => (Guid)pd.Id!,
+                    (es, pd) => { pd.Score = es.Value; return pd; });
+
+            var storePage = new GroceryStorePage();
+            storePage.Stores = stores;
+
+            return Ok(storePage);
+        }
     }
 }
