@@ -257,6 +257,17 @@ namespace CakeCurious_API.Controllers
             return products;
         }
 
+        [HttpGet("grocery")]
+        [Authorize]
+        public async Task<GroceryStorePage> ExploreStores(int seed,
+            [Range(1, int.MaxValue)] int take = 10,
+            [Range(0, int.MaxValue)] int lastKey = 0)
+        {
+            var stores = new GroceryStorePage();
+            stores.Stores = await storeRepository.Explore(seed, take, lastKey);
+            return stores;
+        }
+
         private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Store store)
         {
             return await DynamicLinkHelper.CreateDynamicLink(
