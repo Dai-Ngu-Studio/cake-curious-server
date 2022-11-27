@@ -28,7 +28,7 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult<AdminDashboardReport>> GetAdminDashboardReport()
         {
             AdminDashboardReport dbr;
-            dbr = await dashboardReportRepository.generateAdminReport();
+            dbr = dashboardReportRepository.generateAdminReport();
             BetaAnalyticsDataClient client = new BetaAnalyticsDataClientBuilder
             {
                 CredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS"),
@@ -46,8 +46,7 @@ namespace CakeCurious_API.Controllers
                 DateRanges = { new DateRange { StartDate = LastYear.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), EndDate = "today" }, },
                 OrderBys = { new OrderBy { Dimension = new OrderBy.Types.DimensionOrderBy() { DimensionName = "month" }, Desc = false }, }
             };
-            var currentYearActiveUser = client.RunReport(requestThisYearActiveUser);
-
+            var currentYearActiveUser = await client.RunReportAsync(requestThisYearActiveUser);
             foreach (var row in currentYearActiveUser.Rows)
             {
                 if (Int32.Parse(row.DimensionValues[1].Value) == DateTime.Now.Year)
@@ -67,10 +66,10 @@ namespace CakeCurious_API.Controllers
             };
 
             //Add active user by week data to report
-            var activeUserRes = client.RunReport(requestActiveUser);
-            dbr!.CardStats!.CurrentWeekActiveUser = activeUserRes.Rows.Count() > 0 ? Int32.Parse(activeUserRes.Rows[1].MetricValues[0].Value) : 0;
-            decimal lastWeekActiveUser = Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value);
-            double sinceLastWeekActiveUser = dbr!.CardStats!.CurrentWeekActiveUser > 0 && lastWeekActiveUser > 0 ? (double)((dbr!.CardStats!.CurrentWeekActiveUser - lastWeekActiveUser) / (dbr!.CardStats!.CurrentWeekActiveUser > lastWeekActiveUser ? dbr!.CardStats!.CurrentWeekActiveUser : lastWeekActiveUser)) : -1;
+            var activeUserRes = await client.RunReportAsync(requestActiveUser);
+            dbr!.CardStats!.CurrentWeekActiveUser = activeUserRes.Rows.Count() > 1 ? Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value) : 0;
+            decimal lastWeekActiveUser = activeUserRes.Rows.Count() > 1 ? Int32.Parse(activeUserRes.Rows[1].MetricValues[0].Value) : Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value);
+            double sinceLastWeekActiveUser = (double)((dbr!.CardStats!.CurrentWeekActiveUser - lastWeekActiveUser) / (dbr!.CardStats!.CurrentWeekActiveUser > lastWeekActiveUser ? dbr!.CardStats!.CurrentWeekActiveUser : lastWeekActiveUser));
             dbr!.CardStats!.SinceLastWeekActiveUser = Math.Round(sinceLastWeekActiveUser, 2);
 
             // Get store visit by month 2.6s
@@ -82,7 +81,7 @@ namespace CakeCurious_API.Controllers
                 DateRanges = { new DateRange { StartDate = monthStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), EndDate = "today" }, },
             };
             // Make the request
-            var storeVisitRes = client.RunReport(storeVisitReq);
+            var storeVisitRes = await client.RunReportAsync(storeVisitReq);
             foreach (Row row in storeVisitRes.Rows.Where(r => r.DimensionValues[0].Value.Contains("StoreDemoData")))
             {
                 dbr!.TableStoreVisit!.Add(new TableRowStoreVisit { StoreName = row.DimensionValues[0].Value.Substring(row.DimensionValues[0].Value.LastIndexOf("/") + 1), Visitors = row.MetricValues[0].Value });
@@ -112,7 +111,7 @@ namespace CakeCurious_API.Controllers
                 DateRanges = { new DateRange { StartDate = startAtSunday.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), EndDate = "today" }, },
             };
             // Make the request
-            var storeVisitRes = client.RunReport(storeVisitReq);
+            var storeVisitRes = await client.RunReportAsync(storeVisitReq);
             foreach (Row row in storeVisitRes.Rows)
             {
                 if (row.DimensionValues[0].Value.Contains("StoreDemoData/" + storeId.Value.ToString()))
@@ -134,7 +133,7 @@ namespace CakeCurious_API.Controllers
                     OrderBys = { new OrderBy { Dimension = new OrderBy.Types.DimensionOrderBy() { DimensionName = "month" }, Desc = false }, },
 
                 };
-                var resMonthlyStoreVisit = client.RunReport(requestMonthlyStoreVisit);
+                var resMonthlyStoreVisit = await client.RunReportAsync(requestMonthlyStoreVisit);
                 foreach (Row row in resMonthlyStoreVisit.Rows)
                 {
                     if (Int32.Parse(row.DimensionValues[2].Value) == DateTime.Now.Year)

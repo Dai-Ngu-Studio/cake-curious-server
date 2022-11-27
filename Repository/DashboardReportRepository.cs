@@ -13,32 +13,32 @@ namespace Repository
 {
     public class DashboardReportRepository : IDashboardReportRepository
     {
-        public async Task<AdminDashboardReport> generateAdminReport()
+        public AdminDashboardReport generateAdminReport()
         {
             AdminDashboardReport report = new AdminDashboardReport();
             var db = new CakeCuriousDbContext();
             AdminDashboardCardStats cs = new AdminDashboardCardStats();
             //new report by week cost not much
             DateTime startAtSunday = DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
-            IEnumerable<ViolationReport> TwoLastWeekReport = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= DateTime.Now).ToListAsync();
+            IEnumerable<ViolationReport> TwoLastWeekReport = db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= DateTime.Now);
             cs.CurrentWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= DateTime.Now).Count();
             decimal lastWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= startAtSunday.AddDays(-1)).Count();
-            double sinceLastWeekReport = cs.CurrentWeekReport > 0 && lastWeekReport > 0 ? (double)((cs.CurrentWeekReport - lastWeekReport) / (cs.CurrentWeekReport > lastWeekReport ? cs.CurrentWeekReport : lastWeekReport)) : -1;
+            double sinceLastWeekReport = cs.CurrentWeekReport > 0 || lastWeekReport > 0 ? (double)((cs.CurrentWeekReport - lastWeekReport) / (cs.CurrentWeekReport > lastWeekReport ? cs.CurrentWeekReport : lastWeekReport)) : 0;
             cs.SinceLastWeekReport = Math.Round(sinceLastWeekReport, 2);
 
             //new baker by month
-            IEnumerable<User> TwoLastMonthNewBaker = await db.Users.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.Month || u!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month).ToListAsync();
+            IEnumerable<User> TwoLastMonthNewBaker = db.Users.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.Month || u!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month);
             cs.CurrentMonthNewBaker = TwoLastMonthNewBaker.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.Month).Count();
             decimal LastMonthNewUser = TwoLastMonthNewBaker.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month).Count();
-            double sinceLastMonthNewUser = LastMonthNewUser > 0 && cs.CurrentMonthNewBaker > 0 ? (double)((cs.CurrentMonthNewBaker - LastMonthNewUser) / (cs.CurrentMonthNewBaker > LastMonthNewUser ? cs.CurrentMonthNewBaker : LastMonthNewUser)) : -1;
-            cs.SinceLastMonthNewBaker = Math.Round(sinceLastMonthNewUser, 2) ;
+            double sinceLastMonthNewUser = LastMonthNewUser > 0 || cs.CurrentMonthNewBaker > 0 ? (double)((cs.CurrentMonthNewBaker - LastMonthNewUser) / (cs.CurrentMonthNewBaker > LastMonthNewUser ? cs.CurrentMonthNewBaker : LastMonthNewUser)) : 0;
+            cs.SinceLastMonthNewBaker = Math.Round(sinceLastMonthNewUser, 2);
 
             //new store by month
-            IEnumerable<Store> TwoLastMonthNewStore = await db.Stores.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.Month || u!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month).ToListAsync();
+            IEnumerable<Store> TwoLastMonthNewStore = db.Stores.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.Month || u!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month);
             cs.CurrentMonthNewStore = TwoLastMonthNewStore.Where(s => s!.CreatedDate!.Value.Month == DateTime.Now.Month).Count();
             decimal LastMonthNewStore = TwoLastMonthNewStore.Where(s => s!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month).Count();
-            double sinceLastMonthNewStore = cs.CurrentMonthNewStore > 0 && LastMonthNewStore > 0 ? (double)((cs.CurrentMonthNewStore - LastMonthNewStore) / (cs.CurrentMonthNewStore > LastMonthNewStore ? cs.CurrentMonthNewStore : LastMonthNewStore)) : -1;
-            cs.SinceLastMonthNewStore =  Math.Round(sinceLastMonthNewStore, 2);
+            double sinceLastMonthNewStore = cs.CurrentMonthNewStore > 0 || LastMonthNewStore > 0 ? (double)((cs.CurrentMonthNewStore - LastMonthNewStore) / (cs.CurrentMonthNewStore > LastMonthNewStore ? cs.CurrentMonthNewStore : LastMonthNewStore)) : 0;
+            cs.SinceLastMonthNewStore = Math.Round(sinceLastMonthNewStore, 2);
             report.CardStats = cs;
 
             //Add barchart 1.5s
@@ -61,7 +61,7 @@ namespace Repository
             DateTime endOfCurrentMonthWeek4 = new DateTime(currentYear, currentMonth, dateOfCurrentMonth);
             DateTime endOfLastMonthWeek4 = new DateTime(currentYear, lastMonth, dateOfLastMonth);
             //Get Current Week reports
-            IEnumerable<ViolationReport> ViolationReports = await db.ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek1.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek4).ToListAsync();
+            IEnumerable<ViolationReport> ViolationReports = db.ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek1.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek4);
             int current1stWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek1 && r!.SubmittedDate! <= endOfCurrentMonthWeek1).Count();
             int current2ndWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek2 && r!.SubmittedDate! <= endOfCurrentMonthWeek2).Count();
             int current3rdWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek3 && r!.SubmittedDate! <= endOfCurrentMonthWeek3).Count();
@@ -85,7 +85,7 @@ namespace Repository
             report.BarChart = bc;
 
             //Get famous recipe for staticstic  0.1s       
-            foreach (var recipe in await db.Recipes.Include(r => r.Likes).Include(r => r.Comments).Include(r => r.User).OrderByDescending(r => r!.Likes!.Count()).OrderByDescending(r => r!.Comments!.Count()).Take(5).ToListAsync())
+            foreach (var recipe in db.Recipes.Include(r => r.Likes).Include(r => r.Comments).Include(r => r.User).OrderByDescending(r => r!.Likes!.Count()).OrderByDescending(r => r!.Comments!.Count()).Take(5))
             {
                 report!.TableFamousRecipe!.Add(new TableRowFamousRecipes
                 {
@@ -129,12 +129,12 @@ namespace Repository
                 lastWeekSales -= ord!.DiscountedTotal!.Value > 0 ? ord!.DiscountedTotal!.Value : 0;
             }
             double sinceLastWeekSales = cs.CurrentWeekSales > 0 && lastWeekSales > 0 ? (double)((cs.CurrentWeekSales - lastWeekSales) / (cs.CurrentWeekSales > lastWeekSales ? cs.CurrentWeekSales : lastWeekSales)) : -1;
-            cs.SinceLastWeekSales = Math.Round(sinceLastWeekSales, 2) ;
+            cs.SinceLastWeekSales = Math.Round(sinceLastWeekSales, 2);
             //Order Complete by month
             cs.CurrentMonthTotalCompletedOrder = await db.Orders.Where(ord => ord!.OrderDate!.Value.Month == DateTime.Now.Month && ord!.Status! == (int)OrderStatusEnum.Completed && ord!.StoreId == storeId).CountAsync();
             decimal LastMonthCompletedOrder = await db.Orders.Where(ord => ord!.OrderDate!.Value.Month == DateTime.Now.AddMonths(-1).Month && ord!.Status! == (int)OrderStatusEnum.Completed && ord!.StoreId == storeId).CountAsync();
             double sinceLastMonthCompleteOrder = LastMonthCompletedOrder > 0 && cs.CurrentMonthTotalCompletedOrder > 0 ? (double)((cs.CurrentMonthTotalCompletedOrder - LastMonthCompletedOrder) / (cs.CurrentMonthTotalCompletedOrder > LastMonthCompletedOrder ? cs.CurrentMonthTotalCompletedOrder : LastMonthCompletedOrder)) : -1;
-            cs.SinceLastMonthTotalCompletedOrder = Math.Round(sinceLastMonthCompleteOrder, 2) ;
+            cs.SinceLastMonthTotalCompletedOrder = Math.Round(sinceLastMonthCompleteOrder, 2);
             report.CardStats = cs;
             //Bar chart
             StoreDashboardBarChart bc = new StoreDashboardBarChart();
