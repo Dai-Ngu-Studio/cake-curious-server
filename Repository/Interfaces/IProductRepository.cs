@@ -17,6 +17,6 @@ namespace Repository.Interfaces
         public Task<ICollection<GroceryProduct>> Explore(int productType, int randSeed, int take, int key, Guid? storeId);
         public Task<DetailProduct?> GetProductDetails(Guid id);
         public Task<ICollection<GroceryProduct>> GetSuggestedProducts(List<Guid> productIds);
-        public Task<ICollection<CartOrder>> GetCartOrders(List<Guid> storeIds, List<Guid> productIds);
+        public Task<ICollection<CartOrder>> GetCartOrders(List<Guid> storeIds, List<Guid> productIds, List<Guid?> couponIds);
     }
 }

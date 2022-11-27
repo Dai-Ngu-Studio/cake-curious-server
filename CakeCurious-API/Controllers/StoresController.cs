@@ -196,6 +196,18 @@ namespace CakeCurious_API.Controllers
             return Ok("Update store successfully.");
         }
 
+        [HttpGet("{id:guid}/coupons")]
+        [Authorize]
+        public async Task<ActionResult<SimpleCoupon>> GetValidSimpleCouponsOfStore(Guid id)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                return Ok(await couponRepository.GetValidSimpleCouponsOfStoreForUser(id, uid));
+            }
+            return Unauthorized();
+        }
+
         /// <summary>
         /// Returns coupon information if all of the following conditions are met: the coupon existed, the coupon didn't expire, the coupon hadn't reached max uses, the coupon hadn't been used by the user.
         /// </summary>
@@ -214,19 +226,22 @@ namespace CakeCurious_API.Controllers
                 if (coupon != null)
                 {
                     // Check if coupon had reached max uses
-                    if (coupon.UsedCount < coupon.MaxUses)
+                    if (coupon.MaxUses != null)
                     {
-                        // Check if coupon had been used by the user
-                        var isUsed = await orderRepository.IsCouponInUserOrders((Guid)coupon.Id!, uid);
-                        if (!isUsed)
+                        if (coupon.UsedCount >= coupon.MaxUses)
                         {
-                            // Coupon weren't used by the user
-                            return Ok(coupon);
+                            return NotFound();
                         }
-                        // Coupon had been used by the user
-                        return BadRequest();
                     }
-                    return NotFound();
+                    // Check if coupon had been used by the user
+                    var isUsed = await orderRepository.IsCouponInUserOrders((Guid)coupon.Id!, uid);
+                    if (!isUsed)
+                    {
+                        // Coupon weren't used by the user
+                        return Ok(coupon);
+                    }
+                    // Coupon had been used by the user
+                    return BadRequest();
                 }
                 return NotFound();
             }
@@ -257,6 +272,17 @@ namespace CakeCurious_API.Controllers
             return products;
         }
 
+        [HttpGet("grocery")]
+        [Authorize]
+        public async Task<GroceryStorePage> ExploreStores(int seed,
+            [Range(1, int.MaxValue)] int take = 10,
+            [Range(0, int.MaxValue)] int lastKey = 0)
+        {
+            var stores = new GroceryStorePage();
+            stores.Stores = await storeRepository.Explore(seed, take, lastKey);
+            return stores;
+        }
+
         private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Store store)
         {
             return await DynamicLinkHelper.CreateDynamicLink(
@@ -268,6 +294,82 @@ namespace CakeCurious_API.Controllers
                 photoUrl: store.PhotoUrl ?? "",
                 thumbnailUrl: null
             );
+        }
+
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<ActionResult<GroceryStorePage>> SearchStores(
+            [FromQuery] string? query,
+            [FromQuery] string? lastId,
+            [FromQuery] double? lastScore,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            var searchDescriptor = new SearchDescriptor<ElasticsearchStore>();
+            var descriptor = new QueryContainerDescriptor<ElasticsearchStore>();
+            var shouldContainer = new List<QueryContainer>();
+            var filterContainer = new List<QueryContainer>();
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                var emptyPage = new GroceryStorePage();
+                emptyPage.TotalPages = 0;
+                emptyPage.Stores = new List<GroceryStore>();
+
+                return Ok(emptyPage);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                shouldContainer.Add(descriptor
+                    .Match(m => m
+                        .Field(f => f.Name)
+                        .Query(query)
+                        .Fuzziness(Fuzziness.EditDistance(2))
+                    )
+                );
+            }
+
+            if (lastId != null && lastScore != null)
+            {
+                searchDescriptor = searchDescriptor.SearchAfter(lastScore, lastId);
+            }
+
+            searchDescriptor = searchDescriptor.Index("stores")
+                .Size(take)
+                .MinScore(0.01D)
+                .Sort(ss => ss
+                    .Descending(SortSpecialField.Score)
+                    .Descending(f => f.Id.Suffix("keyword"))
+                )
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(shouldContainer.ToArray())
+                        .Filter(filterContainer.ToArray())
+                    )
+                );
+
+            var searchResponse = await elasticClient.SearchAsync<ElasticsearchStore>(searchDescriptor);
+
+            var elasticsearchStores = new List<KeyValuePair<Guid, double>>();
+
+            foreach (var hit in searchResponse.Hits)
+            {
+                elasticsearchStores.Add(
+                    new KeyValuePair<Guid, double>((Guid)hit.Source.Id!, (double)hit.Score!)
+                );
+            }
+
+            var storeIds = elasticsearchStores.Select(x => x.Key).ToList();
+            var suggestedStores = await storeRepository.GetSuggestedStores(storeIds);
+
+            var stores = elasticsearchStores
+                .Join(suggestedStores, es => es.Key, pd => (Guid)pd.Id!,
+                    (es, pd) => { pd.Score = es.Value; return pd; });
+
+            var storePage = new GroceryStorePage();
+            storePage.Stores = stores;
+
+            return Ok(storePage);
         }
     }
 }

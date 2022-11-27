@@ -17,5 +17,7 @@ namespace Repository.Interfaces
         public Task<Guid> getStoreIdByUid(string uid);
         public Task<DetailStore?> GetStoreDetails(Guid id);
         public Task<Store> CreateStoreForUser(User user, Store store);
+        public Task<ICollection<GroceryStore>> Explore(int randSeed, int take, int key);
+        public Task<ICollection<GroceryStore>> GetSuggestedStores(List<Guid> storeIds);
     }
 }

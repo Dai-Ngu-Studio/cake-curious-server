@@ -1,4 +1,5 @@
-﻿using Repository.Models.Stores;
+﻿using Repository.Models.Coupons;
+using Repository.Models.Stores;
 
 namespace Repository.Models.Product
 {
@@ -6,5 +7,6 @@ namespace Repository.Models.Product
     {
         public CartStore? Store { get; set; }
         public IEnumerable<CartDetailProduct>? Products { get; set; }
+        public SimpleCoupon? Coupon { get; set; }
     }
 }

@@ -231,7 +231,8 @@ namespace CakeCurious_API.Controllers
             {
                 List<Guid> storeIds = cartOrdersRequests.Select(x => (Guid)x.StoreId!).ToList();
                 List<Guid> productIds = cartOrdersRequests.SelectMany(x => x.ProductIds ?? Enumerable.Empty<Guid>()).ToList();
-                var cartOrders = await productRepository.GetCartOrders(storeIds, productIds);
+                List<Guid?> couponIds = cartOrdersRequests.Select(x => x.CouponId).ToList();
+                var cartOrders = await productRepository.GetCartOrders(storeIds, productIds, couponIds);
                 var orders = new CartOrders
                 {
                     Orders = storeIds.Join(cartOrders, id => id, od => (Guid)od.Store!.Id!, (id, od) => od),

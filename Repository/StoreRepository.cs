@@ -6,6 +6,8 @@ using Repository.Interfaces;
 using Repository.Constants.Products;
 using Repository.Constants.Stores;
 using Repository.Constants.Orders;
+using Repository.Constants.Users;
+using Microsoft.Data.SqlClient;
 
 namespace Repository
 {
@@ -260,6 +262,56 @@ namespace Repository
                 await transaction.CommitAsync();
                 return store;
             }
+        }
+
+        public async Task<ICollection<GroceryStore>> GetSuggestedStores(List<Guid> storeIds)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Stores
+                .AsNoTracking()
+                .Where(x => storeIds.Any(y => y == (Guid)x.Id!))
+                .Where(x => x.Status == (int)StoreStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                .ProjectToType<GroceryStore>()
+                .ToListAsync();
+        }
+
+        public async Task<ICollection<GroceryStore>> Explore(int randSeed, int take, int key)
+        {
+            var result = new List<GroceryStore>();
+            var db = new CakeCuriousDbContext();
+            string query = $"select top {take} [s].[id], [s].[name], [s].[rating], [s].[photo_url], abs(checksum([s].[id], rand(@randSeed)*rand(@randSeed))) as [key] from [Store] as [s] left join [User] as [u] on [s].[user_id] = [u].[id] where abs(checksum([s].[id], rand(@randSeed)*rand(@randSeed))) > @key and ([s].[status] = @storeStatus) and ([u].[status] = @userStatus) order by abs(checksum([s].[id], rand(@randSeed)*rand(@randSeed)))";
+            var cmd = db.Database.GetDbConnection().CreateCommand();
+            cmd.CommandText = query;
+            var userStatus = (int)UserStatusEnum.Active;
+            var storeStatus = (int)StoreStatusEnum.Active;
+            cmd.Parameters.Add(new SqlParameter("@take", take));
+            cmd.Parameters.Add(new SqlParameter("@randSeed", randSeed));
+            cmd.Parameters.Add(new SqlParameter("@key", key));
+            cmd.Parameters.Add(new SqlParameter("@storeStatus", storeStatus));
+            cmd.Parameters.Add(new SqlParameter("@userStatus", userStatus));
+            if (cmd.Connection!.State != System.Data.ConnectionState.Open)
+            {
+                await cmd.Connection.OpenAsync();
+            }
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (reader.Read())
+                {
+                    result.Add(new GroceryStore
+                    {
+                        Id = (Guid)reader["id"],
+                        Name = (string)reader["name"],
+                        PhotoUrl = (string)reader["photo_url"],
+                        Rating = (decimal)reader["rating"],
+                    });
+                }
+            }
+            if (cmd.Connection!.State == System.Data.ConnectionState.Open)
+            {
+                await cmd.Connection!.CloseAsync();
+            }
+            return result;
         }
     }
 }

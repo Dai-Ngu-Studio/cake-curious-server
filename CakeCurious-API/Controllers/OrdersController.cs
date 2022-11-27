@@ -184,14 +184,15 @@ namespace CakeCurious_API.Controllers
                             }
 
                             var discountedTotal = total;
+                            var isCouponApplied = false;
                             // Get coupon if existed and apply to total
                             if (checkoutOrder.CouponId != null)
                             {
                                 var coupon = await couponRepository.GetSimpleCouponOfStoreById((Guid)checkoutOrder.CouponId!);
                                 if (coupon != null)
                                 {
-                                    // Check if coupon had reached max uses
-                                    if (coupon.UsedCount < coupon.MaxUses)
+                                    var isReachedMaxUses = (coupon.MaxUses != null) ? coupon.UsedCount >= coupon.MaxUses : false;
+                                    if (!isReachedMaxUses)
                                     {
                                         // Check if coupon had been used by the user
                                         var isUsed = await orderRepository.IsCouponInUserOrders((Guid)coupon.Id!, uid);
@@ -202,10 +203,18 @@ namespace CakeCurious_API.Controllers
                                             switch (coupon.DiscountType)
                                             {
                                                 case (int)CouponDiscountTypeEnum.PercentOff:
+                                                    // Applies percentage coupon
                                                     discountedTotal -= discountedTotal * (decimal)coupon.Discount!;
+                                                    isCouponApplied = true;
                                                     break;
                                                 case (int)CouponDiscountTypeEnum.FixedDecrease:
-                                                    discountedTotal -= (decimal)coupon.Discount!;
+                                                    // Check if coupon discount is greater than total of order
+                                                    if (discountedTotal >= coupon.Discount)
+                                                    {
+                                                        // Applies fixed decrease coupon
+                                                        discountedTotal -= (decimal)coupon.Discount!;
+                                                        isCouponApplied = true;
+                                                    }
                                                     break;
                                             }
                                             coupon.UsedCount++;
@@ -228,7 +237,7 @@ namespace CakeCurious_API.Controllers
                                 OrderDate = DateTime.Now,
                                 StoreId = checkoutOrder.StoreId,
                                 UserId = uid,
-                                CouponId = checkoutOrder.CouponId ?? null,
+                                CouponId = isCouponApplied ? checkoutOrder.CouponId : null,
                                 Address = checkoutOrders.Address!.Trim(),
                                 OrderDetails = orderDetails,
                                 Total = total,
