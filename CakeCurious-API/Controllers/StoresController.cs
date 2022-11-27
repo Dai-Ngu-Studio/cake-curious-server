@@ -196,6 +196,18 @@ namespace CakeCurious_API.Controllers
             return Ok("Update store successfully.");
         }
 
+        [HttpGet("{id:guid}/coupons")]
+        [Authorize]
+        public async Task<ActionResult<SimpleCoupon>> GetValidSimpleCouponsOfStore(Guid id)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                return Ok(await couponRepository.GetValidSimpleCouponsOfStoreForUser(id, uid));
+            }
+            return Unauthorized();
+        }
+
         /// <summary>
         /// Returns coupon information if all of the following conditions are met: the coupon existed, the coupon didn't expire, the coupon hadn't reached max uses, the coupon hadn't been used by the user.
         /// </summary>
@@ -214,19 +226,22 @@ namespace CakeCurious_API.Controllers
                 if (coupon != null)
                 {
                     // Check if coupon had reached max uses
-                    if (coupon.UsedCount < coupon.MaxUses)
+                    if (coupon.MaxUses != null)
                     {
-                        // Check if coupon had been used by the user
-                        var isUsed = await orderRepository.IsCouponInUserOrders((Guid)coupon.Id!, uid);
-                        if (!isUsed)
+                        if (coupon.UsedCount >= coupon.MaxUses)
                         {
-                            // Coupon weren't used by the user
-                            return Ok(coupon);
+                            return NotFound();
                         }
-                        // Coupon had been used by the user
-                        return BadRequest();
                     }
-                    return NotFound();
+                    // Check if coupon had been used by the user
+                    var isUsed = await orderRepository.IsCouponInUserOrders((Guid)coupon.Id!, uid);
+                    if (!isUsed)
+                    {
+                        // Coupon weren't used by the user
+                        return Ok(coupon);
+                    }
+                    // Coupon had been used by the user
+                    return BadRequest();
                 }
                 return NotFound();
             }
