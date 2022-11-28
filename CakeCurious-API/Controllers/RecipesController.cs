@@ -50,7 +50,7 @@ namespace CakeCurious_API.Controllers
             translationClient = _translationClient;
         }
 
-        [HttpDelete("take-down-a-recipe/{guid}")]
+        [HttpDelete("take-down/{guid}")]
         public async Task<ActionResult> TakeDownAnRecipe(Guid? guid)
         {
             if (guid == null)
