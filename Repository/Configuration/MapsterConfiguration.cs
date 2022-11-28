@@ -16,6 +16,7 @@ namespace Repository.Configuration
             CouponMapConfiguration.RegisterCouponMapping();
             StoreMapConfiguration.RegisterStoreMapping();
             OrderMapConfiguration.RegisterOrderMapping();
+            ProductMapConfiguration.RegisterProductMapping();
             TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
         }
     }

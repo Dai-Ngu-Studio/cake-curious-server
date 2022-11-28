@@ -277,6 +277,24 @@ namespace Repository
             {
                 scope.Context.Parameters.Add("productIds", productIds);
                 scope.Context.Parameters.Add("couponIds", couponIds);
+                scope.Context.Parameters.Add("productIngredients", new Dictionary<Guid, string>());
+
+                var db = new CakeCuriousDbContext();
+                return await db.Stores
+                    .AsNoTracking()
+                    .Where(x => storeIds.Any(y => y == (Guid)x.Id!))
+                    .ProjectToType<CartOrder>()
+                    .ToListAsync();
+            }
+        }
+
+        public async Task<ICollection<CartOrder>> GetBundles(List<Guid> storeIds, List<Guid> productIds, Dictionary<Guid, string> productIngredients)
+        {
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("productIds", productIds);
+                scope.Context.Parameters.Add("couponIds", new List<Guid?>());
+                scope.Context.Parameters.Add("productIngredients", productIngredients);
 
                 var db = new CakeCuriousDbContext();
                 return await db.Stores
