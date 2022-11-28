@@ -55,6 +55,31 @@ namespace Repository
             }
         }
 
+        public async Task<int> CountRepliesForComment(Guid commentId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Comments
+                .AsNoTracking()
+                .Where(x => x.RootId == commentId)
+                .Where(x => x.Status == (int)CommentStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                .CountAsync();
+        }
+
+        public IEnumerable<RecipeComment> GetRepliesForComment(Guid commentId, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Comments
+                .AsNoTracking()
+                .OrderBy(x => x.SubmittedDate)
+                .Where(x => x.RootId == commentId)
+                .Where(x => x.Status == (int)CommentStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                .Skip(skip)
+                .Take(take)
+                .ProjectToType<RecipeComment>();
+        }
+
         public async Task<int> CountCommentsForRecipe(Guid recipeId)
         {
             var db = new CakeCuriousDbContext();
@@ -63,6 +88,7 @@ namespace Repository
                 .Where(x => x.RecipeId == recipeId)
                 .Where(x => x.RootId == null)
                 .Where(x => x.Status == (int)CommentStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                 .CountAsync();
         }
 

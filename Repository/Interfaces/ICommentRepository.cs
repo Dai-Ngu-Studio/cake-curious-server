@@ -14,5 +14,7 @@ namespace Repository.Interfaces
         public Task<IEnumerable<SimpleCommentForReportList>> GetReportedCommments(string? filter, int page, int size);
         public Task<int?> CountReportedCommmentsTotalPage(string? filter);
         public IEnumerable<RecipeComment> GetCommentsForRecipe(Guid recipeId, int skip, int take);
+        public Task<int> CountRepliesForComment(Guid commentId);
+        public IEnumerable<RecipeComment> GetRepliesForComment(Guid commentId, int skip, int take);
     }
 }

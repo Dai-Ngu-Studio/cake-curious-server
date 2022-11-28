@@ -12,10 +12,10 @@ namespace Repository.Configuration.Mappings
         {
             TypeAdapterConfig<Comment, RecipeComment>
                 .NewConfig()
-                .Map(dest => dest.Replies, src => src.Replies!
-                    .OrderBy(x => x.SubmittedDate)
+                .Map(dest => dest.RepliesCount, src => src.Replies!
                     .Where(x => x.Status == (int)CommentStatusEnum.Active)
-                    .Where(x => x.User!.Status == (int)UserStatusEnum.Active))
+                    .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                    .Count())
                 .MaxDepth(5);
         }
     }

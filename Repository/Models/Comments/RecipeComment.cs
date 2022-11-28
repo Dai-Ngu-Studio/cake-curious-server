@@ -10,6 +10,6 @@ namespace Repository.Models.Comments
         public DateTime? SubmittedDate { get; set; }
         public int? Depth { get; set; }
         public IEnumerable<RecipeCommentMedia>? Images { get; set; }
-        public IEnumerable<RecipeComment>? Replies { get; set; }
+        public int? RepliesCount { get; set; }
     }
 }
