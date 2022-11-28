@@ -159,17 +159,19 @@ namespace Repository
             return await db.Coupons.ProjectToType<SimpleCoupon>().FirstOrDefaultAsync(x => x.Id == guid);
         }
 
-        public async Task<IEnumerable<SimpleCoupon>> GetValidSimpleCouponsOfStoreForUser(Guid storeId, string userId)
+        public IEnumerable<SimpleCoupon> GetValidSimpleCouponsOfStoreForUser(Guid storeId, string userId, int skip, int take)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Coupons
+            return db.Coupons
+                .OrderByDescending(x => x.ExpiryDate)
                 .Where(x => x.ExpiryDate > DateTime.Now)
                 .Where(x => x.Status == (int)CouponStatusEnum.Active)
                 .Where(x => x.StoreId == storeId)
                 .Where(x => x.MaxUses != null ? x.Orders!.Count < x.MaxUses : true)
                 .Where(x => !(x.Orders!.Any(y => y.UserId == userId)))
-                .ProjectToType<SimpleCoupon>()
-                .ToListAsync();
+                .Skip(skip)
+                .Take(take)
+                .ProjectToType<SimpleCoupon>();
         }
 
         public async Task<SimpleCoupon?> GetSimpleCouponOfStoreByCode(Guid storeId, string code)
