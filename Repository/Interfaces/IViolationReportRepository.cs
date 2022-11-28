@@ -17,6 +17,8 @@ namespace Repository.Interfaces
         public Task Add(ViolationReport obj);
         public Task<StaffReportDetail?> GetReportDetailById(Guid id);
         public Task<ViolationReport?> GetById(Guid id);
+        public Task<string?> BulkUpdate(Guid[] guid);
+        public Task UpdateAllReportStatusOfAnItem(Guid itemId);
         public Task<IEnumerable<StaffDashboardReport>?> GetReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter, int PageSize, int PageIndex);
         public int CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter);
         public Task<int> CountPendingReportOfAnItem(Guid itemId);

@@ -13,6 +13,7 @@ using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 using Repository.Models.Reports;
 using Repository.Models.Users;
+using System.Text;
 
 namespace Repository
 {
@@ -239,5 +240,39 @@ namespace Repository
             return await db.ViolationReports.Where(r => r.ItemId == itemId && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
         }
 
+        public async Task<string?> BulkUpdate(Guid[] ids)
+        {
+            var db = new CakeCuriousDbContext();
+            if (ids.Count() > 0)
+            {
+                var stringBuilder = new StringBuilder();
+                foreach (Guid id in ids)
+                {
+                    ViolationReport? report = await db.ViolationReports.FirstOrDefaultAsync(r => r.Id == id);
+                    if (report!.Status != null
+                   &&
+                   (report.Status == (int)ReportStatusEnum.Rejected
+                   || report.Status == (int)ReportStatusEnum.Censored)) stringBuilder.AppendLine(" " + report.Id.ToString());
+                    else report!.Status = (int)ReportStatusEnum.Rejected;
+                    db.Entry<ViolationReport>(report).State = EntityState.Modified;
+                    await db.SaveChangesAsync();
+                }
+                if (stringBuilder.Length != 0) return stringBuilder.ToString();
+            }
+            return null;
+        }
+
+        public async Task UpdateAllReportStatusOfAnItem(Guid itemId)
+        {
+            var db = new CakeCuriousDbContext();
+            IEnumerable<ViolationReport> reports = db.ViolationReports.Where(r => r.ItemId == itemId);
+            foreach (ViolationReport report in reports)
+            {
+                if (report.Status == (int)ReportStatusEnum.Pending)
+                    report.Status = (int)ReportStatusEnum.Censored;
+            }
+            db.UpdateRange(reports);
+            await db.SaveChangesAsync();
+        }
     }
 }

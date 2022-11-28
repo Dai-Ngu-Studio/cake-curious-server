@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Repository;
 using Repository.Constants.Reports;
 using Repository.Interfaces;
 using Repository.Models;
@@ -21,7 +22,7 @@ namespace CakeCurious_API.Controllers
     {
         private readonly IViolationReportRepository _ReportRepository;
 
-        public ReportsController(IViolationReportRepository ReportRepository)
+        public ReportsController(IViolationReportRepository ReportRepository, IRecipeRepository RecipeRepository)
         {
             _ReportRepository = ReportRepository;
         }
@@ -33,7 +34,7 @@ namespace CakeCurious_API.Controllers
             var result = new StaffReportsOfAnItemPage();
             result.Reports = await _ReportRepository.GetReportsOfAnItem(guid!.Value, search, sort, filter, page, size);
             result.PendingReports = await _ReportRepository.CountPendingReportOfAnItem(guid!.Value);
-            result.TotalPage = (int)Math.Ceiling((decimal) _ReportRepository.CountDashboardViolationReportsOfAnItem(guid!.Value, search, sort, filter) / size);
+            result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReportsOfAnItem(guid!.Value, search, sort, filter) / size);
             return Ok(result);
         }
 
@@ -71,15 +72,29 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
+        [HttpPut("bulk-update")]
+        public async Task<ActionResult> UpdateReportsStatus([FromBody] BulkUpdateReportStatus reports)
+        {
+            if (reports!.reportIds!.Count() == 0)
+            {
+                return BadRequest("Missing input like ids or status");
+            }
+            string? unUpddatedReport = await _ReportRepository.BulkUpdate(reports!.reportIds!);
+            string notification = "Update reports stauts to rejected successfully.";
+            if (unUpddatedReport! != null)
+                notification += " Except for" + unUpddatedReport;
+            return Ok(notification);
+        }
+
         [HttpPut("{guid}")]
         public async Task<ActionResult> PutReport(Guid guid, ViolationReport inputReport)
         {
             try
             {
                 string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (guid != inputReport.Id) return BadRequest();
+                if (guid != inputReport.Id) return BadRequest("Input report id is different from report object id");
                 ViolationReport? beforeUpdateObj = await _ReportRepository.GetById(inputReport.Id.Value);
-                if (beforeUpdateObj == null) throw new Exception("Product that need to update does not exist");
+                if (beforeUpdateObj == null) throw new Exception("Report that need to update does not exist");
                 if (beforeUpdateObj.Status != null
                     &&
                     (beforeUpdateObj.Status == (int)ReportStatusEnum.Rejected
