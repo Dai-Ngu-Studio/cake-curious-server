@@ -14,6 +14,7 @@ using CakeCurious_API.Services;
 using Google.Apis.Services;
 using Google.Apis.FirebaseDynamicLinks.v1;
 using Google.Cloud.Storage.V1;
+using Google.Cloud.Translation.V2;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,6 +86,9 @@ FirebaseApp.Create(new AppOptions()
 
 var storageClient = StorageClient.Create();
 builder.Services.AddSingleton(storageClient);
+
+var translationClient = TranslationClient.Create();
+builder.Services.AddSingleton(translationClient);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
