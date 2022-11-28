@@ -19,7 +19,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             AdminDashboardCardStats cs = new AdminDashboardCardStats();
             //new report by week cost not much
-            DateTime startAtSunday = DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
+            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek).Day);
             IEnumerable<ViolationReport> TwoLastWeekReport = db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= DateTime.Now);
             cs.CurrentWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= DateTime.Now).Count();
             decimal lastWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= startAtSunday.AddDays(-1)).Count();
@@ -103,14 +103,13 @@ namespace Repository
             StoreDashboardReport report = new StoreDashboardReport();
             var db = new CakeCuriousDbContext();
             StoreDashboardCardStats cs = new StoreDashboardCardStats();
-
             //Product Sold by month
             cs.CurrentMonthProductSold = await db.OrderDetails.Include(ord => ord.Order).Where(ord => ord!.Order!.OrderDate!.Value.Month == DateTime.Now.Month && ord!.Order!.Status! == (int)OrderStatusEnum.Completed && ord!.Order!.StoreId == storeId).GroupBy(ord => ord.ProductId).CountAsync();
             decimal LastMonthProductSold = await db.OrderDetails.Include(ord => ord.Order).Where(ord => ord!.Order!.OrderDate!.Value.Month == DateTime.Now.AddMonths(-1).Month && ord!.Order!.Status! == (int)OrderStatusEnum.Completed).GroupBy(ord => ord.ProductId).CountAsync();
-            double sinceLastMonthNewUser = LastMonthProductSold > 0 && cs.CurrentMonthProductSold > 0 ? (double)((cs.CurrentMonthProductSold - LastMonthProductSold) / (cs.CurrentMonthProductSold > LastMonthProductSold ? cs.CurrentMonthProductSold : LastMonthProductSold)) : -1;
+            double sinceLastMonthNewUser = LastMonthProductSold > 0 || cs.CurrentMonthProductSold > 0 ? (double)((cs.CurrentMonthProductSold - LastMonthProductSold) / (cs.CurrentMonthProductSold > LastMonthProductSold ? cs.CurrentMonthProductSold : LastMonthProductSold)) : 0;
             cs.SinceLastMonthProductSold = Math.Round(sinceLastMonthNewUser, 2);
             //Sales by week
-            DateTime startAtSunday = DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
+            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek).Day);
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startAtSunday && ord!.OrderDate! <= DateTime.Now && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
                 foreach (var orderDetail in ord!.OrderDetails!)
@@ -128,7 +127,7 @@ namespace Repository
                 }
                 lastWeekSales -= ord!.DiscountedTotal!.Value > 0 ? ord!.DiscountedTotal!.Value : 0;
             }
-            double sinceLastWeekSales = cs.CurrentWeekSales > 0 && lastWeekSales > 0 ? (double)((cs.CurrentWeekSales - lastWeekSales) / (cs.CurrentWeekSales > lastWeekSales ? cs.CurrentWeekSales : lastWeekSales)) : -1;
+            double sinceLastWeekSales = cs.CurrentWeekSales > 0 || lastWeekSales > 0 ? (double)((cs.CurrentWeekSales - lastWeekSales) / (cs.CurrentWeekSales > lastWeekSales ? cs.CurrentWeekSales : lastWeekSales)) : 0;
             cs.SinceLastWeekSales = Math.Round(sinceLastWeekSales, 2);
             //Order Complete by month
             cs.CurrentMonthTotalCompletedOrder = await db.Orders.Where(ord => ord!.OrderDate!.Value.Month == DateTime.Now.Month && ord!.Status! == (int)OrderStatusEnum.Completed && ord!.StoreId == storeId).CountAsync();
@@ -143,22 +142,19 @@ namespace Repository
             int lastMonth = DateTime.Now.AddMonths(-1).Month;
             int dateOfCurrentMonth = DateTime.DaysInMonth(currentYear, currentMonth);
             int dateOfLastMonth = DateTime.DaysInMonth(currentYear, lastMonth);
-
+            //Get date for start,end of week in current month
             DateTime startOfCurrentMonthWeek1 = new DateTime(currentYear, currentMonth, 1);
             DateTime endOfCurrentMonthWeek1 = new DateTime(currentYear, currentMonth, 7);
-
             DateTime startOfCurrentMonthWeek2 = new DateTime(currentYear, currentMonth, 8);
             DateTime endOfCurrentMonthWeek2 = new DateTime(currentYear, currentMonth, 15);
-
             DateTime startOfCurrentMonthWeek3 = new DateTime(currentYear, currentMonth, 16);
             DateTime endOfCurrentMonthWeek3 = new DateTime(currentYear, currentMonth, 23);
-
             DateTime startOfCurrentMonthWeek4 = new DateTime(currentYear, currentMonth, 24);
             DateTime endOfCurrentMonthWeek4 = new DateTime(currentYear, currentMonth, dateOfCurrentMonth);
             DateTime endOfLastMonthWeek4 = new DateTime(currentYear, lastMonth, dateOfLastMonth);
-
-
+            //init value for current week sale
             decimal currentWeekSale = 0;
+            //get data for week1 sale of this month
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek1 && ord!.OrderDate! <= endOfCurrentMonthWeek1 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
                 foreach (var orderDetail in ord!.OrderDetails!)
@@ -168,7 +164,7 @@ namespace Repository
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.CurrentMonthSales![0] = currentWeekSale;
-
+            //get data for week2 sale of this month
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek2 && ord!.OrderDate! <= endOfCurrentMonthWeek2 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
@@ -179,7 +175,7 @@ namespace Repository
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.CurrentMonthSales![1] = currentWeekSale;
-
+            //get data for week3 sale of this month
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek3 && ord!.OrderDate! <= endOfCurrentMonthWeek3 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
@@ -190,7 +186,7 @@ namespace Repository
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.CurrentMonthSales![2] = currentWeekSale;
-
+            //get data for week4 sale of this month
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek4 && ord!.OrderDate! <= endOfCurrentMonthWeek4 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
@@ -201,8 +197,7 @@ namespace Repository
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.CurrentMonthSales![3] = currentWeekSale;
-
-
+            //get data for week1 sale of last month
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek1.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek1.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
@@ -213,7 +208,7 @@ namespace Repository
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.LastMonthSales![0] = currentWeekSale;
-
+            //get data for week1 sale of last month
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek2.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek2.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
@@ -224,7 +219,7 @@ namespace Repository
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.LastMonthSales![1] = currentWeekSale;
-
+            //get data for week1 sale of last month
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek3.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek3.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
@@ -235,7 +230,7 @@ namespace Repository
                 currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.LastMonthSales![2] = currentWeekSale;
-
+            //get data for week4 sale of last month
             currentWeekSale = 0;
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek4.AddMonths(-1) && ord!.OrderDate! <= endOfLastMonthWeek4 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
