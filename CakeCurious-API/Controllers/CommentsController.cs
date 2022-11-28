@@ -24,6 +24,7 @@ namespace CakeCurious_API.Controllers
             commentRepository = _commentRepository;
             userRepository = _userRepository;
         }
+
         [HttpGet("Is-Reported")]
         [Authorize]
         public async Task<ActionResult<ReportedCommentsPage>> GetReportedComment(string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
@@ -33,6 +34,19 @@ namespace CakeCurious_API.Controllers
             reportedCommentsPage.TotalPage = (int)Math.Ceiling((decimal)await commentRepository.CountReportedCommmentsTotalPage(filter) / size);
             return Ok(reportedCommentsPage);
         }
+
+        [HttpGet("{id:guid}/replies")]
+        [Authorize]
+        public async Task<ActionResult<CommentPage>> GetRepliesOfComment(Guid id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            var commentPage = new CommentPage();
+            commentPage.TotalPages = (int)Math.Ceiling((decimal)await commentRepository.CountRepliesForComment(id) / take);
+            commentPage.Comments = commentRepository.GetRepliesForComment(id, (page - 1) * take, take);
+            return Ok(commentPage);
+        }
+
         [HttpPut("{id:guid}")]
         [Authorize]
         public async Task<ActionResult<RecipeComment>> UpdateComment(Guid id, UpdateComment updateComment)
