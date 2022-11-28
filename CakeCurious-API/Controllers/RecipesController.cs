@@ -30,9 +30,10 @@ namespace CakeCurious_API.Controllers
         private readonly IUserRepository userRepository;
         private readonly IElasticClient elasticClient;
         private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
+        private readonly IViolationReportRepository reportRepository;
 
         public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
-            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService)
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService, IViolationReportRepository _reportRepository)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
@@ -41,6 +42,36 @@ namespace CakeCurious_API.Controllers
             userRepository = _userRepository;
             elasticClient = _elasticClient;
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
+            reportRepository = _reportRepository;
+        }
+
+        [HttpDelete("take-down-a-recipe/{guid}")]
+        public async Task<ActionResult> TakeDownAnRecipe(Guid? guid)
+        {
+            if (guid == null)
+            {
+                return BadRequest("Missing input id");
+            }
+            try
+            {
+                await recipeRepository.Delete(guid.Value);
+            }
+            catch (Exception)
+            {
+
+                return BadRequest("Error when delete an item");
+            }
+            try
+            {
+                await reportRepository.UpdateAllReportStatusOfAnItem(guid.Value);
+
+            }
+            catch (Exception)
+            {
+
+                return BadRequest("Error when change all reports status of an item to censored");
+            }
+            return Ok("Take down item success.");
         }
 
         [HttpGet("Is-Reported")]
