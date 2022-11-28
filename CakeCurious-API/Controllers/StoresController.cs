@@ -198,12 +198,16 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/coupons")]
         [Authorize]
-        public async Task<ActionResult<SimpleCoupon>> GetValidSimpleCouponsOfStore(Guid id)
+        public ActionResult<SimpleCouponPage> GetValidSimpleCouponsOfStore(Guid id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                return Ok(await couponRepository.GetValidSimpleCouponsOfStoreForUser(id, uid));
+                var couponPage = new SimpleCouponPage();
+                couponPage.Coupons = couponRepository.GetValidSimpleCouponsOfStoreForUser(id, uid, (page - 1) * take, take);
+                return Ok(couponPage);
             }
             return Unauthorized();
         }

@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Comments;
 using Repository.Constants.Reports;
+using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Comments;
 
@@ -74,6 +75,7 @@ namespace Repository
                 .Where(x => x.RecipeId == recipeId)
                 .Where(x => x.RootId == null)
                 .Where(x => x.Status == (int)CommentStatusEnum.Active)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                 .Skip(skip)
                 .Take(take)
                 .ProjectToType<RecipeComment>();

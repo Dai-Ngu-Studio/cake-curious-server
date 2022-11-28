@@ -11,6 +11,7 @@ using Repository.Interfaces;
 using Repository.Models.Product;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using System.Text;
 
 namespace CakeCurious_API.Controllers
 {
@@ -340,14 +341,14 @@ namespace CakeCurious_API.Controllers
             {
                 shouldContainer.Add(descriptor
                     .Range(x => x
-                        .Field("discountPrice")
+                        .Field(f => f.DiscountPrice)
                         .GreaterThanOrEquals(decimal.ToDouble((decimal)fromPrice))
                     )
                 );
 
                 filterContainer.Add(descriptor
                     .Range(x => x
-                        .Field("discountPrice")
+                        .Field(f => f.DiscountPrice)
                         .GreaterThanOrEquals(decimal.ToDouble((decimal)fromPrice))
                     )
                 );
@@ -357,14 +358,14 @@ namespace CakeCurious_API.Controllers
             {
                 shouldContainer.Add(descriptor
                     .Range(x => x
-                        .Field("discountPrice")
+                        .Field(f => f.DiscountPrice)
                         .LessThanOrEquals(decimal.ToDouble((decimal)toPrice))
                     )
                 );
 
                 filterContainer.Add(descriptor
                     .Range(x => x
-                        .Field("discountPrice")
+                        .Field(f => f.DiscountPrice)
                         .LessThanOrEquals(decimal.ToDouble((decimal)toPrice))
                     )
                 );
@@ -411,6 +412,90 @@ namespace CakeCurious_API.Controllers
             productPage.Products = products;
 
             return Ok(productPage);
+        }
+
+        [HttpGet("ingredient-bundles")]
+        [Authorize]
+        public async Task<ActionResult> CreateBundles(
+            [FromQuery] string[]? ingredients)
+        {
+            var multisearchDescriptor = new MultiSearchDescriptor();
+
+            if (ingredients == null || (ingredients.Length == 0))
+            {
+                return BadRequest();
+            }
+
+            for (int i = 0; i < ingredients.Length; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(ingredients[i]))
+                {
+                    var searchDescriptor = new SearchDescriptor<ElasticsearchProduct>();
+                    var descriptor = new QueryContainerDescriptor<ElasticsearchProduct>()
+                        .Match(m => m
+                            .Field(f => f.Name)
+                            .Query(ingredients[i])
+                            .Fuzziness(Fuzziness.EditDistance(2))
+                        );
+                    searchDescriptor = searchDescriptor.Index("products")
+                        .ScriptFields(sf => sf
+                            .ScriptField("ingredient", sc => sc
+                                .Source("params['paramIngredient']")
+                                .Params(p => p
+                                    .Add("paramIngredient", ingredients[i])
+                                )
+                                .Lang(ScriptLang.Painless)
+                            )
+                        )
+                        .Source(so => so)
+                        .Size(10)
+                        .MinScore(0.01D)
+                        .Sort(ss => ss
+                            .Descending(SortSpecialField.Score)
+                            .Descending(f => f.Id.Suffix("keyword"))
+                        )
+                        .Query(q => q
+                            .Bool(b => b
+                                .Should(descriptor)
+                            )
+                        );
+                    multisearchDescriptor = multisearchDescriptor.Search<ElasticsearchProduct>($"[{i}]{ingredients[i]}", s => searchDescriptor);
+                }
+            }
+
+            var multisearchResult = await elasticClient.MultiSearchAsync(multisearchDescriptor);
+            var allResponses = multisearchResult.GetResponses<ElasticsearchProduct>();
+            var elasticsearchBundles = new Dictionary<Guid, List<ElasticsearchProduct>>();
+            var productIngredients = new Dictionary<Guid, string>();
+
+            var builder = new StringBuilder();
+
+            foreach (var response in allResponses)
+            {
+                var hits = response.Hits;
+                var searchedStores = new HashSet<Guid>();
+                foreach (var hit in hits)
+                {
+                    var storeId = (Guid)hit.Source.StoreId!;
+                    if (searchedStores.Add(storeId))
+                    {
+                        elasticsearchBundles.TryAdd(storeId, new List<ElasticsearchProduct>());
+                        elasticsearchBundles[storeId].Add(hit.Source);
+                        productIngredients.TryAdd((Guid)hit.Source.Id!, hit.Fields.ValueOf<ElasticsearchProduct, string>(p => p.Ingredient!));
+                    }
+                }
+            }
+
+            var storeIds = elasticsearchBundles.Select(x => x.Key).ToList();
+            var productIds = elasticsearchBundles.SelectMany(x => x.Value.Select(x => (Guid)x.Id!)).ToList();
+            var bundles = await productRepository.GetBundles(storeIds, productIds, productIngredients);
+
+            var cartOrders = new CartOrders
+            {
+                Orders = bundles.OrderByDescending(x => x.Products!.Count()),
+            };
+           
+            return Ok(cartOrders);
         }
     }
 }

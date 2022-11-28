@@ -10,5 +10,6 @@
         public decimal? Discount { get; set; }
         public string? PhotoUrl { get; set; }
         public int? Status { get; set; }
+        public string? Ingredient { get; set; }
     }
 }
