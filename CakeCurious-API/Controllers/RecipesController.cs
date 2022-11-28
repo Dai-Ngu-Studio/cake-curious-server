@@ -2,6 +2,7 @@
 using CakeCurious_API.Utilities;
 using Google.Apis.FirebaseDynamicLinks.v1;
 using Google.Apis.FirebaseDynamicLinks.v1.Data;
+using Google.Cloud.Translation.V2;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,9 +31,10 @@ namespace CakeCurious_API.Controllers
         private readonly IUserRepository userRepository;
         private readonly IElasticClient elasticClient;
         private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
+        private readonly TranslationClient translationClient;
 
         public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
-            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService)
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService, TranslationClient _translationClient)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
@@ -41,6 +43,7 @@ namespace CakeCurious_API.Controllers
             userRepository = _userRepository;
             elasticClient = _elasticClient;
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
+            translationClient = _translationClient;
         }
 
         [HttpGet("Is-Reported")]
@@ -225,16 +228,23 @@ namespace CakeCurious_API.Controllers
                         await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
 
                         var elastisearchMaterials = updateRecipe.Ingredients
-                                .Select(x => x.MaterialName);
+                                .Select(x => x.MaterialName!).ToList();
                         var elastisearchCategories = updateRecipe.HasCategories!
                             .Where(x => x.RecipeCategoryId.HasValue)
                             .Select(x => x.RecipeCategoryId!.Value);
 
+                        var esNames = new List<string>();
+                        esNames.Add(updateRecipe.Name!);
+
+                        // Translation
+                        esNames = await TranslationHelper.TranslateSingle(translationClient, updateRecipe.Name!, esNames);
+                        elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
+
                         var elastisearchRecipe = new ElasticsearchRecipe
                         {
                             Id = recipe.Id,
-                            Name = new string[] { updateRecipe.Name! },
-                            Materials = elastisearchMaterials.ToArray()!,
+                            Name = esNames.ToArray(),
+                            Materials = elastisearchMaterials.ToArray(),
                             Categories = elastisearchCategories.ToArray(),
                         };
 
@@ -280,16 +290,23 @@ namespace CakeCurious_API.Controllers
                 await recipeRepository.AddRecipe(recipe);
 
                 var elastisearchMaterials = createRecipe.Ingredients
-                    .Select(x => x.MaterialName);
+                    .Select(x => x.MaterialName!).ToList();
                 var elastisearchCategories = createRecipe.HasCategories!
                     .Where(x => x.RecipeCategoryId.HasValue)
                     .Select(x => x.RecipeCategoryId!.Value);
 
+                var esNames = new List<string>();
+                esNames.Add(recipe.Name!);
+
+                // Translate
+                esNames = await TranslationHelper.TranslateSingle(translationClient, recipe.Name!, esNames);
+                elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
+
                 var elastisearchRecipe = new ElasticsearchRecipe
                 {
                     Id = recipe.Id,
-                    Name = new string[] { createRecipe.Name! },
-                    Materials = elastisearchMaterials.ToArray()!,
+                    Name = esNames.ToArray(),
+                    Materials = elastisearchMaterials.ToArray(),
                     Categories = elastisearchCategories.ToArray(),
                 };
 
