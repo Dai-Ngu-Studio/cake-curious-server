@@ -75,11 +75,12 @@ namespace CakeCurious_API.Controllers
         [HttpPut("bulk-update")]
         public async Task<ActionResult> UpdateReportsStatus([FromBody] BulkUpdateReportStatus reports)
         {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (reports!.reportIds!.Count() == 0)
             {
                 return BadRequest("Missing input like ids or status");
             }
-            string? unUpddatedReport = await _ReportRepository.BulkUpdate(reports!.reportIds!);
+            string? unUpddatedReport = await _ReportRepository.BulkUpdate(reports!.reportIds!, uid!);
             string notification = "Update reports stauts to rejected successfully.";
             if (unUpddatedReport! != null)
                 notification += " Except for" + unUpddatedReport;

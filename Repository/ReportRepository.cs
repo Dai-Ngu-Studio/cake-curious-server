@@ -240,7 +240,7 @@ namespace Repository
             return await db.ViolationReports.Where(r => r.ItemId == itemId && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
         }
 
-        public async Task<string?> BulkUpdate(Guid[] ids)
+        public async Task<string?> BulkUpdate(Guid[] ids, string uid)
         {
             var db = new CakeCuriousDbContext();
             if (ids.Count() > 0)
@@ -253,7 +253,11 @@ namespace Repository
                    &&
                    (report.Status == (int)ReportStatusEnum.Rejected
                    || report.Status == (int)ReportStatusEnum.Censored)) stringBuilder.AppendLine(" " + report.Id.ToString());
-                    else report!.Status = (int)ReportStatusEnum.Rejected;
+                    else
+                    {
+                        report!.Status = (int)ReportStatusEnum.Rejected;
+                        report!.StaffId = uid;
+                    }
                     db.Entry<ViolationReport>(report).State = EntityState.Modified;
                     await db.SaveChangesAsync();
                 }
@@ -262,14 +266,17 @@ namespace Repository
             return null;
         }
 
-        public async Task UpdateAllReportStatusOfAnItem(Guid itemId)
+        public async Task UpdateAllReportStatusOfAnItem(Guid itemId, string uid)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<ViolationReport> reports = db.ViolationReports.Where(r => r.ItemId == itemId);
             foreach (ViolationReport report in reports)
             {
                 if (report.Status == (int)ReportStatusEnum.Pending)
+                {
                     report.Status = (int)ReportStatusEnum.Censored;
+                    report.StaffId = uid;
+                }
             }
             db.UpdateRange(reports);
             await db.SaveChangesAsync();

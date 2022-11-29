@@ -53,6 +53,7 @@ namespace CakeCurious_API.Controllers
         [HttpDelete("take-down/{guid}")]
         public async Task<ActionResult> TakeDownAnRecipe(Guid? guid)
         {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (guid == null)
             {
                 return BadRequest("Missing input id");
@@ -68,8 +69,10 @@ namespace CakeCurious_API.Controllers
             }
             try
             {
-                await reportRepository.UpdateAllReportStatusOfAnItem(guid.Value);
-
+                if (uid != null)
+                {
+                    await reportRepository.UpdateAllReportStatusOfAnItem(guid.Value, uid!);
+                }
             }
             catch (Exception)
             {
