@@ -279,6 +279,7 @@ namespace CakeCurious_API.Controllers
             var searchDescriptor = new SearchDescriptor<ElasticsearchProduct>();
             var descriptor = new QueryContainerDescriptor<ElasticsearchProduct>();
             var shouldContainer = new List<QueryContainer>();
+            var mustContainer = new List<QueryContainer>();
             var filterContainer = new List<QueryContainer>();
 
             if (string.IsNullOrWhiteSpace(query)
@@ -322,17 +323,17 @@ namespace CakeCurious_API.Controllers
 
             if (storeId != null)
             {
-                shouldContainer.Add(descriptor
-                    .Terms(x => x
+                mustContainer.Add(descriptor
+                    .Match(m => m
                         .Field(f => f.StoreId)
-                        .Terms(storeId)
+                        .Query(storeId.ToString())
                     )
                 );
 
                 filterContainer.Add(descriptor
-                    .Terms(x => x
+                    .Match(m => m
                         .Field(f => f.StoreId)
-                        .Terms(storeId)
+                        .Query(storeId.ToString())
                     )
                 );
             }
@@ -386,6 +387,7 @@ namespace CakeCurious_API.Controllers
                 .Query(q => q
                     .Bool(b => b
                         .Should(shouldContainer.ToArray())
+                        .Must(mustContainer.ToArray())
                         .Filter(filterContainer.ToArray())
                     )
                 );
