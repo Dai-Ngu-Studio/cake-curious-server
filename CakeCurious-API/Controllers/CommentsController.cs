@@ -18,11 +18,12 @@ namespace CakeCurious_API.Controllers
     {
         private readonly ICommentRepository commentRepository;
         private readonly IUserRepository userRepository;
-
-        public CommentsController(ICommentRepository _commentRepository, IUserRepository _userRepository)
+        private readonly IViolationReportRepository reportRepository;
+        public CommentsController(ICommentRepository _commentRepository, IUserRepository _userRepository, IViolationReportRepository _reportRepository)
         {
             commentRepository = _commentRepository;
             userRepository = _userRepository;
+            reportRepository = _reportRepository;
         }
 
         [HttpGet("Is-Reported")]
@@ -86,6 +87,38 @@ namespace CakeCurious_API.Controllers
                 return Ok(await commentRepository.GetRecipeComment((Guid)comment.Id!));
             }
             return Unauthorized();
+        }
+
+        [HttpDelete("take-down/{guid}")]
+        public async Task<ActionResult> TakeDownAnComment(Guid? guid)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (guid == null)
+            {
+                return BadRequest("Missing input id");
+            }
+            try
+            {
+                await commentRepository.Delete(guid.Value);
+            }
+            catch (Exception)
+            {
+
+                return BadRequest("Error when delete an item");
+            }
+            try
+            {
+                if (uid != null)
+                {
+                    await reportRepository.UpdateAllReportStatusOfAnItem(guid.Value, uid!);
+                }
+            }
+            catch (Exception)
+            {
+
+                return BadRequest("Error when change all reports status of an item to censored");
+            }
+            return Ok("Take down item success.");
         }
 
         [HttpDelete("{id:guid}")]
