@@ -198,7 +198,7 @@ namespace Repository
                 else if (order_by != null && order_by == OrderSortEnum.AscOrderDate.ToString())
                 {
                     orders = OrderAscOrderDate(orders);
-                }              
+                }
             }
             catch (Exception ex)
             {
@@ -273,11 +273,16 @@ namespace Repository
 
         public async Task<DetailOrder?> GetOrderDetails(Guid id)
         {
-            var db = new CakeCuriousDbContext();
-            return await db.Orders
-                .AsNoTracking()
-                .ProjectToType<DetailOrder>()
-                .FirstOrDefaultAsync(x => (Guid)x.Id! == id);
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("productIngredients", new Dictionary<Guid, string>());
+
+                var db = new CakeCuriousDbContext();
+                return await db.Orders
+                    .AsNoTracking()
+                    .ProjectToType<DetailOrder>()
+                    .FirstOrDefaultAsync(x => (Guid)x.Id! == id);
+            }
         }
 
         /// <summary>
