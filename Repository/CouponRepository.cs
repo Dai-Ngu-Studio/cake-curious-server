@@ -95,7 +95,7 @@ namespace Repository
                 else if (order_by != null && order_by == CouponOrderByEnum.DescName.ToString())
                 {
                     coupons = OrderByDescName(coupons);
-                }               
+                }
             }
             catch (Exception ex)
             {
@@ -110,15 +110,15 @@ namespace Repository
             {
                 if (obj.DiscountType == (int)CouponDiscountTypeEnum.PercentOff)
                 {
-                    if (obj.Discount >= 1 && obj.Discount <= 100)
+                    if (obj.Discount >= 1 && obj.Discount <= 50)
                     {
                         obj.Discount /= 100;
                     }
-                    else if (obj.Discount < 1)
+                    else if (obj.Discount <= (decimal)0.5)
                     {
 
                     }
-                    else throw new Exception("Discount value of PercentOff discount type must less than or equal 100");
+                    else throw new Exception("Discount value of PercentOff discount type must less than or equal 50%");
                 }
             }
             else throw new Exception("Discount value must greater than 0");
@@ -201,16 +201,25 @@ namespace Repository
 
         public async Task UpdateCoupon(Coupon obj)
         {
-            try
+            if (obj.Discount != null && obj.Discount > 0)
             {
-                var db = new CakeCuriousDbContext();
-                db.Entry<Coupon>(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                await db.SaveChangesAsync();
+                if (obj.DiscountType == (int)CouponDiscountTypeEnum.PercentOff)
+                {
+                    if (obj.Discount >= 1 && obj.Discount <= 50)
+                    {
+                        obj.Discount /= 100;
+                    }
+                    else if (obj.Discount <= (decimal)0.5)
+                    {
+
+                    }
+                    else throw new Exception("Discount value of PercentOff discount type must less than or equal 50%");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            else throw new Exception("Discount value must greater than 0");
+            var db = new CakeCuriousDbContext();
+            db.Entry<Coupon>(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            await db.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Coupon>> GetAllActiveCoupon()

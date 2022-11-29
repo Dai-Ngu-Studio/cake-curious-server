@@ -80,23 +80,24 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult> PutCoupon(Guid guid, Coupon coupon)
         {
+            if (guid != coupon.Id) return BadRequest();
+            Coupon? beforeUpdateObj = await _couponRepository.GetById(coupon.Id.Value);
+            if (beforeUpdateObj == null) throw new Exception("Coupon that need to update does not exist.");
+            Coupon updateCoupon = new Coupon()
+            {
+                Id = coupon.Id == null ? beforeUpdateObj.Id : coupon.Id,
+                Code = coupon.Code == null ? beforeUpdateObj.Code : coupon.Code,
+                Discount = coupon.Discount == null ? beforeUpdateObj.Discount : coupon.Discount,
+                ExpiryDate = !coupon.ExpiryDate.HasValue ? beforeUpdateObj.ExpiryDate : coupon.ExpiryDate,
+                DiscountType = coupon.DiscountType == null ? beforeUpdateObj.DiscountType : coupon.DiscountType,
+                MaxUses = coupon.MaxUses == null ? beforeUpdateObj.MaxUses : coupon.MaxUses,
+                Name = coupon.Name == null ? beforeUpdateObj.Name : coupon.Name,
+                Status = coupon.Status == null ? beforeUpdateObj.Status : coupon.Status,
+                StoreId = coupon.StoreId == null ? beforeUpdateObj.StoreId : coupon.StoreId,
+            };
             try
             {
-                if (guid != coupon.Id) return BadRequest();
-                Coupon? beforeUpdateObj = await _couponRepository.GetById(coupon.Id.Value);
-                if (beforeUpdateObj == null) throw new Exception("Coupon that need to update does not exist.");
-                Coupon updateCoupon = new Coupon()
-                {
-                    Id = coupon.Id == null ? beforeUpdateObj.Id : coupon.Id,
-                    Code = coupon.Code == null ? beforeUpdateObj.Code : coupon.Code,
-                    Discount = coupon.Discount != null ? coupon.Discount == (int)CouponDiscountTypeEnum.PercentOff ? coupon.Discount / 100 : coupon.Discount : beforeUpdateObj.Discount,
-                    ExpiryDate = !coupon.ExpiryDate.HasValue ? beforeUpdateObj.ExpiryDate : coupon.ExpiryDate,
-                    DiscountType = coupon.DiscountType == null ? beforeUpdateObj.DiscountType : coupon.DiscountType,
-                    MaxUses = coupon.MaxUses == null ? beforeUpdateObj.MaxUses : coupon.MaxUses,
-                    Name = coupon.Name == null ? beforeUpdateObj.Name : coupon.Name,
-                    Status = coupon.Status == null ? beforeUpdateObj.Status : coupon.Status,
-                    StoreId = coupon.StoreId == null ? beforeUpdateObj.StoreId : coupon.StoreId,
-                };
+
                 await _couponRepository.UpdateCoupon(updateCoupon);
             }
             catch (DbUpdateConcurrencyException)
@@ -108,7 +109,11 @@ namespace CakeCurious_API.Controllers
 
                 throw;
             }
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            return Ok(updateCoupon);
         }
         [HttpDelete("{guid}")]
         [Authorize]
