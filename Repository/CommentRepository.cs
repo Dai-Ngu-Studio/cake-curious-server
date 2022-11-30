@@ -25,6 +25,12 @@ namespace Repository
             return await db.Comments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<Comment?> GetCommentWithRootReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Comments.AsNoTracking().Include(x => x.Root).FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<RecipeComment?> GetRecipeComment(Guid id)
         {
             var db = new CakeCuriousDbContext();
@@ -48,7 +54,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
-                string query = "update [Comment] set [Comment].[status] = {0} where [Comment].[id] = {1}";
+                string query = "update [Comment] set [Comment].[status] = {0} where [Comment].[id] = {1} or [Comment].[root_id] = {1}";
                 var rows = await db.Database.ExecuteSqlRawAsync(query, (int)CommentStatusEnum.Inactive, id);
                 await transaction.CommitAsync();
                 return rows;
