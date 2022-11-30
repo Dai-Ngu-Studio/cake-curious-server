@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Nest;
 using Repository.Constants.Products;
 using Repository.Interfaces;
+using Repository.Models.Orders;
 using Repository.Models.Product;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
@@ -492,12 +493,12 @@ namespace CakeCurious_API.Controllers
             var productIds = elasticsearchBundles.SelectMany(x => x.Value.Select(x => (Guid)x.Id!)).ToList();
             var bundles = await productRepository.GetBundles(storeIds, productIds, productIngredients);
 
-            var cartOrders = new CartOrders
+            var bundleOrders = new BundleOrders
             {
                 Orders = bundles.OrderByDescending(x => x.Products!.Count()),
             };
            
-            return Ok(cartOrders);
+            return Ok(bundleOrders);
         }
     }
 }

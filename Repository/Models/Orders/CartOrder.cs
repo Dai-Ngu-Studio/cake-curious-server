@@ -1,7 +1,8 @@
 ﻿using Repository.Models.Coupons;
+using Repository.Models.Product;
 using Repository.Models.Stores;
 
-namespace Repository.Models.Product
+namespace Repository.Models.Orders
 {
     public class CartOrder
     {
