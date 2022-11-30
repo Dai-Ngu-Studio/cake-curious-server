@@ -1,6 +1,6 @@
 ﻿namespace Repository.Models.Product
 {
-    public class CartDetailProduct
+    public class BundleDetailProduct
     {
         public Guid? Id { get; set; }
         public Guid? StoreId { get; set; }
@@ -10,5 +10,6 @@
         public decimal? Discount { get; set; }
         public string? PhotoUrl { get; set; }
         public int? Status { get; set; }
+        public string? Ingredient { get; set; }
     }
 }

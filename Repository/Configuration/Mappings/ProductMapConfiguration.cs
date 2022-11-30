@@ -8,11 +8,9 @@ namespace Repository.Configuration.Mappings
     {
         public static void RegisterProductMapping()
         {
-            TypeAdapterConfig<Product, CartDetailProduct>
+            TypeAdapterConfig<Product, BundleDetailProduct>
                 .NewConfig()
-                .Map(dest => dest.Ingredient, src => ((Dictionary<Guid, string>)MapContext.Current!.Parameters["productIngredients"]).Count > 0
-                    ? ((Dictionary<Guid, string>)MapContext.Current!.Parameters["productIngredients"])[(Guid)src.Id!]
-                    : string.Empty);
+                .Map(dest => dest.Ingredient, src => ((Dictionary<Guid, string>)MapContext.Current!.Parameters["productIngredients"])[(Guid)src.Id!]);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Repository.Models.Product
+﻿namespace Repository.Models.Orders
 {
     public class CartOrderRequest
     {
