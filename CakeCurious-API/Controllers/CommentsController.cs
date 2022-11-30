@@ -42,10 +42,15 @@ namespace CakeCurious_API.Controllers
             [Range(1, int.MaxValue)] int page = 1,
             [Range(1, int.MaxValue)] int take = 5)
         {
-            var commentPage = new CommentPage();
-            commentPage.TotalPages = (int)Math.Ceiling((decimal)await commentRepository.CountRepliesForComment(id) / take);
-            commentPage.Comments = commentRepository.GetRepliesForComment(id, (page - 1) * take, take);
-            return Ok(commentPage);
+            var comment = await commentRepository.GetCommentReadonly(id);
+            if (comment?.Status == (int)CommentStatusEnum.Active)
+            {
+                var commentPage = new CommentPage();
+                commentPage.TotalPages = (int)Math.Ceiling((decimal)await commentRepository.CountRepliesForComment(id) / take);
+                commentPage.Comments = commentRepository.GetRepliesForComment(id, (page - 1) * take, take);
+                return Ok(commentPage);
+            }
+            return Conflict();
         }
 
         [HttpPut("{id:guid}")]
@@ -56,9 +61,15 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                var comment = await commentRepository.GetCommentReadonly(id);
+                var comment = await commentRepository.GetCommentWithRootReadonly(id);
                 if (comment != null)
                 {
+                    if (comment.Status == (int)CommentStatusEnum.Inactive
+                        || (comment.Root != null && comment.Root.Status == (int)CommentStatusEnum.Inactive))
+                    {
+                        return Conflict();
+                    }
+
                     if (comment.UserId == uid
                         || await UserRoleAuthorizer.AuthorizeUser(new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
                     {
@@ -79,6 +90,15 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
+                if (createComment.RootId != null)
+                {
+                    var rootComment = await commentRepository.GetCommentReadonly((Guid)createComment.RootId!);
+                    if (rootComment?.Status == (int)CommentStatusEnum.Inactive)
+                    {
+                        return Conflict();
+                    }
+                }
+
                 var comment = createComment.Adapt<Comment>();
                 comment.UserId = uid;
                 comment.SubmittedDate = DateTime.Now;
@@ -132,6 +152,11 @@ namespace CakeCurious_API.Controllers
                 var comment = await commentRepository.GetCommentReadonly(id);
                 if (comment != null)
                 {
+                    if (comment.Status == (int)CommentStatusEnum.Inactive)
+                    {
+                        return Conflict();
+                    }
+
                     if (comment.UserId == uid
                         || await UserRoleAuthorizer.AuthorizeUser(new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
                     {
