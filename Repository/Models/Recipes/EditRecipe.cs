@@ -2,12 +2,14 @@
 using Repository.Models.RecipeMaterials;
 using Repository.Models.RecipeMedia;
 using Repository.Models.RecipeSteps;
+using Repository.Models.Users;
 
 namespace Repository.Models.Recipes
 {
     public class EditRecipe
     {
         public Guid? Id { get; set; }
+        public SimpleUser? User { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
         public int? ServingSize { get; set; }
