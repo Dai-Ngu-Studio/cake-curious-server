@@ -110,6 +110,7 @@ namespace CakeCurious_API.Controllers
         }
 
         [HttpDelete("take-down/{guid}")]
+        [Authorize]
         public async Task<ActionResult> TakeDownAnComment(Guid? guid)
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

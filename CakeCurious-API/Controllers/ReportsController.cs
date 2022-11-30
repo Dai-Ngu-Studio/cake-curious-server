@@ -73,6 +73,7 @@ namespace CakeCurious_API.Controllers
         }
 
         [HttpPut("bulk-update")]
+        [Authorize]
         public async Task<ActionResult> UpdateReportsStatus([FromBody] BulkUpdateReportStatus reports)
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -88,6 +89,7 @@ namespace CakeCurious_API.Controllers
         }
 
         [HttpPut("{guid}")]
+        [Authorize]
         public async Task<ActionResult> PutReport(Guid guid, ViolationReport inputReport)
         {
             try
