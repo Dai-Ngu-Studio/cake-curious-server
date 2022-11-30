@@ -18,7 +18,7 @@ namespace Repository.Interfaces
         public Task<int> Delete(Guid id);
         public Task<Recipe?> GetRecipeReadonly(Guid id);
         public Task<IEnumerable<SimpleRecipeForReportList>> GetReportedRecipes(string? s, string? sort, string? filter, int page, int size);
-        public Task<int?> CountTotalReportedRecipes(string? s, string? sort, string? filter);
+        public Task<int?> CountTotalReportedRecipes(string? s, string? filter);
         public Task<Recipe?> GetRecipeWithStepsReadonly(Guid id);
         public Task<Recipe?> GetRecipe(Guid id);
         public Task<EditRecipe?> GetEditRecipe(Guid id);

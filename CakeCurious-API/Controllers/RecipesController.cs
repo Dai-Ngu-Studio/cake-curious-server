@@ -84,11 +84,11 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("Is-Reported")]
         [Authorize]
-        public async Task<ActionResult<ReportedRecipesPage>> GetReportedRecipes(string? s, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        public async Task<ActionResult<ReportedRecipesPage>> GetReportedRecipes(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             ReportedRecipesPage reportedRecipesPage = new ReportedRecipesPage();
-            reportedRecipesPage.Recipes = await recipeRepository.GetReportedRecipes(s, sort, filter, page, size);
-            reportedRecipesPage.TotalPage = (int)Math.Ceiling((decimal)await recipeRepository.CountTotalReportedRecipes(s, sort, filter) / size);
+            reportedRecipesPage.Recipes = await recipeRepository.GetReportedRecipes(search, sort, filter, page, size);
+            reportedRecipesPage.TotalPage = (int)Math.Ceiling((decimal)await recipeRepository.CountTotalReportedRecipes(search, filter) / size);
             return Ok(reportedRecipesPage);
         }
 

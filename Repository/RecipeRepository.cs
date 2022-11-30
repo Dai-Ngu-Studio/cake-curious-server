@@ -391,7 +391,7 @@ namespace Repository
             return isReportedRecipes!;
         }
 
-        public async Task<int?> CountTotalReportedRecipes(string? s, string? sort, string? filter)
+        public async Task<int?> CountTotalReportedRecipes(string? s, string? filter)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<ViolationReport> reportsRecipeType = await db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Recipe).GroupBy(x => x.ItemId).Select(d => d.First()).ToListAsync();
@@ -416,15 +416,6 @@ namespace Repository
                 else if (filter != null && filter == RecipeStatusEnum.Inactive.ToString())
                 {
                     isReportedRecipes = FilterByStatusInactive(isReportedRecipes);
-                }
-                //orderby
-                if (sort != null && sort == RecipeOrderByEnum.DescName.ToString())
-                {
-                    isReportedRecipes = OrderByDescName(isReportedRecipes);
-                }
-                else if (sort != null && sort == RecipeOrderByEnum.AscName.ToString())
-                {
-                    isReportedRecipes = OrderByAscName(isReportedRecipes);
                 }
             }
             catch (Exception ex)
