@@ -12,7 +12,7 @@ namespace Repository.Interfaces
         public Task<Order?> GetById(Guid guid);
         public Task<IEnumerable<SimpleOrderDetail>?> GetOrderDetailForStore(Guid guid, string? sort, int pageIndex, int pageSize);
         public Task<int?> OrderDetailCount(Guid id, string? sort);
-        public int CountDashboardOrders(string uid, string? s, string? order_by, string? filter_Order);
+        public int CountDashboardOrders(string uid, string? s, string? filter_Order);
         public Task<bool> IsCouponInUserOrders(Guid couponId, string userId);
         public Task AddOrder(Order order, string query);
         public IEnumerable<InfoOrder> GetOrdersOfUser(string userId, int[] status, int skip, int take);

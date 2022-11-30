@@ -14,7 +14,7 @@ namespace Repository.Interfaces
         public Task<ICollection<FollowerUser>> GetFollowersOfUser(string uid, string currentUserId, int skip, int take);
         public Task<int> CountFollowingOfUser(string uid);
         public Task<ICollection<FollowingUser>> GetFollowingOfUser(string uid, string currentUserId, int skip, int take);
-        public int CountDashboardUser(string? search, string? order_by, string? filter);
+        public int CountDashboardUser(string? search, string? filter);
         public Task<UserDetailForWeb?> GetUserDetailForWeb(string uid);
         public Task<User?> DeleteUser(string? id);
         public Task<ProfileUser?> GetProfileUser(string? id, string currentUserId);

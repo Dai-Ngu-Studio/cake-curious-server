@@ -171,7 +171,7 @@ namespace Repository
             }
         }
 
-        public int CountDashboardOrders(string uid, string? s, string? order_by, string? filter_Order)
+        public int CountDashboardOrders(string uid, string? s, string? filter_Order)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid);
@@ -189,16 +189,7 @@ namespace Repository
                 else if (filter_Order != null && filter_Order == OrderStatusEnum.Completed.ToString())
                 {
                     orders = FilterByStatusComplete(orders);
-                }
-                //sort
-                if (order_by != null && order_by == OrderSortEnum.DescOrderDate.ToString())
-                {
-                    orders = OrderDescOrderDate(orders);
-                }
-                else if (order_by != null && order_by == OrderSortEnum.AscOrderDate.ToString())
-                {
-                    orders = OrderAscOrderDate(orders);
-                }
+                }               
             }
             catch (Exception ex)
             {

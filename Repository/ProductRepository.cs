@@ -141,7 +141,7 @@ namespace Repository
             }
         }
 
-        public int CountDashboardProducts(Guid? id, string? s, string? order_by, string? product_type)
+        public int CountDashboardProducts(Guid? id, string? s, string? product_type)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<Product> prods = db.Products.Where(p => p.StoreId == id);
@@ -159,24 +159,7 @@ namespace Repository
                 else if (product_type != null && product_type == ProductTypeEnum.Tool.ToString())
                 {
                     prods = FilterByTool(prods);
-                }
-                //Orderby
-                if (order_by != null && order_by == ProductOrderByEnum.AscName.ToString())
-                {
-                    prods = OrderByAscName(prods);
-                }
-                else if (order_by != null && order_by == ProductOrderByEnum.DescName.ToString())
-                {
-                    prods = OrderByDescName(prods);
-                }
-                else if (order_by != null && order_by == ProductOrderByEnum.AscPrice.ToString())
-                {
-                    prods = OrderByAscPrice(prods);
-                }
-                else if (order_by != null && order_by == ProductOrderByEnum.DescName.ToString())
-                {
-                    prods = OrderbyByDescPrice(prods);
-                }               
+                }                   
             }
             catch (Exception ex)
             {

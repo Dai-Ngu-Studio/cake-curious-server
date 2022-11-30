@@ -68,7 +68,7 @@ namespace Repository
             }
             return null;
         }
-        public int CountCouponPage(string uid, string? s, string? order_by, string? filter_Coupon)
+        public int CountCouponPage(string uid, string? s, string? filter_Coupon)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<Coupon> coupons = db.Coupons.Where(c => c!.Store!.UserId == uid);
@@ -86,16 +86,7 @@ namespace Repository
                 else if (filter_Coupon != null && filter_Coupon == CouponStatusEnum.Inactive.ToString())
                 {
                     coupons = FilterByInActiveStatus(coupons);
-                }
-                //Orderby
-                if (order_by != null && order_by == CouponOrderByEnum.AscName.ToString())
-                {
-                    coupons = OrderByAscName(coupons);
-                }
-                else if (order_by != null && order_by == CouponOrderByEnum.DescName.ToString())
-                {
-                    coupons = OrderByDescName(coupons);
-                }
+                }            
             }
             catch (Exception ex)
             {

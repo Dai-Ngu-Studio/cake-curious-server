@@ -20,7 +20,7 @@ namespace Repository.Interfaces
         public Task<string?> BulkUpdate(Guid[] guid, string uid);
         public Task UpdateAllReportStatusOfAnItem(Guid itemId, string uid);
         public Task<IEnumerable<StaffDashboardReport>?> GetReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter, int PageSize, int PageIndex);
-        public int CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter);
+        public int CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? filter);
         public Task<int> CountPendingReportOfAnItem(Guid itemId);
 
     }

@@ -42,7 +42,7 @@ namespace CakeCurious_API.Controllers
             Guid storeId = await storeRepository.getStoreIdByUid(uid!);
             if (storeId.ToString() == "00000000-0000-0000-0000-000000000000") return BadRequest("Invalid store ID. You need to create a store to get product list.");
             result.Products = productRepository.GetProducts(storeId, search, sort, filter, page, size);
-            result.TotalPage = (int)Math.Ceiling((decimal)productRepository.CountDashboardProducts(storeId, search, sort, filter) / size);
+            result.TotalPage = (int)Math.Ceiling((decimal)productRepository.CountDashboardProducts(storeId, search, filter) / size);
             return Ok(result);
         }
 
@@ -496,7 +496,7 @@ namespace CakeCurious_API.Controllers
             {
                 Orders = bundles.OrderByDescending(x => x.Products!.Count()),
             };
-           
+
             return Ok(cartOrders);
         }
     }

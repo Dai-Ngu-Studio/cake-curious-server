@@ -43,7 +43,7 @@ namespace CakeCurious_API.Controllers
         {
             var result = new AdminDashboardStorePage();
             result.Stores = storeRepository.GetStores(search, sort, filter, size, page);
-            result.TotalPage = (int)Math.Ceiling((decimal)storeRepository.CountDashboardStores(search, sort, filter) / size);
+            result.TotalPage = (int)Math.Ceiling((decimal)storeRepository.CountDashboardStores(search, filter) / size);
             return Ok(result);
         }
 

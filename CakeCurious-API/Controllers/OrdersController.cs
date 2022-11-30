@@ -37,7 +37,7 @@ namespace CakeCurious_API.Controllers
             var result = new StoreDashboardOrderPage();
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             result.Orders = orderRepository.GetOrdersOfAStore(uid!, search, sort, filter, size, page);
-            result.TotalPage = (int)Math.Ceiling((decimal)orderRepository.CountDashboardOrders(uid!, search!, sort!, filter!) / size);
+            result.TotalPage = (int)Math.Ceiling((decimal)orderRepository.CountDashboardOrders(uid!, search!, filter!) / size);
             return Ok(result);
         }
 

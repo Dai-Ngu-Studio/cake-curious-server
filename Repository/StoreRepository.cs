@@ -184,7 +184,7 @@ namespace Repository
             }
         }
 
-        public int CountDashboardStores(string? s, string? order_by, string? filter_Store)
+        public int CountDashboardStores(string? s, string? filter_Store)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<Store> stores = db.Stores;
@@ -203,16 +203,7 @@ namespace Repository
                 else if (filter_Store != null && filter_Store == StoreStatusEnum.Inactive.ToString())
                 {
                     stores = FilterByStatusInactive(stores);
-                }
-                //Sort
-                if (order_by != null && order_by == StoreSortEnum.DescName.ToString())
-                {
-                    stores = OrderByDescName(stores);
-                }
-                else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
-                {
-                    stores = OrderByAscName(stores);
-                }
+                }          
                 return stores.Count();
             }
             catch (Exception ex)

@@ -77,7 +77,7 @@ namespace Repository
             }
             return null;
         }
-        public int CountDashboardUser(string? search, string? order_by, string? filter)
+        public int CountDashboardUser(string? search, string? filter)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<User> users = db.Users.ToList();
@@ -95,16 +95,7 @@ namespace Repository
                 else if (filter != null && filter == UserStatusEnum.Inactive.ToString())
                 {
                     users = filterByInactiveStatus(users);
-                }
-                //Orderby
-                if (order_by != null && order_by == UserSortEnum.AscDisplayName.ToString())
-                {
-                    users = orderByAscDisplayName(users);
-                }
-                else if (order_by != null && order_by == UserSortEnum.DescDisplayName.ToString())
-                {
-                    users = orderByDescDisplayName(users);
-                }
+                }              
                 return users.Count();
             }
             catch (Exception ex)

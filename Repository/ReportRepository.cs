@@ -192,7 +192,7 @@ namespace Repository
             return null;
         }
 
-        public int CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter)
+        public int CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? filter)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Where(r => r.ItemId == itemId).Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>();
@@ -216,15 +216,7 @@ namespace Repository
                 {
                     reports = FilterByRejectedStatus(reports);
                 }
-                //sort
-                if (order_by != null && order_by == ReportSortEnum.DescTitle.ToString())
-                {
-                    reports = OrderByDescTitle(reports);
-                }
-                else if (order_by != null && order_by == ReportSortEnum.AscTitle.ToString())
-                {
-                    reports = OrderByAscTitle(reports);
-                }
+                //sort             
                 return reports.Count();
             }
             catch (Exception ex)

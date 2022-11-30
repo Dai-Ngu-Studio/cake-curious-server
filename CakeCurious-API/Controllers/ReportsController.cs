@@ -34,7 +34,7 @@ namespace CakeCurious_API.Controllers
             var result = new StaffReportsOfAnItemPage();
             result.Reports = await _ReportRepository.GetReportsOfAnItem(guid!.Value, search, sort, filter, page, size);
             result.PendingReports = await _ReportRepository.CountPendingReportOfAnItem(guid!.Value);
-            result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReportsOfAnItem(guid!.Value, search, sort, filter) / size);
+            result.TotalPage = (int)Math.Ceiling((decimal)_ReportRepository.CountDashboardViolationReportsOfAnItem(guid!.Value, search, filter) / size);
             return Ok(result);
         }
 

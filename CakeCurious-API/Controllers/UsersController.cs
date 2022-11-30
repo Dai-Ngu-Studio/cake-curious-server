@@ -55,7 +55,7 @@ namespace CakeCurious_API.Controllers
         {
             var result = new AdminDashboardUserPage();
             result.Users = userRepository.GetList(search, sort, filter, page, size);
-            result.TotalPage = (int)Math.Ceiling((decimal)userRepository.CountDashboardUser(search, sort, filter) / size);
+            result.TotalPage = (int)Math.Ceiling((decimal)userRepository.CountDashboardUser(search, filter) / size);
             return Ok(result);
         }
 
