@@ -36,12 +36,5 @@ namespace Repository.Models.Recipes
 
         public int? TotalPendingReports { get; set; }
 
-        public ICollection<SimpleRecipeHasCategory>? HasCategories { get; set; }
-
-        public ICollection<SimpleRecipeMaterial>? RecipeMaterials { get; set; }
-
-        public ICollection<SimpleRecipeMedia>? RecipeMedia { get; set; }
-
-        public ICollection<SimpleRecipeStep>? RecipeSteps { get; set; }
     }
 }
