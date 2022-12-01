@@ -19,7 +19,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             AdminDashboardCardStats cs = new AdminDashboardCardStats();
             //new report by week cost not much
-            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek).Day);
+            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
             IEnumerable<ViolationReport> TwoLastWeekReport = db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= DateTime.Now);
             cs.CurrentWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= DateTime.Now).Count();
             decimal lastWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= startAtSunday.AddDays(-1)).Count();
@@ -109,7 +109,7 @@ namespace Repository
             double sinceLastMonthNewUser = LastMonthProductSold > 0 || cs.CurrentMonthProductSold > 0 ? (double)((cs.CurrentMonthProductSold - LastMonthProductSold) / (cs.CurrentMonthProductSold > LastMonthProductSold ? cs.CurrentMonthProductSold : LastMonthProductSold)) : 0;
             cs.SinceLastMonthProductSold = Math.Round(sinceLastMonthNewUser, 2);
             //Sales by week
-            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek).Day);
+            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
             foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startAtSunday && ord!.OrderDate! <= DateTime.Now && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
                 foreach (var orderDetail in ord!.OrderDetails!)
