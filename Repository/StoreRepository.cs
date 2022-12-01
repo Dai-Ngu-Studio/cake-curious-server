@@ -293,7 +293,7 @@ namespace Repository
                     {
                         Id = (Guid)reader["id"],
                         Name = (string)reader["name"],
-                        PhotoUrl = reader["photo_url"] != null ? (string)reader["photo_url"] : null,
+                        PhotoUrl = reader["photo_url"].GetType() == typeof(string) ? (string)reader["photo_url"] : null,
                         Rating = (decimal)reader["rating"],
                     });
                 }
