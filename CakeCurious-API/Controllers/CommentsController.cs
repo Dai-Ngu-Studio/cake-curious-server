@@ -38,7 +38,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}")]
         [Authorize]
-        public async Task<ActionResult<SimpleComment>> GetRepliesOfComment(Guid id)
+        public async Task<ActionResult<SimpleComment>> GetCommentById(Guid id)
         {
             SimpleComment comment = await commentRepository.GetCommentById(id);
             if (comment == null) return BadRequest("Not found comment.");
