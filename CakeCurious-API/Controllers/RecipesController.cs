@@ -243,6 +243,7 @@ namespace CakeCurious_API.Controllers
                         return Ok(await recipeRepository.GetEditRecipe(id));
                     }
                 }
+                return NotFound();
             }
             return Unauthorized();
         }
