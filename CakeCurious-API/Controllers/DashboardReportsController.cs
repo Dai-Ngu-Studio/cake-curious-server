@@ -34,7 +34,7 @@ namespace CakeCurious_API.Controllers
                 CredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS"),
             }.Build();
             DateTime monthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek).Day);
+            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
             DateTime LastYear = new DateTime(DateTime.Now.AddYears(-1).Year, 1, 1);
             AdminDashboardLineChart lc = new AdminDashboardLineChart();
             try
@@ -61,9 +61,9 @@ namespace CakeCurious_API.Controllers
                 Console.WriteLine(ex.Message);
                 return BadRequest("Error when get monthly active users data from google analytic");
             }
-            dbr.LineChart = lc;
             try
             {
+                dbr.LineChart = lc;
                 //Get weely Active user cost 1.x s
                 RunReportRequest requestActiveUser = new RunReportRequest
                 {
@@ -74,13 +74,15 @@ namespace CakeCurious_API.Controllers
                 };
                 //Add active user by week data to report
                 var activeUserRes = await client.RunReportAsync(requestActiveUser);
-                dbr!.CardStats!.CurrentWeekActiveUser = activeUserRes.Rows.Count() > 1 ? Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value) : 0;
-                decimal lastWeekActiveUser = activeUserRes.Rows.Count() > 1 ? Int32.Parse(activeUserRes.Rows[1].MetricValues[0].Value) : Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value);
+                dbr!.CardStats!.CurrentWeekActiveUser = activeUserRes.Rows.Count() > 1 ? Int32.Parse(activeUserRes.Rows[1].MetricValues[0].Value) : 0;
+                decimal lastWeekActiveUser = activeUserRes.Rows.Count() > 1 ? Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value) : Int32.Parse(activeUserRes.Rows[0].MetricValues[0].Value);
                 double sinceLastWeekActiveUser = (double)((dbr!.CardStats!.CurrentWeekActiveUser - lastWeekActiveUser) / (dbr!.CardStats!.CurrentWeekActiveUser > lastWeekActiveUser ? dbr!.CardStats!.CurrentWeekActiveUser : lastWeekActiveUser));
                 dbr!.CardStats!.SinceLastWeekActiveUser = Math.Round(sinceLastWeekActiveUser, 2);
+
             }
             catch (Exception ex)
             {
+
                 Console.WriteLine(ex.Message);
                 return BadRequest("Error when get weekly active users from google analytic");
             }
@@ -116,7 +118,7 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             Guid? storeId = await storeRepository.getStoreIdByUid(uid!);
             dbr = await dashboardReportRepository.generateStoreReport(storeId.Value);
-            DateTime startAtSunday = DateTime.Now.AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
+            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
             BetaAnalyticsDataClient client = new BetaAnalyticsDataClientBuilder
             {
                 CredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS"),
