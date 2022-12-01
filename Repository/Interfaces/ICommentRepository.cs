@@ -10,6 +10,7 @@ namespace Repository.Interfaces
         public Task<RecipeComment?> GetRecipeComment(Guid id);
         public Task Add(Comment comment);
         public Task<int> Update(Guid id, UpdateComment updateComment);
+        public Task<SimpleComment> GetCommentById(Guid id);
         public Task<int> Delete(Guid id);
         public Task<int> CountCommentsForRecipe(Guid recipeId);
         public Task<IEnumerable<SimpleCommentForReportList>> GetReportedCommments(string? filter, int page, int size);

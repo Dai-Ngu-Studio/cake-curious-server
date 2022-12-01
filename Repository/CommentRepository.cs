@@ -167,5 +167,13 @@ namespace Repository
             }
             return isReportedComments!.Count();
         }
+
+        public async Task<SimpleComment> GetCommentById(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            SimpleComment? simpleComment = await db.Comments.Include(c => c.User).ProjectToType<SimpleComment>().FirstOrDefaultAsync(c => c.Id == id);
+            return simpleComment!;
+
+        }
     }
 }

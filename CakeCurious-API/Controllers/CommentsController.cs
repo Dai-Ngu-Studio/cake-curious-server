@@ -36,11 +36,20 @@ namespace CakeCurious_API.Controllers
             return Ok(reportedCommentsPage);
         }
 
+        [HttpGet("{id:guid}")]
+        [Authorize]
+        public async Task<ActionResult<SimpleComment>> GetRepliesOfComment(Guid id)
+        {
+            SimpleComment comment = await commentRepository.GetCommentById(id);
+            if (comment == null) return BadRequest("Not found comment.");
+            return Ok(comment);
+        }
+
         [HttpGet("{id:guid}/replies")]
         [Authorize]
         public async Task<ActionResult<CommentPage>> GetRepliesOfComment(Guid id,
-            [Range(1, int.MaxValue)] int page = 1,
-            [Range(1, int.MaxValue)] int take = 5)
+        [Range(1, int.MaxValue)] int page = 1,
+        [Range(1, int.MaxValue)] int take = 5)
         {
             var comment = await commentRepository.GetCommentReadonly(id);
             if (comment?.Status == (int)CommentStatusEnum.Active)
