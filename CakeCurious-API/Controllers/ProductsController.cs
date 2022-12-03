@@ -174,6 +174,7 @@ namespace CakeCurious_API.Controllers
                     Status = product.Status == null ? beforeUpdateObj.Status : product.Status,
                     StoreId = product.StoreId == null ? beforeUpdateObj.StoreId : product.StoreId,
                     ProductCategoryId = product.ProductCategoryId == null ? beforeUpdateObj.ProductCategoryId : product.ProductCategoryId,
+                    Version = product.Version, // Row versioning
                 };
 
                 var dynamicLinkResponse = await CreateDynamicLink(updateProd);
@@ -212,14 +213,13 @@ namespace CakeCurious_API.Controllers
                         );
                 }
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException e)
             {
                 if (productRepository.GetById(id) == null)
                 {
                     return NotFound();
                 }
-
-                throw;
+                return Conflict($"{e.Message}\n{e.InnerException}\n{e.StackTrace}");
             }
             return Ok("Update product successfully");
         }

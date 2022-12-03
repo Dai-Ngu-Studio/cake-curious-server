@@ -55,6 +55,10 @@ namespace BusinessObject
         [Column("status")]
         public int? Status { get; set; }
 
+        [Column("version")]
+        [Timestamp]
+        public byte[]? Version { get; set; }
+
         [InverseProperty("Product")]
         public ICollection<OrderDetail>? OrderDetails { get; set; }
     }
