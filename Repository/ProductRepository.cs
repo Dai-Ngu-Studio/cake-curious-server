@@ -179,7 +179,15 @@ namespace Repository
         public async Task<Product?> GetActiveProductReadonly(Guid id)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == (int)ProductStatusEnum.Active);
+            return await db.Products
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Where(x => x.Id == id)
+                .Where(x => x.Status == (int)ProductStatusEnum.Active)
+                .Where(x => x.Store!.Status == (int)StoreStatusEnum.Active)
+                .Where(x => x.Store!.User!.Status == (int)UserStatusEnum.Active)
+                .ProjectToType<Product>()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<DetailProduct?> GetProductDetails(Guid id)

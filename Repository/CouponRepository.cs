@@ -2,6 +2,8 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Coupons;
+using Repository.Constants.Products;
+using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Coupons;
 
@@ -178,14 +180,17 @@ namespace Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<SimpleCoupon?> GetSimpleCouponOfStoreById(Guid id)
+        public async Task<SimpleCoupon?> GetActiveSimpleCouponOfStoreById(Guid id)
         {
             var db = new CakeCuriousDbContext();
             return await db.Coupons
                 .AsNoTracking()
-                .Where(x => x.Id == id
-                    && x.ExpiryDate > DateTime.Now
-                    && x.Status == (int)CouponStatusEnum.Active)
+                .AsSplitQuery()
+                .Where(x => x.Id == id)
+                .Where(x => x.ExpiryDate > DateTime.Now)
+                .Where(x => x.Status == (int)CouponStatusEnum.Active)
+                .Where(x => x.Store!.Status == (int)StoreStatusEnum.Active)
+                .Where(x => x.Store!.User!.Status == (int)UserStatusEnum.Active)
                 .ProjectToType<SimpleCoupon>()
                 .FirstOrDefaultAsync();
         }
