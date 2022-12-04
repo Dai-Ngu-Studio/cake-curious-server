@@ -112,7 +112,7 @@ namespace Repository
                 .Take(take)
                 .ProjectToType<RecipeComment>();
         }
-        public List<SimpleCommentForReportList>? FilterByStatusActiveList(List<SimpleCommentForReportList>? isReportedComments)
+        public List<SimpleCommentForReportList>? FilterByStatusActive(List<SimpleCommentForReportList>? isReportedComments)
         {
             return isReportedComments!.Where(p => p.Status == (int)CommentStatusEnum.Active).ToList();
         }
@@ -127,9 +127,9 @@ namespace Repository
         }
         public List<SimpleCommentForReportList>? OrderByDescTotalPendingReport(List<SimpleCommentForReportList>? isReportedComments)
         {
-            return isReportedComments!.OrderBy(r => r.TotalPendingReports).ToList();
+            return isReportedComments!.OrderByDescending(r => r.TotalPendingReports).ToList();
         }
-        public async Task<IEnumerable<SimpleCommentForReportList>> GetReportedCommments(string? filter,string? sort ,int page, int size)
+        public async Task<IEnumerable<SimpleCommentForReportList>> GetReportedCommments(string? filter, string? sort, int page, int size)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<ViolationReport> reportsCommentType = await db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Comment).GroupBy(x => x.ItemId).Select(d => d.First()).ToListAsync();
@@ -144,7 +144,7 @@ namespace Repository
             //filter
             if (filter != null && filter == CommentStatusEnum.Active.ToString())
             {
-                isReportedComments = FilterByStatusActiveList(isReportedComments);
+                isReportedComments = FilterByStatusActive(isReportedComments);
             }
             else if (filter != null && filter == CommentStatusEnum.Inactive.ToString())
             {
@@ -155,7 +155,7 @@ namespace Repository
             {
                 isReportedComments = OrderByAscTotalPendingReport(isReportedComments);
             }
-            else if (filter != null && sort == SortCommentEnum.DescPendingReport.ToString())
+            else if (sort != null && sort == SortCommentEnum.DescPendingReport.ToString())
             {
                 isReportedComments = OrderByDescTotalPendingReport(isReportedComments);
             }
@@ -176,7 +176,7 @@ namespace Repository
             //filter
             if (filter != null && filter == CommentStatusEnum.Active.ToString())
             {
-                isReportedComments = FilterByStatusActiveList(isReportedComments);
+                isReportedComments = FilterByStatusActive(isReportedComments);
             }
             else if (filter != null && filter == CommentStatusEnum.Inactive.ToString())
             {

@@ -335,9 +335,9 @@ namespace Repository
         }
         public List<SimpleRecipeForReportList>? OrderByDescTotalPendingReport(List<SimpleRecipeForReportList>? isReportedComments)
         {
-            return isReportedComments!.OrderBy(r => r.TotalPendingReports).ToList();
+            return isReportedComments!.OrderByDescending(r => r.TotalPendingReports).ToList();
         }
-        public List<SimpleRecipeForReportList>? FilterByStatusActiveList(List<SimpleRecipeForReportList>? isReportedRecipes)
+        public List<SimpleRecipeForReportList>? FilterByStatusActive(List<SimpleRecipeForReportList>? isReportedRecipes)
         {
             return isReportedRecipes!.Where(p => p.Status == (int)RecipeStatusEnum.Active).ToList();
         }
@@ -374,7 +374,7 @@ namespace Repository
                 //filter
                 if (filter != null && filter == RecipeStatusEnum.Active.ToString())
                 {
-                    isReportedRecipes = FilterByStatusActiveList(isReportedRecipes);
+                    isReportedRecipes = FilterByStatusActive(isReportedRecipes);
                 }
                 else if (filter != null && filter == RecipeStatusEnum.Inactive.ToString())
                 {
@@ -385,7 +385,7 @@ namespace Repository
                 {
                     isReportedRecipes = OrderByAscTotalPendingReport(isReportedRecipes);
                 }
-                else if (filter != null && sort == RecipeOrderByEnum.DescPendingReport.ToString())
+                else if (sort != null && sort == RecipeOrderByEnum.DescPendingReport.ToString())
                 {
                     isReportedRecipes = OrderByDescTotalPendingReport(isReportedRecipes);
                 }
@@ -419,7 +419,7 @@ namespace Repository
                 //filter
                 if (filter != null && filter == RecipeStatusEnum.Active.ToString())
                 {
-                    isReportedRecipes = FilterByStatusActiveList(isReportedRecipes);
+                    isReportedRecipes = FilterByStatusActive(isReportedRecipes);
                 }
                 else if (filter != null && filter == RecipeStatusEnum.Inactive.ToString())
                 {
