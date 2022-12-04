@@ -19,6 +19,9 @@ namespace BusinessObject
         [Column("name", TypeName = "nvarchar(32)")]
         public string? Name { get; set; }
 
+        [Column("lang_code", TypeName = "varchar(128)")]
+        public string? LangCode { get; set; }
+
         [InverseProperty("ReportCategory")]
         public ICollection<ViolationReport>? ViolationReports { get; set; }
     }

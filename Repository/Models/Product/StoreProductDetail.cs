@@ -14,6 +14,7 @@ namespace Repository.Models.Product
         public decimal? Price { get; set; }
         public decimal? Discount { get; set; }
         public string? PhotoUrl { get; set; }
+        public decimal? Rating { get; set; }
         public int? Status { get; set; }
     }
 }

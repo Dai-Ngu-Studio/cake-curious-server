@@ -31,5 +31,8 @@ namespace BusinessObject
 
         [Column("price", TypeName = "decimal(20,4)")]
         public decimal? Price { get; set; }
+
+        [Column("rating", TypeName = "decimal(5,2)")]
+        public decimal? Rating { get; set; }
     }
 }
