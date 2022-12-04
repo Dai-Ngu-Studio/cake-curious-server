@@ -28,6 +28,7 @@ namespace BusinessObject
         public DbSet<Comment> Comments { get; set; } = null!;
         public DbSet<CommentMedia> CommentMedia { get; set; } = null!;
         public DbSet<Coupon> Coupons { get; set; } = null!;
+        public DbSet<DeactivateReason> DeactivateReasons { get; set; } = null!;
         public DbSet<Like> Likes { get; set; } = null!;
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
