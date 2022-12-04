@@ -128,17 +128,15 @@ namespace Repository
             return null;
         }
 
-        public async Task Update(Product updateObj)
+        public async Task Update(Product product)
         {
-            try
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
             {
-                var db = new CakeCuriousDbContext();
-                db.Entry<Product>(updateObj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                await db.Database.ExecuteSqlRawAsync($"select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'");
+                db.Entry<Product>(product).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 await db.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                await transaction.CommitAsync(); // Commit transaction, remove lock
             }
         }
 
@@ -160,7 +158,7 @@ namespace Repository
                 else if (product_type != null && product_type == ProductTypeEnum.Tool.ToString())
                 {
                     prods = FilterByTool(prods);
-                }                   
+                }
             }
             catch (Exception ex)
             {
@@ -179,7 +177,15 @@ namespace Repository
         public async Task<Product?> GetActiveProductReadonly(Guid id)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == (int)ProductStatusEnum.Active);
+            return await db.Products
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Where(x => x.Id == id)
+                .Where(x => x.Status == (int)ProductStatusEnum.Active)
+                .Where(x => x.Store!.Status == (int)StoreStatusEnum.Active)
+                .Where(x => x.Store!.User!.Status == (int)UserStatusEnum.Active)
+                .ProjectToType<Product>()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<DetailProduct?> GetProductDetails(Guid id)

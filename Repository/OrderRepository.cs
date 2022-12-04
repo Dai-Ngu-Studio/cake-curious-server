@@ -210,19 +210,30 @@ namespace Repository
             return await db.Orders.FirstOrDefaultAsync(x => x.Id == guid);
         }
 
-        public async Task AddOrder(Order order, string query)
+        public async Task AddOrder(Order order, string query, int expectedRows)
         {
             var db = new CakeCuriousDbContext();
-            using (var transaction = await db.Database.BeginTransactionAsync())
+            var rowsAffected = 0;
+            // Starts transaction, update to products are locked for others
+            /// Which is why transaction should be short
+            using (var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
             {
-                await db.Orders.AddAsync(order);
+                await db.Orders.AddAsync(order); // Add order (including order details)
+                rowsAffected += await db.SaveChangesAsync();
                 if (!string.IsNullOrWhiteSpace(query))
                 {
-                    await db.Database.ExecuteSqlRawAsync(query);
+                    // Execute query to update product quantity
+                    /// Query might remove order and order details if any invalid order or order details are detected
+                    rowsAffected += await db.Database.ExecuteSqlRawAsync(query);
                 }
-                await db.SaveChangesAsync();
-                await transaction.CommitAsync();
-                Console.WriteLine();
+                rowsAffected += await db.SaveChangesAsync();
+                await transaction.CommitAsync(); // Commit transaction, remove lock
+            }
+            Console.WriteLine($"Affected: {rowsAffected}, Expected: {expectedRows}, {rowsAffected}/{expectedRows}.");
+            // Compare number of rows affected to expected
+            if (rowsAffected != expectedRows)
+            {
+                throw new Exception();
             }
         }
 
@@ -283,7 +294,10 @@ namespace Repository
         public async Task<bool> IsCouponInUserOrders(Guid couponId, string userId)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Orders.AnyAsync(x => x.UserId == userId
+            return await db.Orders
+                .AsNoTracking()
+                .AsSplitQuery()
+                .AnyAsync(x => x.UserId == userId
                 && x.CouponId == couponId
                 && (x.Status == (int)OrderStatusEnum.Pending
                     || x.Status == (int)OrderStatusEnum.Processing

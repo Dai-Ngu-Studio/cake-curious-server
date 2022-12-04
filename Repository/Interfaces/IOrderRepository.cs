@@ -14,7 +14,7 @@ namespace Repository.Interfaces
         public Task<int?> OrderDetailCount(Guid id, string? sort);
         public int CountDashboardOrders(string uid, string? s, string? filter_Order);
         public Task<bool> IsCouponInUserOrders(Guid couponId, string userId);
-        public Task AddOrder(Order order, string query);
+        public Task AddOrder(Order order, string query, int expectedRows);
         public IEnumerable<InfoOrder> GetOrdersOfUser(string userId, int[] status, int skip, int take);
         public Task<int> CountOrdersOfUser(string userId, int[] status);
         public IEnumerable<string?> GetAddressesOfUser(string userId, int skip, int take);

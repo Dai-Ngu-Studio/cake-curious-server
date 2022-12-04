@@ -163,17 +163,17 @@ namespace CakeCurious_API.Controllers
                 if (beforeUpdateObj == null) return BadRequest("Product does not exist.");
                 Product updateProd = new Product()
                 {
-                    Id = product.Id == null ? beforeUpdateObj.Id : product.Id,
-                    Name = product.Name == null ? beforeUpdateObj.Name : product.Name,
-                    Description = product.Description == null ? beforeUpdateObj.Description : product.Description,
+                    Id = product.Id ?? beforeUpdateObj.Id,
+                    Name = product.Name ?? beforeUpdateObj.Name,
+                    Description = product.Description ?? beforeUpdateObj.Description,
                     Discount = product.Discount == null ? beforeUpdateObj.Discount : product.Discount / 100,
-                    PhotoUrl = product.PhotoUrl == null ? beforeUpdateObj.PhotoUrl : product.PhotoUrl,
-                    Quantity = product.Quantity == null ? beforeUpdateObj.Quantity : product.Quantity,
-                    Price = product.Price == null ? beforeUpdateObj.Price : product.Price,
-                    ProductType = product.ProductType == null ? beforeUpdateObj.ProductType : product.ProductType,
-                    Status = product.Status == null ? beforeUpdateObj.Status : product.Status,
-                    StoreId = product.StoreId == null ? beforeUpdateObj.StoreId : product.StoreId,
-                    ProductCategoryId = product.ProductCategoryId == null ? beforeUpdateObj.ProductCategoryId : product.ProductCategoryId,
+                    PhotoUrl = product.PhotoUrl ?? beforeUpdateObj.PhotoUrl,
+                    Quantity = product.Quantity ?? beforeUpdateObj.Quantity,
+                    Price = product.Price ?? beforeUpdateObj.Price,
+                    ProductType = product.ProductType ?? beforeUpdateObj.ProductType,
+                    Status = product.Status ?? beforeUpdateObj.Status,
+                    StoreId = product.StoreId ?? beforeUpdateObj.StoreId,
+                    ProductCategoryId = product.ProductCategoryId ?? beforeUpdateObj.ProductCategoryId,
                 };
 
                 var dynamicLinkResponse = await CreateDynamicLink(updateProd);
@@ -212,14 +212,13 @@ namespace CakeCurious_API.Controllers
                         );
                 }
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException e)
             {
                 if (productRepository.GetById(id) == null)
                 {
                     return NotFound();
                 }
-
-                throw;
+                return Conflict($"{e.Message}\n{e.InnerException}\n{e.StackTrace}");
             }
             return Ok("Update product successfully");
         }
