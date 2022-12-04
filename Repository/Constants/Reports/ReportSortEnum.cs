@@ -9,6 +9,8 @@ namespace Repository.Constants.Reports
     public enum ReportSortEnum
     {
         AscTitle,
-        DescTitle
+        DescTitle,
+        DescDate,
+        AscDate,
     }
 }

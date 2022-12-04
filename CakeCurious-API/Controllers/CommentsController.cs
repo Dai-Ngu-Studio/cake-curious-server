@@ -28,10 +28,11 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("Is-Reported")]
         [Authorize]
-        public async Task<ActionResult<ReportedCommentsPage>> GetReportedComment(string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        public async Task<ActionResult<ReportedCommentsPage>> GetReportedComment(string? filter, string? sort, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             ReportedCommentsPage reportedCommentsPage = new ReportedCommentsPage();
-            reportedCommentsPage.Comments = await commentRepository.GetReportedCommments(filter, page, size);
+            reportedCommentsPage.Comments = await commentRepository.GetReportedCommments(filter, sort, page, size);
+            Console.WriteLine(reportedCommentsPage.Comments.Count());
             reportedCommentsPage.TotalPage = (int)Math.Ceiling((decimal)await commentRepository.CountReportedCommmentsTotalPage(filter) / size);
             return Ok(reportedCommentsPage);
         }

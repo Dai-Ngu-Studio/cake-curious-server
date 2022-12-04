@@ -329,6 +329,14 @@ namespace Repository
         {
             return isReportedRecipes!.OrderByDescending(p => p.Name).ToList();
         }
+        public List<SimpleRecipeForReportList>? OrderByAscTotalPendingReport(List<SimpleRecipeForReportList>? isReportedComments)
+        {
+            return isReportedComments!.OrderBy(r => r.TotalPendingReports).ToList();
+        }
+        public List<SimpleRecipeForReportList>? OrderByDescTotalPendingReport(List<SimpleRecipeForReportList>? isReportedComments)
+        {
+            return isReportedComments!.OrderBy(r => r.TotalPendingReports).ToList();
+        }
         public List<SimpleRecipeForReportList>? FilterByStatusActiveList(List<SimpleRecipeForReportList>? isReportedRecipes)
         {
             return isReportedRecipes!.Where(p => p.Status == (int)RecipeStatusEnum.Active).ToList();
@@ -373,13 +381,13 @@ namespace Repository
                     isReportedRecipes = FilterByStatusInactive(isReportedRecipes);
                 }
                 //orderby
-                if (sort != null && sort == RecipeOrderByEnum.DescName.ToString())
+                if (sort != null && sort == RecipeOrderByEnum.AscPendingReport.ToString())
                 {
-                    isReportedRecipes = OrderByDescName(isReportedRecipes);
+                    isReportedRecipes = OrderByAscTotalPendingReport(isReportedRecipes);
                 }
-                else if (sort != null && sort == RecipeOrderByEnum.AscName.ToString())
+                else if (filter != null && sort == RecipeOrderByEnum.DescPendingReport.ToString())
                 {
-                    isReportedRecipes = OrderByAscName(isReportedRecipes);
+                    isReportedRecipes = OrderByDescTotalPendingReport(isReportedRecipes);
                 }
                 return isReportedRecipes!.Skip((page - 1) * size)
                                 .Take(size).ToList();

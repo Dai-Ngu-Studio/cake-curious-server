@@ -1,6 +1,7 @@
 ﻿using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Users;
@@ -21,6 +22,22 @@ namespace Repository
         public IEnumerable<User> filterByActiveStatus(IEnumerable<User> users)
         {
             return users.Where(x => x.Status == (int)UserStatusEnum.Active);
+        }
+        public IEnumerable<User> filterByRoleStoreOwner(IEnumerable<User> users)
+        {
+            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner));
+        }
+        public IEnumerable<User> filterByAdmin(IEnumerable<User> users)
+        {
+            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Administrator));
+        }
+        public IEnumerable<User> filterByStaff(IEnumerable<User> users)
+        {
+            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Staff));
+        }
+        public IEnumerable<User> filterByBaker(IEnumerable<User> users)
+        {
+            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Baker));
         }
         public IEnumerable<User> orderByDescDisplayName(IEnumerable<User> users)
         {
@@ -51,6 +68,22 @@ namespace Repository
                 {
                     users = filterByInactiveStatus(users);
                 }
+                else if (filter != null && filter == RoleEnum.StoreOwner.ToString())
+                {
+                    users = filterByRoleStoreOwner(users);
+                }
+                else if (filter != null && filter == RoleEnum.Staff.ToString())
+                {
+                    users = filterByStaff(users);
+                }
+                else if (filter != null && filter == RoleEnum.Baker.ToString())
+                {
+                    users = filterByBaker(users);
+                }
+                else if (filter != null && filter == RoleEnum.Administrator.ToString())
+                {
+                    users = filterByAdmin(users);
+                }
                 //Orderby
                 if (order_by != null && order_by == UserSortEnum.AscDisplayName.ToString())
                 {
@@ -80,7 +113,7 @@ namespace Repository
         public int CountDashboardUser(string? search, string? filter)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<User> users = db.Users.ToList();
+            IEnumerable<User> users = db.Users.Include(u => u.HasRoles)!;
             try
             {   //Search
                 if (search != null)
@@ -95,14 +128,29 @@ namespace Repository
                 else if (filter != null && filter == UserStatusEnum.Inactive.ToString())
                 {
                     users = filterByInactiveStatus(users);
-                }              
-                return users.Count();
+                }
+                else if (filter != null && filter == RoleEnum.StoreOwner.ToString())
+                {
+                    users = filterByRoleStoreOwner(users);
+                }
+                else if (filter != null && filter == RoleEnum.Staff.ToString())
+                {
+                    users = filterByStaff(users);
+                }
+                else if (filter != null && filter == RoleEnum.Baker.ToString())
+                {
+                    users = filterByBaker(users);
+                }
+                else if (filter != null && filter == RoleEnum.Administrator.ToString())
+                {
+                    users = filterByAdmin(users);
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            return 0;
+            return users.Count();
         }
 
         public async Task<int> CountFollowingOfUser(string uid)

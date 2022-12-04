@@ -121,7 +121,15 @@ namespace Repository
         {
             return isReportedComments!.Where(p => p.Status == (int)CommentStatusEnum.Inactive).ToList();
         }
-        public async Task<IEnumerable<SimpleCommentForReportList>> GetReportedCommments(string? filter, int page, int size)
+        public List<SimpleCommentForReportList>? OrderByAscTotalPendingReport(List<SimpleCommentForReportList>? isReportedComments)
+        {
+            return isReportedComments!.OrderBy(r => r.TotalPendingReports).ToList();
+        }
+        public List<SimpleCommentForReportList>? OrderByDescTotalPendingReport(List<SimpleCommentForReportList>? isReportedComments)
+        {
+            return isReportedComments!.OrderBy(r => r.TotalPendingReports).ToList();
+        }
+        public async Task<IEnumerable<SimpleCommentForReportList>> GetReportedCommments(string? filter,string? sort ,int page, int size)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<ViolationReport> reportsCommentType = await db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Comment).GroupBy(x => x.ItemId).Select(d => d.First()).ToListAsync();
@@ -141,6 +149,15 @@ namespace Repository
             else if (filter != null && filter == CommentStatusEnum.Inactive.ToString())
             {
                 isReportedComments = FilterByStatusInactive(isReportedComments);
+            }
+            //order by
+            if (sort != null && sort == SortCommentEnum.AscPendingReport.ToString())
+            {
+                isReportedComments = OrderByAscTotalPendingReport(isReportedComments);
+            }
+            else if (filter != null && sort == SortCommentEnum.DescPendingReport.ToString())
+            {
+                isReportedComments = OrderByDescTotalPendingReport(isReportedComments);
             }
             return isReportedComments!.Skip((page - 1) * size)
                                 .Take(size).ToList();

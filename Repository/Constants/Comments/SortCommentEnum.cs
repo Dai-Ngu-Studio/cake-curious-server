@@ -4,13 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repository.Constants.Recipes
+namespace Repository.Constants.Comments
 {
-    public enum RecipeOrderByEnum
+    public enum SortCommentEnum
     {
-        AscName,
-        DescName,
         AscPendingReport,
-        DescPendingReport,
+        DescPendingReport
     }
 }

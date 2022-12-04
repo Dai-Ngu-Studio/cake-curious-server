@@ -46,7 +46,14 @@ namespace Repository
         {
             return reports.OrderByDescending(p => p.Title);
         }
-
+        public IEnumerable<StaffDashboardReport> OrderByAscDate(IEnumerable<StaffDashboardReport> reports)
+        {
+            return reports.OrderBy(p => p.SubmittedDate);
+        }
+        public IEnumerable<StaffDashboardReport> OrderByDescDate(IEnumerable<StaffDashboardReport> reports)
+        {
+            return reports.OrderByDescending(p => p.SubmittedDate);
+        }
         public IEnumerable<StaffDashboardReport> FilterByPendingStatus(IEnumerable<StaffDashboardReport> reports)
         {
             return reports.Where(p => p.Status == (int)ReportStatusEnum.Pending);
@@ -144,7 +151,7 @@ namespace Repository
             return await db.ViolationReports.FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public async Task<IEnumerable<StaffDashboardReport>?> GetReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter_status, int PageIndex, int PageSize)
+        public async Task<IEnumerable<StaffDashboardReport>?> GetReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter, int PageIndex, int PageSize)
         {
             var db = new CakeCuriousDbContext();
             IEnumerable<StaffDashboardReport> reports = db.ViolationReports.Where(r => r.ItemId == itemId).Include(r => r.ReportCategory).Include(r => r.Staff).Include(r => r.Reporter).ProjectToType<StaffDashboardReport>();
@@ -161,15 +168,15 @@ namespace Repository
                     reports = SearchViolationReport(s, reports);
                 }
                 //filter status
-                if (filter_status != null && filter_status == ReportStatusEnum.Censored.ToString())
+                if (filter != null && filter == ReportStatusEnum.Censored.ToString())
                 {
                     reports = FilterByCensoredStatus(reports);
                 }
-                else if (filter_status != null && filter_status == ReportStatusEnum.Pending.ToString())
+                else if (filter != null && filter == ReportStatusEnum.Pending.ToString())
                 {
                     reports = FilterByPendingStatus(reports);
                 }
-                else if (filter_status != null && filter_status == ReportStatusEnum.Rejected.ToString())
+                else if (filter != null && filter == ReportStatusEnum.Rejected.ToString())
                 {
                     reports = FilterByRejectedStatus(reports);
                 }
@@ -181,6 +188,14 @@ namespace Repository
                 else if (order_by != null && order_by == ReportSortEnum.AscTitle.ToString())
                 {
                     reports = OrderByAscTitle(reports);
+                }
+                else if (order_by != null && order_by == ReportSortEnum.DescDate.ToString())
+                {
+                    reports = OrderByDescDate(reports);
+                }
+                else if (order_by != null && order_by == ReportSortEnum.AscDate.ToString())
+                {
+                    reports = OrderByAscDate(reports);
                 }
                 return reports.Skip((PageIndex - 1) * PageSize)
                             .Take(PageSize).ToList();
