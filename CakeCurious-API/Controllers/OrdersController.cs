@@ -1,5 +1,4 @@
 ﻿using BusinessObject;
-using CakeCurious_API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +9,7 @@ using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.OrderDetails;
 using Repository.Models.Orders;
+using Repository.Models.Stores;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text;
@@ -145,32 +145,40 @@ namespace CakeCurious_API.Controllers
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                var errors = new HashSet<Guid>();
+                var errors = new HashSet<CartStore>();
                 // Check if there are no orders
                 if (checkoutOrders.Orders!.Count() == 0)
                 {
                     return BadRequest();
                 }
+                var orderCount = checkoutOrders.Orders!.Count();
+                var successOrderCount = 0;
                 // Check each store's order
                 foreach (var checkoutOrder in checkoutOrders.Orders!)
                 {
-                    // Check if store existed
-                    if (await storeRepository.IsStoreExisted((Guid)checkoutOrder.StoreId!))
+                    // Get store in database
+                    var store = await storeRepository.GetReadonlyCartStore((Guid)checkoutOrder.StoreId!);
+                    if (store != null)
                     {
                         try
                         {
+                            // Check if store or store owner is inactive
+                            if (store.Status == (int)StoreStatusEnum.Inactive || store.User!.Status == (int)UserStatusEnum.Inactive)
+                            {
+                                // Store or store owner is inactive
+                                throw new Exception();
+                            }
                             // Check if order has products
                             if (checkoutOrder.Products!.Count() == 0)
                             {
                                 // Order does not contain any products
-                                // Continue with other orders
-                                continue;
+                                throw new Exception();
                             }
 
                             // Create query to execute during transaction
-                            var queryBuilder = new StringBuilder(checkoutOrder.Products!.Count() * 800);
+                            var queryBuilder = new StringBuilder(checkoutOrder.Products!.Count() * 700);
                             // Declare variables for use in query
-                            queryBuilder.AppendLine($"declare @initialProductQuantity int; declare @buyQuantity int; declare @newProductQuantityTab table (quantity_value INT NOT NULL); declare @orderDetailNewQuantityTab table (quantity_value INT NOT NULL); declare @newProductQuantity int; declare @orderDetailNewQuantity int;");
+                            queryBuilder.AppendLine($"declare @buyQuantity int; declare @newProductQuantityTab table (quantity_value INT NOT NULL); declare @newProductQuantity int;");
                             // Initialize expected rows
                             var expectedRows = 0;
                             // Generate Order ID to reference in query
@@ -182,15 +190,23 @@ namespace CakeCurious_API.Controllers
                             decimal total = 0.0M;
                             foreach (var checkoutProduct in checkoutOrder.Products!)
                             {
+                                if (checkoutProduct.Quantity == 0)
+                                {
+                                    // Invalid buy order
+                                    throw new Exception();
+                                }
                                 // Get product from repository
                                 /// Get active product only
                                 /// Store, store owner must also be active
                                 var product = await productRepository.GetActiveProductReadonly((Guid)checkoutProduct.Id!);
                                 if (product != null)
                                 {
-                                    var actualBuyQuantity = (checkoutProduct.Quantity! > product.Quantity) ? product.Quantity : checkoutProduct.Quantity!;
-                                    // Actual buy quantity must be greater than 0
-                                    if (actualBuyQuantity > 0)
+                                    if (checkoutProduct.Quantity! > product.Quantity)
+                                    {
+                                        // Product quantity in stock does not meet buy order
+                                        throw new Exception();
+                                    }
+                                    if (checkoutProduct.Quantity! <= product.Quantity)
                                     {
                                         // Create order detail
                                         var orderDetail = new OrderDetail
@@ -198,7 +214,7 @@ namespace CakeCurious_API.Controllers
                                             ProductId = product.Id,
                                             ProductName = product.Name,
                                             Price = (product.Discount != null) ? product.Price - product.Price * product.Discount : product.Price,
-                                            Quantity = actualBuyQuantity,
+                                            Quantity = checkoutProduct.Quantity!,
                                         };
 
                                         orderDetails.Add(orderDetail);
@@ -209,21 +225,14 @@ namespace CakeCurious_API.Controllers
                                         /// Query string was not concatenated for performance reason (strings are immutable)
                                         // Product query instructions: 
                                         /*
-                                         * 1. Set value for variable @productQuantity (stock quantity of product: product.quantity), also use update lock on the selected product to prevent modification during transaction
-                                         * 2. Set value for variable @productNewQuantity (quantity to update product to: @productQuantity - orderDetail.quantity)
-                                         * 3. Update quantity of product to @productNewQuantity if @productNewQuantity >= 0, else update quantity of product to 0 (the version must match for the update to affect)
-                                         * 4. Check the numbers of rows affected for the update statement
-                                         * 4.A. If no rows are affected, the product quantity had already been changed by another transaction (version of product changed during transaction)
-                                         * 4.A.1 Delete the order detail for product
-                                         * 4.B. If rows are affected, the product quantity was not changed by another transaction (version of product did not change during transaction)
-                                         * 4.B.A. If @productNewQuantity is lower than 0, there are not enough products to meet order requirement
-                                         * 4.B.A.A. If @productQuantity is lower or equals to 0, product is already out of stock
-                                         * 4.B.A.A.1. Delete the order detail for product (if this order detail is the only order detail in order, the order will be deleted later in the query below)
-                                         * 4.B.A.B. Else, stock quantity does not fully meet order requirement but is not 0
-                                         * 4.B.A.B.1. Update the quantity of order detail to equal stock quantity
+                                         * 1. Clear previous value in @newProductQuantityTab
+                                         * 2. Set @buyQuantity = {orderDetail.Quantity}
+                                         * 3. Select product row to lock other transactions from modifying quantity until this transaction is completed
+                                         * 4. Update product quantity, set new quantity as @newProductQuantity
+                                         * 5. If new product quantity is lower than 0, rollback transaction, an exception will be thrown
                                          */
-                                        queryBuilder.AppendLine($"begin delete from @newProductQuantityTab; delete from @orderDetailNewQuantityTab; begin set @buyQuantity = {orderDetail.Quantity} set @initialProductQuantity = (select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'); update [p] set [p].[quantity] = [p].[quantity] - @buyQuantity output inserted.[quantity] into @newProductQuantityTab from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}' begin set @newProductQuantity = (select [quantity_value] from @newProductQuantityTab) if (@newProductQuantity < 0) begin if (@initialProductQuantity <= 0) begin delete from [OrderDetail] where [OrderDetail].[order_id] = '{orderId}' and [OrderDetail].[product_id] = '{product.Id}'  end else begin update [od] set [od].[quantity] = @newProductQuantity + @buyQuantity output inserted.[quantity] into @orderDetailNewQuantityTab from [OrderDetail] as [od] where [od].[order_id] = '{orderId}' and [od].[product_id] = '{product.Id}'; set @orderDetailNewQuantity = (select [quantity_value] from @orderDetailNewQuantityTab) if (@orderDetailNewQuantity <= 0) begin delete from [OrderDetail] where [OrderDetail].[order_id] = '{orderId}' and [OrderDetail].[product_id] = '{product.Id}' end end begin update [p] set [p].[quantity] = 0 from [Product] as [p] where [p].[id] = '{product.Id}' end end end end end");
-                                        expectedRows++; // A row of product would be updated (if no invalid order or order details are detected)
+                                        queryBuilder.AppendLine($"begin delete from @newProductQuantityTab; begin set @buyQuantity = {orderDetail.Quantity} select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'; update [p] set [p].[quantity] = [p].[quantity] - @buyQuantity output inserted.[quantity] into @newProductQuantityTab from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}' begin set @newProductQuantity = (select [quantity_value] from @newProductQuantityTab) if (@newProductQuantity < 0) begin rollback transaction end end end end");
+                                        expectedRows++; // A row of product would be updated (if transaction executed without errors)
                                     }
                                 }
                             }
@@ -316,23 +325,35 @@ namespace CakeCurious_API.Controllers
                                 /// Transaction should be short to prevent lengthy lock
                                 // Add to database, each order should be in its own transaction
                                 await orderRepository.AddOrder(order, query, expectedRows);
+                                successOrderCount++;
                             }
                             else // No order details, not creating order
                             {
                                 // Notify in response order for which store was not created
-                                errors.Add((Guid)checkoutOrder.StoreId!);
+                                errors.Add(store);
                             }
                         }
                         catch (Exception e) // Exception occurred for an order
                         {
                             // Notify in response the order for which store had an exception
                             Console.WriteLine($"Message: {e.Message}\n{e.InnerException}\n{e.StackTrace}");
-                            errors.Add((Guid)checkoutOrder.StoreId!);
+                            errors.Add(store);
                             continue; // Continue with other orders
                         }
                     } // End check if store existed
                 } // End iteration of orders
-                return Ok(errors.Count > 0 ? errors : string.Empty);
+                // Check if all order failed
+                if (successOrderCount == 0)
+                {
+                    return Conflict();
+                }
+                // Some orders were successful
+                if (errors.Count > 0)
+                {
+                    var stores = new CartStores { Stores = errors };
+                    return Ok(stores);
+                }
+                return Ok();
             }
             return Unauthorized();
         }

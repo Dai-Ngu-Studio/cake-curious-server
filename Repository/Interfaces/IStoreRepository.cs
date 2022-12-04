@@ -13,7 +13,7 @@ namespace Repository.Interfaces
         public Task<AdminDashboardStore?> GetStoreDetailForWeb(Guid guid);
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int PageSize, int PageIndex);
         public int CountDashboardStores(string? s, string? filter_Store);
-        public Task<bool> IsStoreExisted(Guid id);
+        public Task<CartStore?> GetReadonlyCartStore(Guid id);
         public Task<Guid> getStoreIdByUid(string uid);
         public Task<DetailStore?> GetStoreDetails(Guid id);
         public Task<Store> CreateStoreForUser(User user, Store store);
