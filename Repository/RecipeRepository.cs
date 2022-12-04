@@ -321,14 +321,6 @@ namespace Repository
                 .ProjectToType<HomeRecipe>()
                 .ToListAsync();
         }
-        public List<SimpleRecipeForReportList>? OrderByAscName(List<SimpleRecipeForReportList>? isReportedRecipes)
-        {
-            return isReportedRecipes!.OrderBy(p => p.Name).ToList();
-        }
-        public List<SimpleRecipeForReportList>? OrderByDescName(List<SimpleRecipeForReportList>? isReportedRecipes)
-        {
-            return isReportedRecipes!.OrderByDescending(p => p.Name).ToList();
-        }
         public List<SimpleRecipeForReportList>? OrderByAscTotalPendingReport(List<SimpleRecipeForReportList>? isReportedComments)
         {
             return isReportedComments!.OrderBy(r => r.TotalPendingReports).ToList();

@@ -25,19 +25,19 @@ namespace Repository
         }
         public IEnumerable<User> filterByRoleStoreOwner(IEnumerable<User> users)
         {
-            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner));
+            return users.Where(x => x!.HasRoles!.Count() == 1 && x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner));
         }
         public IEnumerable<User> filterByAdmin(IEnumerable<User> users)
         {
-            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Administrator));
+            return users.Where(x => x!.HasRoles!.Count() == 1 && x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Administrator));
         }
         public IEnumerable<User> filterByStaff(IEnumerable<User> users)
         {
-            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Staff));
+            return users.Where(x => x!.HasRoles!.Count() == 1 && x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Staff));
         }
         public IEnumerable<User> filterByBaker(IEnumerable<User> users)
         {
-            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Baker));
+            return users.Where(x => x!.HasRoles!.Count() == 1 && x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Baker));
         }
         public IEnumerable<User> orderByDescDisplayName(IEnumerable<User> users)
         {
