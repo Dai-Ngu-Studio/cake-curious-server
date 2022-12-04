@@ -47,7 +47,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Bookmark");
+                    b.ToTable("Bookmark", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Comment", b =>
@@ -93,7 +93,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comment", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.CommentMedia", b =>
@@ -115,7 +115,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("CommentId");
 
-                    b.ToTable("CommentMedia");
+                    b.ToTable("CommentMedia", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Coupon", b =>
@@ -161,7 +161,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("Coupon");
+                    b.ToTable("Coupon", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Like", b =>
@@ -189,7 +189,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Like");
+                    b.ToTable("Like", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Order", b =>
@@ -247,7 +247,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Order");
+                    b.ToTable("Order", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.OrderDetail", b =>
@@ -283,7 +283,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetail");
+                    b.ToTable("OrderDetail", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Product", b =>
@@ -337,19 +337,13 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("store_id");
 
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion")
-                        .HasColumnName("version");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ProductCategoryId");
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Product", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.ProductCategory", b =>
@@ -364,7 +358,7 @@ namespace BusinessObject.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductCategory");
+                    b.ToTable("ProductCategory", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Recipe", b =>
@@ -418,7 +412,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Recipe");
+                    b.ToTable("Recipe", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeCategory", b =>
@@ -439,7 +433,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("RecipeCategoryGroupId");
 
-                    b.ToTable("RecipeCategory");
+                    b.ToTable("RecipeCategory", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeCategoryGroup", b =>
@@ -458,7 +452,7 @@ namespace BusinessObject.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RecipeCategoryGroup");
+                    b.ToTable("RecipeCategoryGroup", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeHasCategory", b =>
@@ -482,7 +476,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("RecipeId");
 
-                    b.ToTable("RecipeHasCategory");
+                    b.ToTable("RecipeHasCategory", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeMaterial", b =>
@@ -520,7 +514,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("RecipeId");
 
-                    b.ToTable("RecipeMaterial");
+                    b.ToTable("RecipeMaterial", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeMedia", b =>
@@ -546,7 +540,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("RecipeId");
 
-                    b.ToTable("RecipeMedia");
+                    b.ToTable("RecipeMedia", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeStep", b =>
@@ -576,7 +570,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("RecipeId");
 
-                    b.ToTable("RecipeStep");
+                    b.ToTable("RecipeStep", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.RecipeStepMaterial", b =>
@@ -600,7 +594,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("RecipeStepId");
 
-                    b.ToTable("RecipeStepMaterial");
+                    b.ToTable("RecipeStepMaterial", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.ReportCategory", b =>
@@ -615,7 +609,7 @@ namespace BusinessObject.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ReportCategory");
+                    b.ToTable("ReportCategory", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Role", b =>
@@ -634,7 +628,7 @@ namespace BusinessObject.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role");
+                    b.ToTable("Role", (string)null);
 
                     b.HasData(
                         new
@@ -710,7 +704,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Store");
+                    b.ToTable("Store", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.User", b =>
@@ -787,7 +781,7 @@ namespace BusinessObject.Migrations
                         .IsUnique()
                         .HasFilter("[username] IS NOT NULL");
 
-                    b.ToTable("User");
+                    b.ToTable("User", (string)null);
 
                     b.HasData(
                         new
@@ -813,7 +807,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserDevice");
+                    b.ToTable("UserDevice", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.UserFollow", b =>
@@ -837,7 +831,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserFollow");
+                    b.ToTable("UserFollow", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.UserHasRole", b =>
@@ -861,7 +855,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserHasRole");
+                    b.ToTable("UserHasRole", (string)null);
 
                     b.HasData(
                         new
@@ -923,7 +917,7 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("ViolationReport");
+                    b.ToTable("ViolationReport", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Bookmark", b =>

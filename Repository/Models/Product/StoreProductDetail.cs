@@ -15,6 +15,5 @@ namespace Repository.Models.Product
         public decimal? Discount { get; set; }
         public string? PhotoUrl { get; set; }
         public int? Status { get; set; }
-        public byte[]? Version { get; set; }
     }
 }

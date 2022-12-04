@@ -128,17 +128,15 @@ namespace Repository
             return null;
         }
 
-        public async Task Update(Product updateObj)
+        public async Task Update(Product product)
         {
-            try
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
             {
-                var db = new CakeCuriousDbContext();
-                db.Entry<Product>(updateObj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                await db.Database.ExecuteSqlRawAsync($"select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'");
+                db.Entry<Product>(product).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 await db.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                await transaction.CommitAsync(); // Commit transaction, remove lock
             }
         }
 
@@ -160,7 +158,7 @@ namespace Repository
                 else if (product_type != null && product_type == ProductTypeEnum.Tool.ToString())
                 {
                     prods = FilterByTool(prods);
-                }                   
+                }
             }
             catch (Exception ex)
             {

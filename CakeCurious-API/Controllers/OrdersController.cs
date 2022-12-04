@@ -170,7 +170,7 @@ namespace CakeCurious_API.Controllers
                             // Create query to execute during transaction
                             var queryBuilder = new StringBuilder(checkoutOrder.Products!.Count() * 800);
                             // Declare variables for use in query
-                            queryBuilder.AppendLine($"declare @productNewQuantity int; declare @productQuantity int; ");
+                            queryBuilder.AppendLine($"declare @initialProductQuantity int; declare @buyQuantity int; declare @newProductQuantityTab table (quantity_value INT NOT NULL); declare @orderDetailNewQuantityTab table (quantity_value INT NOT NULL); declare @newProductQuantity int; declare @orderDetailNewQuantity int;");
                             // Initialize expected rows
                             var expectedRows = 0;
                             // Generate Order ID to reference in query
@@ -222,8 +222,7 @@ namespace CakeCurious_API.Controllers
                                          * 4.B.A.B. Else, stock quantity does not fully meet order requirement but is not 0
                                          * 4.B.A.B.1. Update the quantity of order detail to equal stock quantity
                                          */
-                                        var productVersion = ByteConvertUtility.ToVarbinary(product.Version!);
-                                        queryBuilder.AppendLine($"begin begin set @productQuantity = (select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}' and [p].[version] = {productVersion}); set @productNewQuantity = @productQuantity - {orderDetail.Quantity}; update [p] set [p].[quantity] = IIF(@productNewQuantity >= 0, @productNewQuantity, 0) from [Product] as [p] where [p].[id] = '{product.Id}' and [p].[version] = {productVersion} if (@@rowcount = 0) begin delete from [OrderDetail] where [OrderDetail].[order_id] = '{orderId}' and [OrderDetail].[product_id] = '{product.Id}' end else begin if (@productNewQuantity < 0) begin if (@productQuantity <= 0) begin delete from [OrderDetail] where [OrderDetail].[order_id] = '{orderId}' and [OrderDetail].[product_id] = '{product.Id}' end else begin update [od] set [od].[quantity] = @productQuantity from [OrderDetail] as [od] where [od].[order_id] = '{orderId}' and [od].[product_id] = '{product.Id}' end end end end end");
+                                        queryBuilder.AppendLine($"begin delete from @newProductQuantityTab; delete from @orderDetailNewQuantityTab; begin set @buyQuantity = {orderDetail.Quantity} set @initialProductQuantity = (select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'); update [p] set [p].[quantity] = [p].[quantity] - @buyQuantity output inserted.[quantity] into @newProductQuantityTab from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}' begin set @newProductQuantity = (select [quantity_value] from @newProductQuantityTab) if (@newProductQuantity < 0) begin if (@initialProductQuantity <= 0) begin delete from [OrderDetail] where [OrderDetail].[order_id] = '{orderId}' and [OrderDetail].[product_id] = '{product.Id}'  end else begin update [od] set [od].[quantity] = @newProductQuantity + @buyQuantity output inserted.[quantity] into @orderDetailNewQuantityTab from [OrderDetail] as [od] where [od].[order_id] = '{orderId}' and [od].[product_id] = '{product.Id}'; set @orderDetailNewQuantity = (select [quantity_value] from @orderDetailNewQuantityTab) if (@orderDetailNewQuantity <= 0) begin delete from [OrderDetail] where [OrderDetail].[order_id] = '{orderId}' and [OrderDetail].[product_id] = '{product.Id}' end end begin update [p] set [p].[quantity] = 0 from [Product] as [p] where [p].[id] = '{product.Id}' end end end end end");
                                         expectedRows++; // A row of product would be updated (if no invalid order or order details are detected)
                                     }
                                 }
@@ -324,9 +323,10 @@ namespace CakeCurious_API.Controllers
                                 errors.Add((Guid)checkoutOrder.StoreId!);
                             }
                         }
-                        catch (Exception) // Exception occurred for an order
+                        catch (Exception e) // Exception occurred for an order
                         {
                             // Notify in response the order for which store had an exception
+                            Console.WriteLine($"Message: {e.Message}\n{e.InnerException}\n{e.StackTrace}");
                             errors.Add((Guid)checkoutOrder.StoreId!);
                             continue; // Continue with other orders
                         }
