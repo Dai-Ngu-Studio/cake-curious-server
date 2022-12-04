@@ -9,6 +9,8 @@
         public decimal? Price { get; set; }
         public decimal? Discount { get; set; }
         public string? PhotoUrl { get; set; }
+        public decimal? Rating { get; set; }
+        public int? RatingCount { get; set; }
         public int? Status { get; set; }
         public string? Ingredient { get; set; }
     }

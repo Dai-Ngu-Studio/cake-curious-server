@@ -134,6 +134,7 @@ namespace Repository
             using (var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
             {
                 await db.Database.ExecuteSqlRawAsync($"select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'");
+                product.Rating = (await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == product.Id))!.Rating;
                 db.Entry<Product>(product).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 await db.SaveChangesAsync();
                 await transaction.CommitAsync(); // Commit transaction, remove lock

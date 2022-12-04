@@ -4,8 +4,10 @@
     {
         public int? Id { get; set; }
         public string? Name { get; set; }
+        public string? LangCode { get; set; }
         public int? RecipeCategoryGroupId { get; set; }
         public string? RecipeCategoryGroupName { get; set; }
+        public string? RecipeCategoryGroupLangCode { get; set; }
         public int? RecipeCategoryGroupType { get; set; }
     }
 }

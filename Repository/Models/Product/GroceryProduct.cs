@@ -8,6 +8,7 @@
         public decimal? Price { get; set; }
         public decimal? Discount { get; set; }
         public string? PhotoUrl { get; set; }
+        public decimal? Rating { get; set; }
         public int? Key { get; set; }
         public double? Score { get; set; }
     }
