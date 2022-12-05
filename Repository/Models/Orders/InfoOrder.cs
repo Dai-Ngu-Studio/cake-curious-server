@@ -13,5 +13,6 @@ namespace Repository.Models.Orders
         public DateTime? ProcessedDate { get; set; }
         public DateTime? CompletedDate { get; set; }
         public int? Status { get; set; }
+        public string? PhotoUrl { get; set; }
     }
 }
