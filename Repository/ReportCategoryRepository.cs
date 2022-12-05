@@ -12,5 +12,11 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return db.ReportCategories.ProjectToType<SimpleReportCategory>();
         }
+
+        public IEnumerable<EngSimpleReportCategory> GetEnglishReportCategories()
+        {
+            var db = new CakeCuriousDbContext();
+            return db.ReportCategories.ProjectToType<EngSimpleReportCategory>();
+        }
     }
 }

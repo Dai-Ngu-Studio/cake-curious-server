@@ -1,7 +1,7 @@
 ﻿namespace Repository.Models.ReportCategories
 {
-    public class SimpleReportCategoryPage
+    public class SimpleReportCategoryPage<T>
     {
-        public IEnumerable<SimpleReportCategory>? ReportCategories { get; set; }
+        public IEnumerable<T>? ReportCategories { get; set; }
     }
 }

@@ -65,11 +65,6 @@ namespace Repository.Configuration.Mappings
                 .Map(dest => dest.PhotoUrl, src => src.Recipe!.PhotoUrl!)
                 .Map(dest => dest.User, src => src.Recipe!.User!);
 
-            TypeAdapterConfig<RecipeCategory, DetachedRecipeCategory>
-                .NewConfig()
-                .Map(dest => dest.RecipeCategoryGroupType, src => src.RecipeCategoryGroup!.GroupType)
-                .Map(dest => dest.RecipeCategoryGroupName, src => src.RecipeCategoryGroup!.Name);
-
             TypeAdapterConfig<Recipe, EditRecipe>
                 .NewConfig()
                 .Map(dest => dest.Equipment, src => src.RecipeMaterials!.Where(x => x.MaterialType == (int)RecipeMaterialTypeEnum.Equipment))

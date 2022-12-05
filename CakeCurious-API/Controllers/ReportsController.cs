@@ -65,6 +65,8 @@ namespace CakeCurious_API.Controllers
                 var report = createReport.Adapt<ViolationReport>();
                 report.ReporterId = uid;
                 report.SubmittedDate = DateTime.Now;
+                report.Title = report.Title!.Trim();
+                report.Content = report.Content!.Trim();
                 report.Status = (int)ReportStatusEnum.Pending;
                 await _ReportRepository.Add(report);
                 return Ok();

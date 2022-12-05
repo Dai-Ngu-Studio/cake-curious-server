@@ -1,7 +1,7 @@
 ﻿namespace Repository.Models.RecipeCategories
 {
-    public class DetachedRecipeCategories
+    public class DetachedRecipeCategories<T>
     {
-        public IEnumerable<DetachedRecipeCategory>? RecipeCategories { get; set; }
+        public IEnumerable<T>? RecipeCategories { get; set; }
     }
 }
