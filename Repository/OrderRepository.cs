@@ -223,7 +223,6 @@ namespace Repository
                 if (!string.IsNullOrWhiteSpace(query))
                 {
                     // Execute query to update product quantity
-                    /// Query might remove order and order details if any invalid order or order details are detected
                     rowsAffected += await db.Database.ExecuteSqlRawAsync(query);
                 }
                 rowsAffected += await db.SaveChangesAsync();

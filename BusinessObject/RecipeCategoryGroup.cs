@@ -16,11 +16,11 @@ namespace BusinessObject
         [Column("id")]
         public int? Id { get; set; }
 
-        [Column("name", TypeName = "nvarchar(32)")]
+        [Column("name", TypeName = "nvarchar(48)")]
         public string? Name { get; set; }
 
-        [Column("lang_code", TypeName = "varchar(128)")]
-        public string? LangCode { get; set; }
+        [Column("en_name", TypeName = "nvarchar(48)")]
+        public string? EnName { get; set; }
 
         [Column("group_type")]
         public int? GroupType { get; set; }

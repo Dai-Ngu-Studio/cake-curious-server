@@ -213,10 +213,14 @@ namespace Repository
             return 0;
         }
 
-        public async Task<bool> IsStoreExisted(Guid id)
+        public async Task<CartStore?> GetReadonlyCartStore(Guid id)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Stores.AsNoTracking().AnyAsync(x => x.Id == id && x.Status == (int)StoreStatusEnum.Active);
+            return await db.Stores
+                .AsNoTracking()
+                .Where(x => x.Id == id)
+                .ProjectToType<CartStore>()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<StoreDetail?> GetByUserId(string? uid)
