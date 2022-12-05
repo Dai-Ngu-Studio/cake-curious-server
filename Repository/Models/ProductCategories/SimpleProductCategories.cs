@@ -1,7 +1,7 @@
 ﻿namespace Repository.Models.ProductCategories
 {
-    public class SimpleProductCategories
+    public class SimpleProductCategories<T>
     {
-        public IEnumerable<SimpleProductCategory>? ProductCategories { get; set; }
+        public IEnumerable<T>? ProductCategories { get; set; }
     }
 }

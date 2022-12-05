@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Constants.Categories;
 using Repository.Interfaces;
 using Repository.Models.ProductCategories;
 
@@ -11,26 +12,28 @@ namespace CakeCurious_API.Controllers
     [ApiController]
     public class ProductCategoriesController : ControllerBase
     {
-        private readonly IProductCategoryRepository _productCategoryRepository;
+        private readonly IProductCategoryRepository productCategoryRepository;
 
-        public ProductCategoriesController(IProductCategoryRepository productCategoryRepository)
+        public ProductCategoriesController(IProductCategoryRepository _productCategoryRepository)
         {
-            _productCategoryRepository = productCategoryRepository;
+            productCategoryRepository = _productCategoryRepository;
         }
 
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<ProductCategoryResponse>> GetProductCategories()
         {
-            return Ok(await _productCategoryRepository.GetProductCategories());
+            return Ok(await productCategoryRepository.GetProductCategories());
         }
 
         [HttpGet("simple")]
         [Authorize]
-        public ActionResult<SimpleProductCategories> GetSimpleProductCategories()
+        public ActionResult<SimpleProductCategories<SimpleProductCategory>> GetSimpleProductCategories(int la)
         {
-            var productCategories = new SimpleProductCategories();
-            productCategories.ProductCategories = _productCategoryRepository.GetSimpleProductCategories();
+            var productCategories = new SimpleProductCategories<SimpleProductCategory>();
+            productCategories.ProductCategories = (la == (int)CategoryLanguageEnum.English) 
+                ? productCategoryRepository.GetEnglishSimpleProductCategories() 
+                : productCategoryRepository.GetSimpleProductCategories();
             return Ok(productCategories);
         }
     }

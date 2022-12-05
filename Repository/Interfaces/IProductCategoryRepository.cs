@@ -6,5 +6,6 @@ namespace Repository.Interfaces
     {
         public Task<ProductCategoryResponse> GetProductCategories();
         public IEnumerable<SimpleProductCategory> GetSimpleProductCategories();
+        public IEnumerable<EngSimpleProductCategory> GetEnglishSimpleProductCategories();
     }
 }

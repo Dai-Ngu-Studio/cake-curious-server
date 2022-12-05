@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Constants.Categories;
 using Repository.Interfaces;
 using Repository.Models.ReportCategories;
 
@@ -18,10 +19,12 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<SimpleReportCategoryPage> GetReportCategories()
+        public ActionResult<SimpleReportCategoryPage<SimpleReportCategory>> GetReportCategories(int la)
         {
-            var reportCategoryPage = new SimpleReportCategoryPage();
-            reportCategoryPage.ReportCategories = reportCategoryRepository.GetReportCategories();
+            var reportCategoryPage = new SimpleReportCategoryPage<SimpleReportCategory>();
+            reportCategoryPage.ReportCategories = (la == (int)CategoryLanguageEnum.English) 
+                ? reportCategoryRepository.GetEnglishReportCategories() 
+                : reportCategoryRepository.GetReportCategories();
             return Ok(reportCategoryPage);
         }
     }

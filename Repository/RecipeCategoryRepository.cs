@@ -14,10 +14,22 @@ namespace Repository
             return db.RecipeCategories.ProjectToType<DetachedRecipeCategory>();
         }
 
+        public IEnumerable<EngDetachedRecipeCategory> GetEnglishRecipeCategories()
+        {
+            var db = new CakeCuriousDbContext();
+            return db.RecipeCategories.ProjectToType<EngDetachedRecipeCategory>();
+        }
+
         public IEnumerable<DetachedRecipeCategoryGroup> GetRecipeCategoriesGrouped()
         {
             var db = new CakeCuriousDbContext();
             return db.RecipeCategoryGroups.ProjectToType<DetachedRecipeCategoryGroup>();
+        }
+
+        public IEnumerable<EngDetachedRecipeCategoryGroup> GetEnglishRecipeCategoriesGrouped()
+        {
+            var db = new CakeCuriousDbContext();
+            return db.RecipeCategoryGroups.ProjectToType<EngDetachedRecipeCategoryGroup>();
         }
     }
 }

@@ -5,5 +5,6 @@ namespace Repository.Interfaces
     public interface IReportCategoryRepository
     {
         public IEnumerable<SimpleReportCategory> GetReportCategories();
+        public IEnumerable<EngSimpleReportCategory> GetEnglishReportCategories();
     }
 }

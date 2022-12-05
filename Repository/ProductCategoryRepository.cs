@@ -3,11 +3,6 @@ using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.ProductCategories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository
 {
@@ -25,6 +20,12 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return db.ProductCategories.ProjectToType<SimpleProductCategory>();
+        }
+
+        public IEnumerable<EngSimpleProductCategory> GetEnglishSimpleProductCategories()
+        {
+            var db = new CakeCuriousDbContext();
+            return db.ProductCategories.ProjectToType<EngSimpleProductCategory>();
         }
     }
 }

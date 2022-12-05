@@ -17,6 +17,7 @@ namespace Repository.Configuration
             StoreMapConfiguration.RegisterStoreMapping();
             OrderMapConfiguration.RegisterOrderMapping();
             ProductMapConfiguration.RegisterProductMapping();
+            CategoryMapConfiguration.RegisterCategoryMapping();
             TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
         }
     }

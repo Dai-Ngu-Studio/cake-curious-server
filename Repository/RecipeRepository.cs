@@ -107,8 +107,8 @@ namespace Repository
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
                 // Set new information
-                recipe.Name = updateRecipe.Name;
-                recipe.Description = updateRecipe.Description;
+                recipe.Name = updateRecipe.Name!.Trim();
+                recipe.Description = updateRecipe.Description!.Trim();
                 recipe.ServingSize = updateRecipe.ServingSize;
                 recipe.PhotoUrl = updateRecipe.PhotoUrl;
                 recipe.ThumbnailUrl = updateRecipe.ThumbnailUrl;
