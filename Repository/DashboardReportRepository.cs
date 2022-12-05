@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Orders;
+using Repository.Constants.Reports;
 
 namespace Repository
 {
@@ -83,7 +84,6 @@ namespace Repository
             bc!.LastMonthReport![3] = last4thWeekReports > 0 ? last4thWeekReports : 0;
             //1.5s 2nd time 0.4s
             report.BarChart = bc;
-
             //Get famous recipe for staticstic  0.1s       
             foreach (var recipe in db.Recipes.Include(r => r.Likes).Include(r => r.Comments).Include(r => r.User).OrderByDescending(r => r!.Likes!.Count()).OrderByDescending(r => r!.Comments!.Count()).Take(5))
             {
@@ -95,6 +95,91 @@ namespace Repository
                     Likes = recipe!.Likes!.Count()
                 });
             }
+            return report;
+        }
+
+        public async Task<StaffDashboardReport> generateStaffReport()
+        {
+            StaffDashboardReport report = new StaffDashboardReport();
+            var db = new CakeCuriousDbContext();
+            StaffDashboardCardStats cs = new StaffDashboardCardStats();
+            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
+            DateTime lastWeekSunday = startAtSunday.AddDays(-7);
+            //Today repots sended
+            DateTime today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            DateTime yesterday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(-1).Day);
+            cs.TodayReports = await db.ViolationReports.Where(r => r.SubmittedDate == today).CountAsync();
+            int yesterdayReports = await db.ViolationReports.Where(r => r.SubmittedDate == yesterday).CountAsync();
+            cs.SinceYesterdayReports = cs.TodayReports > 0 || yesterdayReports > 0 ? (double)((cs.TodayReports - yesterdayReports) / (cs.TodayReports > yesterdayReports ? cs.TodayReports : yesterdayReports)) : 0;
+            //Current week reported recipes
+            cs.CurrentWeekReportedRecipes = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
+            int lastWeekReportedRecipes = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
+            cs.SinceLastWeekReportedRecipes = cs.CurrentWeekReportedRecipes > 0 || lastWeekReportedRecipes > 0 ? (double)((cs.CurrentWeekReportedRecipes - lastWeekReportedRecipes) / (cs.CurrentWeekReportedRecipes > lastWeekReportedRecipes ? cs.CurrentWeekReportedRecipes : lastWeekReportedRecipes)) : 0;
+            //Current week reported comments
+            cs.CurrentWeekReportedComments = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
+            int lastWeekReportedComments = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
+            cs.SinceLastWeekReportedRecipes = cs.CurrentWeekReportedComments > 0 || lastWeekReportedComments > 0 ? (double)((cs.CurrentWeekReportedComments - lastWeekReportedComments) / (cs.CurrentWeekReportedComments > lastWeekReportedComments ? cs.CurrentWeekReportedComments : lastWeekReportedComments)) : 0;
+            //
+            cs.CurrentWeekProcessedReports = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.Status == (int)ReportStatusEnum.Censored).CountAsync();
+            int lastWeekProcessedReports = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.Status == (int)ReportStatusEnum.Censored).CountAsync();
+            cs.SinceLastWeekReportedRecipes = cs.CurrentWeekProcessedReports > 0 || lastWeekProcessedReports > 0 ? (double)((cs.CurrentWeekProcessedReports - lastWeekProcessedReports) / (cs.CurrentWeekProcessedReports > lastWeekProcessedReports ? cs.CurrentWeekProcessedReports : lastWeekProcessedReports)) : 0;
+            report.CardStats = cs;
+            //bar chart
+            //Add barchart 1.5s
+            StaffDashboardBarChart bc = new StaffDashboardBarChart();
+            int currentMonth = DateTime.Now.Month;
+            int currentYear = DateTime.Now.Year;
+            int lastMonth = DateTime.Now.AddMonths(-1).Month;
+            int dateOfCurrentMonth = DateTime.DaysInMonth(currentYear, currentMonth);
+            int dateOfLastMonth = DateTime.DaysInMonth(currentYear, lastMonth);
+            DateTime startOfCurrentMonthWeek1 = new DateTime(currentYear, currentMonth, 1);
+            DateTime endOfCurrentMonthWeek1 = new DateTime(currentYear, currentMonth, 7);
+
+            DateTime startOfCurrentMonthWeek2 = new DateTime(currentYear, currentMonth, 8);
+            DateTime endOfCurrentMonthWeek2 = new DateTime(currentYear, currentMonth, 15);
+
+            DateTime startOfCurrentMonthWeek3 = new DateTime(currentYear, currentMonth, 16);
+            DateTime endOfCurrentMonthWeek3 = new DateTime(currentYear, currentMonth, 23);
+
+            DateTime startOfCurrentMonthWeek4 = new DateTime(currentYear, currentMonth, 24);
+            DateTime endOfCurrentMonthWeek4 = new DateTime(currentYear, currentMonth, dateOfCurrentMonth);
+            DateTime endOfLastMonthWeek4 = new DateTime(currentYear, lastMonth, dateOfLastMonth);
+            //Get Current Week reports
+            IEnumerable<ViolationReport> ViolationReports = db.ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek1.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek4);
+            int current1stWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek1 && r!.SubmittedDate! <= endOfCurrentMonthWeek1).Count();
+            int current2ndWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek2 && r!.SubmittedDate! <= endOfCurrentMonthWeek2).Count();
+            int current3rdWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek3 && r!.SubmittedDate! <= endOfCurrentMonthWeek3).Count();
+            int current4thWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek4 && r!.SubmittedDate! <= endOfCurrentMonthWeek4).Count();
+
+            bc!.CurrentMonthReports![0] = current1stWeekReports > 0 ? current1stWeekReports : 0;
+            bc!.CurrentMonthReports![1] = current2ndWeekReports > 0 ? current2ndWeekReports : 0;
+            bc!.CurrentMonthReports![2] = current3rdWeekReports > 0 ? current3rdWeekReports : 0;
+            bc!.CurrentMonthReports![3] = current4thWeekReports > 0 ? current4thWeekReports : 0;
+            //Get last week reports
+            int last1stWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek1.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek1.AddMonths(-1)).Count();
+            int last2ndWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek2.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek2.AddMonths(-1)).Count();
+            int last3rdWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek3.AddMonths(-1) && r!.SubmittedDate! <= endOfCurrentMonthWeek3.AddMonths(-1)).Count();
+            int last4thWeekReports = ViolationReports.Where(r => r!.SubmittedDate! >= startOfCurrentMonthWeek4.AddMonths(-1) && r!.SubmittedDate! <= endOfLastMonthWeek4).Count();
+
+            bc!.LastMonthReports![0] = last1stWeekReports > 0 ? last1stWeekReports : 0;
+            bc!.LastMonthReports![1] = last2ndWeekReports > 0 ? last2ndWeekReports : 0;
+            bc!.LastMonthReports![2] = last3rdWeekReports > 0 ? last3rdWeekReports : 0;
+            bc!.LastMonthReports![3] = last4thWeekReports > 0 ? last4thWeekReports : 0;
+            report.BarChart = bc;
+            //Line chart
+            int month = 1;
+            int currentMonthProcessedReport = 0;
+            int currentMonthUnprocessedReport = 0;
+            StaffDashboardLineChart lc = new StaffDashboardLineChart();
+            while (month < 13)
+            {
+                currentMonthProcessedReport = await db.ViolationReports.Where(r => r.SubmittedDate!.Value.Month == month && r.Status == (int)ReportStatusEnum.Censored).CountAsync();
+                currentMonthUnprocessedReport = await db.ViolationReports.Where(r => r.SubmittedDate!.Value.Month == month && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
+                lc.CurrentYearProcessedReports[month - 1] = currentMonthProcessedReport;
+                lc.CurrentYearUnprocessedReports[month - 1] = currentMonthUnprocessedReport;
+                month++;
+            }
+            report.LineChart = lc;
             return report;
         }
 

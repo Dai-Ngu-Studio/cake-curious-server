@@ -110,6 +110,15 @@ namespace CakeCurious_API.Controllers
             }
             return Ok(dbr);
         }
+        [HttpGet("Staff")]
+        [Authorize]
+
+        public async Task<ActionResult<StaffDashboardReport>> GetStaffDashboardReport()
+        {
+            StaffDashboardReport dbr;
+            dbr = await dashboardReportRepository.generateStaffReport();
+            return dbr;
+        }
         [HttpGet("Store")]
         [Authorize]
         public async Task<ActionResult<AdminDashboardReport>> GetStoreDashboardReport()
