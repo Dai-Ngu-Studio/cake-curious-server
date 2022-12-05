@@ -266,13 +266,13 @@ namespace CakeCurious_API.Controllers
                         await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
 
                         var elastisearchMaterials = updateRecipe.Ingredients
-                                .Select(x => x.MaterialName!).ToList();
+                                .Select(x => x.MaterialName!.Trim()).ToList();
                         var elastisearchCategories = updateRecipe.HasCategories!
                             .Where(x => x.RecipeCategoryId.HasValue)
                             .Select(x => x.RecipeCategoryId!.Value);
 
                         var esNames = new List<string>();
-                        esNames.Add(updateRecipe.Name!);
+                        esNames.Add(updateRecipe.Name!.Trim());
 
                         // Translation
                         esNames = await TranslationHelper.TranslateSingle(translationClient, updateRecipe.Name!, esNames);
@@ -324,17 +324,19 @@ namespace CakeCurious_API.Controllers
                 recipe.Status = (int)RecipeStatusEnum.Active;
                 recipe.PublishedDate = DateTime.Now;
                 recipe.UserId = uid;
+                recipe.Name = recipe.Name!.Trim();
+                recipe.Description = recipe.Description!.Trim();
 
                 await recipeRepository.AddRecipe(recipe);
 
                 var elastisearchMaterials = createRecipe.Ingredients
-                    .Select(x => x.MaterialName!).ToList();
+                    .Select(x => x.MaterialName!.Trim()).ToList();
                 var elastisearchCategories = createRecipe.HasCategories!
                     .Where(x => x.RecipeCategoryId.HasValue)
                     .Select(x => x.RecipeCategoryId!.Value);
 
                 var esNames = new List<string>();
-                esNames.Add(recipe.Name!);
+                esNames.Add(recipe.Name!.Trim());
 
                 // Translate
                 esNames = await TranslationHelper.TranslateSingle(translationClient, recipe.Name!, esNames);

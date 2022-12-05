@@ -83,6 +83,7 @@ namespace CakeCurious_API.Controllers
                     if (comment.UserId == uid
                         || await UserRoleAuthorizer.AuthorizeUser(new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
                     {
+                        updateComment.Content = updateComment.Content!.Trim();
                         var rows = await commentRepository.Update(id, updateComment);
                         return (rows > 0) ? Ok(await commentRepository.GetRecipeComment(id)) : BadRequest();
                     }
@@ -113,6 +114,7 @@ namespace CakeCurious_API.Controllers
                 comment.UserId = uid;
                 comment.SubmittedDate = DateTime.Now;
                 comment.Status = (int)CommentStatusEnum.Active;
+                comment.Content = comment.Content!.Trim();
                 await commentRepository.Add(comment);
                 return Ok(await commentRepository.GetRecipeComment((Guid)comment.Id!));
             }
