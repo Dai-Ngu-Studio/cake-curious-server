@@ -392,8 +392,12 @@ namespace BusinessObject.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    b.Property<string>("EnName")
+                        .HasColumnType("nvarchar(48)")
+                        .HasColumnName("en_name");
+
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(32)")
+                        .HasColumnType("nvarchar(48)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
@@ -461,12 +465,12 @@ namespace BusinessObject.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
-                    b.Property<string>("LangCode")
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("lang_code");
+                    b.Property<string>("EnName")
+                        .HasColumnType("nvarchar(48)")
+                        .HasColumnName("en_name");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(32)")
+                        .HasColumnType("nvarchar(48)")
                         .HasColumnName("name");
 
                     b.Property<int?>("RecipeCategoryGroupId")
@@ -486,16 +490,16 @@ namespace BusinessObject.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    b.Property<string>("EnName")
+                        .HasColumnType("nvarchar(48)")
+                        .HasColumnName("en_name");
+
                     b.Property<int?>("GroupType")
                         .HasColumnType("int")
                         .HasColumnName("group_type");
 
-                    b.Property<string>("LangCode")
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("lang_code");
-
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(32)")
+                        .HasColumnType("nvarchar(48)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
@@ -651,12 +655,12 @@ namespace BusinessObject.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
-                    b.Property<string>("LangCode")
-                        .HasColumnType("varchar(128)")
-                        .HasColumnName("lang_code");
+                    b.Property<string>("EnName")
+                        .HasColumnType("nvarchar(48)")
+                        .HasColumnName("en_name");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(32)")
+                        .HasColumnType("nvarchar(48)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
