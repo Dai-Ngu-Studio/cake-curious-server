@@ -99,6 +99,8 @@ namespace Repository
 
         public async Task CreateCoupon(Coupon obj)
         {
+            var db = new CakeCuriousDbContext();
+            DateTime today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             if (obj.Discount != null && obj.Discount > 0)
             {
                 if (obj.DiscountType == (int)CouponDiscountTypeEnum.PercentOff)
@@ -113,9 +115,11 @@ namespace Repository
                     }
                     else throw new Exception("Discount value of PercentOff discount type must less than or equal 50%");
                 }
-            }
+            }     
             else throw new Exception("Discount value must greater than 0");
-            var db = new CakeCuriousDbContext();
+            if (obj.ExpiryDate <= today) throw new Exception("Expire date must greater than today");
+            if (db.Coupons.Any(c => c.Code == obj!.Code!.Trim() && c.Status == (int)CouponStatusEnum.Active && c.ExpiryDate > DateTime.Now))
+                throw new Exception("This code is already exitst");    
             db.Coupons.Add(obj);
             await db.SaveChangesAsync();
         }
@@ -197,6 +201,8 @@ namespace Repository
 
         public async Task UpdateCoupon(Coupon obj)
         {
+            DateTime today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            var db = new CakeCuriousDbContext();
             if (obj.Discount != null && obj.Discount > 0)
             {
                 if (obj.DiscountType == (int)CouponDiscountTypeEnum.PercentOff)
@@ -213,7 +219,9 @@ namespace Repository
                 }
             }
             else throw new Exception("Discount value must greater than 0");
-            var db = new CakeCuriousDbContext();
+            if (obj.ExpiryDate <= today) throw new Exception("Expire date must greater than today");
+            if (db.Coupons.Any(c => c.Code == obj!.Code!.Trim() && c.Status == (int)CouponStatusEnum.Active && c.ExpiryDate > DateTime.Now))
+                throw new Exception("This code is already exitst");
             db.Entry<Coupon>(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
             await db.SaveChangesAsync();
         }
