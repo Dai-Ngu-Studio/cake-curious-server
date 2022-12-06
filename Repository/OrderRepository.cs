@@ -226,13 +226,13 @@ namespace Repository
                     rowsAffected += await db.Database.ExecuteSqlRawAsync(query);
                 }
                 rowsAffected += await db.SaveChangesAsync();
+				Console.WriteLine($"Affected: {rowsAffected}, Expected: {expectedRows}, {rowsAffected}/{expectedRows}.");
+				// Compare number of rows affected to expected
+				if (rowsAffected != expectedRows)
+				{
+					throw new Exception();
+				}
                 await transaction.CommitAsync(); // Commit transaction, remove lock
-            }
-            Console.WriteLine($"Affected: {rowsAffected}, Expected: {expectedRows}, {rowsAffected}/{expectedRows}.");
-            // Compare number of rows affected to expected
-            if (rowsAffected != expectedRows)
-            {
-                throw new Exception();
             }
         }
 

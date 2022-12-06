@@ -188,6 +188,7 @@ namespace CakeCurious_API.Controllers
                             /// Create product quantity update script (for transaction)
                             var orderDetails = new List<OrderDetail>();
                             decimal total = 0.0M;
+							var isFirstProduct = true;
                             foreach (var checkoutProduct in checkoutOrder.Products!)
                             {
                                 if (checkoutProduct.Quantity == 0)
@@ -233,6 +234,8 @@ namespace CakeCurious_API.Controllers
                                          */
                                         queryBuilder.AppendLine($"begin delete from @newProductQuantityTab; begin set @buyQuantity = {orderDetail.Quantity} select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'; update [p] set [p].[quantity] = [p].[quantity] - @buyQuantity output inserted.[quantity] into @newProductQuantityTab from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}' begin set @newProductQuantity = (select [quantity_value] from @newProductQuantityTab) if (@newProductQuantity < 0) begin rollback transaction end end end end");
                                         expectedRows++; // A row of product would be updated (if transaction executed without errors)
+										if (isFirstProduct) expectedRows++; // From clearing variable table
+										isFirstProduct = false;
                                     }
                                 }
                             }
