@@ -210,28 +210,21 @@ namespace Repository
             return await db.Orders.FirstOrDefaultAsync(x => x.Id == guid);
         }
 
-        public async Task AddOrder(Order order, string query, int expectedRows)
+        public async Task AddOrder(Order order, string query)
         {
             var db = new CakeCuriousDbContext();
-            var rowsAffected = 0;
             // Starts transaction, update to products are locked for others
             /// Which is why transaction should be short
             using (var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
             {
                 await db.Orders.AddAsync(order); // Add order (including order details)
-                rowsAffected += await db.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 if (!string.IsNullOrWhiteSpace(query))
                 {
                     // Execute query to update product quantity
-                    rowsAffected += await db.Database.ExecuteSqlRawAsync(query);
+                    await db.Database.ExecuteSqlRawAsync(query);
                 }
-                rowsAffected += await db.SaveChangesAsync();
-				Console.WriteLine($"Affected: {rowsAffected}, Expected: {expectedRows}, {rowsAffected}/{expectedRows}.");
-				// Compare number of rows affected to expected
-				if (rowsAffected != expectedRows)
-				{
-					throw new Exception();
-				}
+                await db.SaveChangesAsync();
                 await transaction.CommitAsync(); // Commit transaction, remove lock
             }
         }
