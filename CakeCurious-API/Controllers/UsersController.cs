@@ -340,60 +340,58 @@ namespace CakeCurious_API.Controllers
             return Unauthorized();
         }
 
-        /// <summary>
-        /// For development purpose only.
-        /// </summary>
-        /// <param name="roleRequest"></param>
-        /// <returns></returns>
-        [HttpPost("current/role")]
+        [HttpPost("staff")]
         [Authorize]
-        public async Task<ActionResult<DetachedUser>> AddRoleToCurrentUser(AddRoleRequest roleRequest)
+        public async Task<ActionResult<DetachedUser>> CreateStaff(CreateStaffUser createStaff)
         {
             // Get ID Token
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrWhiteSpace(uid))
+            if (await UserRoleAuthorizer
+                .AuthorizeUser(new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid!, userRepository))
             {
-                // Check if user existed in database
-                User? user = await userRepository.Get(uid);
+                var email = createStaff.Email!.Trim();
+                var hasRoles = new HashSet<UserHasRole>();
+                // Check if user with email already exists
+                var user = await userRepository.GetUserByEmail(email);
                 if (user != null)
                 {
-                    // Check if user already has requested role
-                    var roleExisted = user.HasRoles!.Any(x => x.RoleId == roleRequest.RoleId);
-                    if (!roleExisted)
+                    hasRoles.Add(new UserHasRole
                     {
-                        try
-                        {
-                            // Add role to user
-                            user.HasRoles!.Add(new UserHasRole
-                            {
-                                UserId = uid,
-                                RoleId = roleRequest.RoleId,
-                            });
-                            await userRepository.Update(user);
-                            var elasticsearchUser = new ElasticsearchUser
-                            {
-                                Id = user.Id,
-                                Username = user.Username,
-                                DisplayName = user.DisplayName,
-                                Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
-                            };
+                        UserId = uid,
+                        RoleId = (int)RoleEnum.Baker,
+                    });
 
-                            var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(elasticsearchUser.Id,
-                                x => x
-                                    .Index("users")
-                                    .Doc(elasticsearchUser)
-                                );
-                            return Ok();
-                        }
-                        catch (Exception)
-                        {
-                            return BadRequest();
-                        }
-                    }
-                    return BadRequest();
+                    hasRoles.Add(new UserHasRole
+                    {
+                        UserId = uid,
+                        RoleId = (int)RoleEnum.Staff,
+                    });
+                    user.HasRoles = hasRoles;
+                    await userRepository.UpdateStaff(user, user.Id!);
+                    return Ok(await userRepository.GetDetached(user.Id!));
                 }
+                var placeholderId = Guid.NewGuid().ToString();
+                // Set staff role
+                hasRoles.Add(new UserHasRole
+                {
+                    UserId = placeholderId,
+                    RoleId = (int)RoleEnum.Staff,
+                });
+                var newUser = new User
+                {
+                    Id = placeholderId,
+                    DisplayName = email.Split("@").FirstOrDefault() ?? placeholderId,
+                    Username = placeholderId,
+                    Email = email,
+                    HasRoles = hasRoles,
+                    CreatedDate = DateTime.Now,
+                    Status = (int)UserStatusEnum.Active,
+                };
+
+                await userRepository.Add(newUser);
+                return Ok();
             }
-            return Unauthorized();
+            return BadRequest();
         }
 
         [HttpPost("login")]
@@ -459,40 +457,64 @@ namespace CakeCurious_API.Controllers
                             UserId = uid,
                             RoleId = (int)RoleEnum.Baker,
                         });
-                        User newUser = new User
+                        // Check if email already exists in database
+                        var staff = await userRepository.GetReadonlyUserByEmail(userRecord!.Email);
+                        if (isUserRecordExisted && staff != null)
                         {
-                            Id = uid,
-                            DisplayName = isUserRecordExisted
-                            ? userRecord!.DisplayName != null
-                            ? userRecord!.DisplayName
-                            : "Anonymous User"
-                            : "Anonymous User",
-                            Username = uid,
-                            Email = isUserRecordExisted ? userRecord!.Email : "Anonymous",
-                            PhotoUrl = isUserRecordExisted ? userRecord!.PhotoUrl : "",
-                            HasRoles = hasRoles,
-                            CreatedDate = DateTime.Now,
-                            Status = (int)UserStatusEnum.Active,
-                        };
+                            // Staff account was created prior to login
+                            // Update with information from Firebase
+                            hasRoles.Add(new UserHasRole
+                            {
+                                UserId = uid,
+                                RoleId = (int)RoleEnum.Staff,
+                            });
+                            var newStaff = new User
+                            {
+                                Id = uid,
+                                DisplayName = staff.DisplayName,
+                                Username = uid,
+                                Email = staff.Email,
+                                PhotoUrl = userRecord.PhotoUrl,
+                                HasRoles = hasRoles,
+                                CreatedDate = staff.CreatedDate,
+                                Status = staff.Status,
+                            };
 
-                        var dynamicLinkResponse = await CreateUserDynamicLink(newUser);
-                        newUser.ShareUrl = dynamicLinkResponse.ShortLink;
+                            var dynamicLinkResponse = await CreateUserDynamicLink(newStaff);
+                            newStaff.ShareUrl = dynamicLinkResponse.ShortLink;
 
-                        await userRepository.Add(newUser);
-                        // Add user to Elasticsearch
-                        var elasticsearchUser = new ElasticsearchUser
+                            await userRepository.UpdateStaff(newStaff, staff.Id!);
+
+                            // Add user to Elasticsearch
+                            await AddToElasticsearch(newStaff);
+                            user = await userRepository.GetDetached(uid);
+                            return Ok(user);
+                        }
+                        else
                         {
-                            Id = newUser.Id,
-                            Username = newUser.Username,
-                            DisplayName = newUser.DisplayName,
-                            Roles = newUser.HasRoles.Select(x => (int)x.RoleId!).ToArray(),
-                        };
+                            User newUser = new User
+                            {
+                                Id = uid,
+                                DisplayName = isUserRecordExisted
+                                ? userRecord!.DisplayName != null
+                                ? userRecord!.DisplayName
+                                : "Anonymous"
+                                : "Anonymous",
+                                Username = uid,
+                                Email = isUserRecordExisted ? userRecord!.Email : "Anonymous",
+                                PhotoUrl = isUserRecordExisted ? userRecord!.PhotoUrl : null,
+                                HasRoles = hasRoles,
+                                CreatedDate = DateTime.Now,
+                                Status = (int)UserStatusEnum.Active,
+                            };
 
-                        var createResponse = await elasticClient.CreateAsync<ElasticsearchUser>(elasticsearchUser,
-                            x => x
-                                .Id(newUser.Id)
-                                .Index("users")
-                            );
+                            var dynamicLinkResponse = await CreateUserDynamicLink(newUser);
+                            newUser.ShareUrl = dynamicLinkResponse.ShortLink;
+
+                            await userRepository.Add(newUser);
+                            // Add user to Elasticsearch
+                            await AddToElasticsearch(newUser);
+                        }
                         // Check if device needed to be added
                         await CheckAndAddDevice(FcmToken, uid);
                         // Return user with no collection attached (except roles)
@@ -507,6 +529,23 @@ namespace CakeCurious_API.Controllers
                 }
             }
             return Unauthorized();
+        }
+
+        private async Task AddToElasticsearch(User user)
+        {
+            var elasticsearchUser = new ElasticsearchUser
+            {
+                Id = user.Id,
+                Username = user.Username,
+                DisplayName = user.DisplayName,
+                Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+            };
+
+            var createResponse = await elasticClient.CreateAsync<ElasticsearchUser>(elasticsearchUser,
+                x => x
+                    .Id(user.Id)
+                    .Index("users")
+                );
         }
 
         [HttpGet("current/bookmarks")]

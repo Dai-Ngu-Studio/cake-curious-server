@@ -179,8 +179,6 @@ namespace CakeCurious_API.Controllers
                             var queryBuilder = new StringBuilder(checkoutOrder.Products!.Count() * 700);
                             // Declare variables for use in query
                             queryBuilder.AppendLine($"declare @buyQuantity int; declare @newProductQuantityTab table (quantity_value INT NOT NULL); declare @newProductQuantity int;");
-                            // Initialize expected rows
-                            var expectedRows = 0;
                             // Generate Order ID to reference in query
                             var orderId = Guid.NewGuid();
 
@@ -188,7 +186,6 @@ namespace CakeCurious_API.Controllers
                             /// Create product quantity update script (for transaction)
                             var orderDetails = new List<OrderDetail>();
                             decimal total = 0.0M;
-							var isFirstProduct = true;
                             foreach (var checkoutProduct in checkoutOrder.Products!)
                             {
                                 if (checkoutProduct.Quantity == 0)
@@ -214,12 +211,11 @@ namespace CakeCurious_API.Controllers
                                         {
                                             ProductId = product.Id,
                                             ProductName = product.Name,
-                                            Price = (product.Discount != null) ? product.Price - product.Price * product.Discount : product.Price,
+                                            Price = product.Price,
                                             Quantity = checkoutProduct.Quantity!,
                                         };
 
                                         orderDetails.Add(orderDetail);
-                                        expectedRows++; // A row would be created for order detail
                                         total += (decimal)orderDetail.Price! * (decimal)orderDetail.Quantity;
                                         // Update quantity of product
                                         // This query is executed after order (including order details) is created.
@@ -233,9 +229,6 @@ namespace CakeCurious_API.Controllers
                                          * 5. If new product quantity is lower than 0, rollback transaction, an exception will be thrown
                                          */
                                         queryBuilder.AppendLine($"begin delete from @newProductQuantityTab; begin set @buyQuantity = {orderDetail.Quantity} select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'; update [p] set [p].[quantity] = [p].[quantity] - @buyQuantity output inserted.[quantity] into @newProductQuantityTab from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}' begin set @newProductQuantity = (select [quantity_value] from @newProductQuantityTab) if (@newProductQuantity < 0) begin rollback transaction end end end end");
-                                        expectedRows++; // A row of product would be updated (if transaction executed without errors)
-										if (isFirstProduct) expectedRows++; // From clearing variable table
-										isFirstProduct = false;
                                     }
                                 }
                             }
@@ -293,7 +286,6 @@ namespace CakeCurious_API.Controllers
                                     if (coupon.MaxUses != null && coupon.UsedCount >= coupon.MaxUses)
                                     {
                                         queryBuilder.AppendLine($"update [Coupon] set [Coupon].[status] = {(int)CouponStatusEnum.Inactive} where [Coupon].[id] = '{coupon.Id}'");
-                                        expectedRows++; // A row of coupon would be updated
                                     }
                                 }
                             }
@@ -321,13 +313,12 @@ namespace CakeCurious_API.Controllers
                                 /// If number of order details with specified orderID equals to 0, the order is dangling
                                 //// Delete the dangling order
                                 queryBuilder.AppendLine($"if ((select count([od].[id]) from [OrderDetail] as [od] where [od].[order_id] = '{orderId}') = 0) begin delete from [Order] where [Order].[id] = '{orderId}' end");
-                                expectedRows++; // A row would be created for order
 
                                 var query = queryBuilder.ToString();
 
                                 /// Transaction should be short to prevent lengthy lock
                                 // Add to database, each order should be in its own transaction
-                                await orderRepository.AddOrder(order, query, expectedRows);
+                                await orderRepository.AddOrder(order, query);
                                 successOrderCount++;
                             }
                             else // No order details, not creating order

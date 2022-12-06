@@ -6,6 +6,7 @@ namespace Repository.Models.Stores
     {
         public Guid? Id { get; set; }
         public string? Name { get; set; }
+        public decimal? Rating { get; set; }
         public int? Status { get; set; }
         public StatusOnlyUser? User { get; set; }
     }

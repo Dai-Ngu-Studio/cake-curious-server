@@ -5,7 +5,6 @@ using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Users;
-using System.Collections.Generic;
 
 namespace Repository
 {
@@ -295,6 +294,37 @@ namespace Repository
                 var rows = await db.Database.ExecuteSqlRawAsync(query, shareUrl, id);
                 await transaction.CommitAsync();
                 return rows;
+            }
+        }
+
+        public async Task<EmailSimpleUser?> GetReadonlyUserByEmail(string email)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Users
+                .AsNoTracking()
+                .Where(x => x.Email == email)
+                .ProjectToType<EmailSimpleUser>()
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Users
+                .Where(x => x.Email == email)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task UpdateStaff(User user, string id)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                string query = "delete from [UserHasRole] where [UserHasRole].[user_id] = {0} ; update [User] set [User].[id] = {1} where [User].[id] = {2}";
+                await db.Database.ExecuteSqlRawAsync(query, id, user.Id!, id);
+                db.Users.Update(user);
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
         }
     }
