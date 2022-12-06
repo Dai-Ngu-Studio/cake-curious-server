@@ -39,13 +39,13 @@ namespace Repository
         {
             return users.Where(x => x!.HasRoles!.Count() == 1 && x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.Baker));
         }
-        public IEnumerable<User> orderByDescDisplayName(IEnumerable<User> users)
+        public IEnumerable<User> orderByDescCreatedDate(IEnumerable<User> users)
         {
-            return users.OrderByDescending(u => u.DisplayName);
+            return users.OrderByDescending(u => u.CreatedDate);
         }
-        public IEnumerable<User> orderByAscDisplayName(IEnumerable<User> users)
+        public IEnumerable<User> orderByAscCreatedDate(IEnumerable<User> users)
         {
-            return users.OrderBy(u => u.DisplayName);
+            return users.OrderBy(u => u.CreatedDate);
         }
         public IEnumerable<AdminDashboardUser>? GetList(string? search, string? order_by, string? filter, int page, int size)
         {
@@ -85,13 +85,13 @@ namespace Repository
                     users = filterByAdmin(users);
                 }
                 //Orderby
-                if (order_by != null && order_by == UserSortEnum.AscDisplayName.ToString())
+                if (order_by != null && order_by == UserSortEnum.AscCreatedDate.ToString())
                 {
-                    users = orderByAscDisplayName(users);
+                    users = orderByAscCreatedDate(users);
                 }
-                else if (order_by != null && order_by == UserSortEnum.DescDisplayName.ToString())
+                else if (order_by != null && order_by == UserSortEnum.DescCreatedDate.ToString())
                 {
-                    users = orderByDescDisplayName(users);
+                    users = orderByDescCreatedDate(users);
                 }
                 result = users.Adapt<IEnumerable<AdminDashboardUser>>().Skip((page - 1) * size)
                             .Take(size).ToList();

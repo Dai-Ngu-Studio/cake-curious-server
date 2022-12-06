@@ -8,7 +8,7 @@ namespace Repository.Constants.Users
 {
     public enum UserSortEnum
     {
-        AscDisplayName,
-        DescDisplayName,
+        AscCreatedDate,
+        DescCreatedDate,
     }
 }
