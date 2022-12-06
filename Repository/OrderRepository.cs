@@ -43,7 +43,7 @@ namespace Repository
 
         public IEnumerable<Order> SearchOrder(string? keyWord, IEnumerable<Order> orders)
         {
-            return orders.Where(p => p.User!.DisplayName!.ToLower().Contains(keyWord!.ToLower()));
+            return orders.Where(p => p!.Id!.Value.ToString().Contains(keyWord!));
         }
 
         public IEnumerable<StoreDashboardOrder>? GetOrdersOfAStore(string uid, string? s, string? order_by, string? filter_Order, int pageSize, int pageIndex)
