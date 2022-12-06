@@ -348,7 +348,7 @@ namespace Repository
         public async Task<IEnumerable<SimpleRecipeForReportList>> GetReportedRecipes(string? s, string? sort, string? filter, int page, int size)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<ViolationReport> reportsRecipeType = db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Recipe).GroupBy(x => x.ItemId).Select(d => d.First());
+            IEnumerable<ViolationReport> reportsRecipeType = await db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Recipe).GroupBy(x => x.ItemId).Select(d => d.First()).ToListAsync();
             List<SimpleRecipeForReportList>? isReportedRecipes = new List<SimpleRecipeForReportList>();
             if (reportsRecipeType.Count() > 0)
                 foreach (var report in reportsRecipeType)
