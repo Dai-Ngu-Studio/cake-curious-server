@@ -8,7 +8,7 @@ namespace Repository.Constants.Stores
 {
     public enum StoreSortEnum
     {
-        AscName,
-        DescName,
+        AscCreatedDate,
+        DescCreatedDate,
     }
 }

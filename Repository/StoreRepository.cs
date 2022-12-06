@@ -20,13 +20,13 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
-        public IEnumerable<Store> OrderByAscName(IEnumerable<Store> stores)
+        public IEnumerable<Store> OrderByAscCreatedDate(IEnumerable<Store> stores)
         {
-            return stores.OrderBy(p => p.Name);
+            return stores.OrderBy(p => p.Orders);
         }
-        public IEnumerable<Store> OrderByDescName(IEnumerable<Store> stores)
+        public IEnumerable<Store> OrderByDescCreatedDate(IEnumerable<Store> stores)
         {
-            return stores.OrderByDescending(p => p.Name);
+            return stores.OrderByDescending(p => p.Orders);
         }
         public IEnumerable<Store> FilterByStatusActive(IEnumerable<Store> stores)
         {
@@ -47,7 +47,7 @@ namespace Repository
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int pageSize, int pageIndex)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<Store> stores = db.Stores.Include(s => s.User);
+            IEnumerable<Store> stores = db.Stores.Include(s => s.User).OrderByDescending(s => s.CreatedDate);
             try
             {
                 //search
@@ -65,13 +65,13 @@ namespace Repository
                     stores = FilterByStatusInactive(stores);
                 }
                 //orderby
-                if (order_by != null && order_by == StoreSortEnum.DescName.ToString())
+                if (order_by != null && order_by == StoreSortEnum.DescCreatedDate.ToString())
                 {
-                    stores = OrderByDescName(stores);
+                    stores = OrderByDescCreatedDate(stores);
                 }
-                else if (order_by != null && order_by == StoreSortEnum.AscName.ToString())
+                else if (order_by != null && order_by == StoreSortEnum.AscCreatedDate.ToString())
                 {
-                    stores = OrderByAscName(stores);
+                    stores = OrderByAscCreatedDate(stores);
                 }
                 return stores.Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize).Adapt<IEnumerable<AdminDashboardStore>>().ToList();
@@ -203,7 +203,7 @@ namespace Repository
                 else if (filter_Store != null && filter_Store == StoreStatusEnum.Inactive.ToString())
                 {
                     stores = FilterByStatusInactive(stores);
-                }          
+                }
                 return stores.Count();
             }
             catch (Exception ex)
