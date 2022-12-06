@@ -88,7 +88,7 @@ namespace Repository
                 else if (filter_Coupon != null && filter_Coupon == CouponStatusEnum.Inactive.ToString())
                 {
                     coupons = FilterByInActiveStatus(coupons);
-                }            
+                }
             }
             catch (Exception ex)
             {
@@ -115,11 +115,11 @@ namespace Repository
                     }
                     else throw new Exception("Discount value of PercentOff discount type must less than or equal 50%");
                 }
-            }     
+            }
             else throw new Exception("Discount value must greater than 0");
             if (obj.ExpiryDate <= today) throw new Exception("Expire date must greater than today");
             if (db.Coupons.Any(c => c.Code == obj!.Code!.Trim() && c.StoreId == obj.StoreId && c.Status == (int)CouponStatusEnum.Active && c.ExpiryDate > DateTime.Now))
-                throw new Exception("This code is already exitst");    
+                throw new Exception("This code is already exitst");
             db.Coupons.Add(obj);
             await db.SaveChangesAsync();
         }
