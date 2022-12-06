@@ -297,24 +297,31 @@ namespace Repository
             }
         }
 
-        public async Task<EmailSimpleUser?> GetUserByEmail(string email)
+        public async Task<EmailSimpleUser?> GetReadonlyUserByEmail(string email)
         {
             var db = new CakeCuriousDbContext();
             return await db.Users
                 .AsNoTracking()
-                .AsSplitQuery()
                 .Where(x => x.Email == email)
                 .ProjectToType<EmailSimpleUser>()
                 .FirstOrDefaultAsync();
         }
 
-        public async Task UpdateStaff(User user, string guid)
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Users
+                .Where(x => x.Email == email)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task UpdateStaff(User user, string id)
         {
             var db = new CakeCuriousDbContext();
             using (var transaction = await db.Database.BeginTransactionAsync())
             {
                 string query = "delete from [UserHasRole] where [UserHasRole].[user_id] = {0} ; update [User] set [User].[id] = {1} where [User].[id] = {2}";
-                await db.Database.ExecuteSqlRawAsync(query, guid, user.Id!, guid);
+                await db.Database.ExecuteSqlRawAsync(query, id, user.Id!, id);
                 db.Users.Update(user);
                 await db.SaveChangesAsync();
                 await transaction.CommitAsync();

@@ -350,14 +350,28 @@ namespace CakeCurious_API.Controllers
                 .AuthorizeUser(new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid!, userRepository))
             {
                 var email = createStaff.Email!.Trim();
+                var hasRoles = new HashSet<UserHasRole>();
                 // Check if user with email already exists
-                if (await userRepository.GetUserByEmail(email) != null)
+                var user = await userRepository.GetUserByEmail(email);
+                if (user != null)
                 {
-                    return Conflict();
+                    hasRoles.Add(new UserHasRole
+                    {
+                        UserId = uid,
+                        RoleId = (int)RoleEnum.Baker,
+                    });
+
+                    hasRoles.Add(new UserHasRole
+                    {
+                        UserId = uid,
+                        RoleId = (int)RoleEnum.Staff,
+                    });
+                    user.HasRoles = hasRoles;
+                    await userRepository.UpdateStaff(user, user.Id!);
+                    return Ok(await userRepository.GetDetached(user.Id!));
                 }
                 var placeholderId = Guid.NewGuid().ToString();
                 // Set staff role
-                var hasRoles = new HashSet<UserHasRole>();
                 hasRoles.Add(new UserHasRole
                 {
                     UserId = placeholderId,
@@ -444,7 +458,7 @@ namespace CakeCurious_API.Controllers
                             RoleId = (int)RoleEnum.Baker,
                         });
                         // Check if email already exists in database
-                        var staff = await userRepository.GetUserByEmail(userRecord!.Email);
+                        var staff = await userRepository.GetReadonlyUserByEmail(userRecord!.Email);
                         if (isUserRecordExisted && staff != null)
                         {
                             // Staff account was created prior to login
