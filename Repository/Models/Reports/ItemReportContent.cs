@@ -1,16 +1,11 @@
-﻿using BusinessObject;
-using Repository.Constants.Reports;
+﻿
 using Repository.Models.Comments;
 using Repository.Models.RecipeMaterials;
 using Repository.Models.RecipeMedia;
 using Repository.Models.RecipeSteps;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models.Product
+
+namespace Repository.Models.Reports
 {
     public class ItemReportContent
     {   

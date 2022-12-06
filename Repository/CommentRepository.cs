@@ -1,6 +1,5 @@
 ﻿using BusinessObject;
 using Mapster;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Comments;
 using Repository.Constants.Reports;

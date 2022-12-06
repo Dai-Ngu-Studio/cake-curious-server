@@ -1,15 +1,8 @@
 ﻿using BusinessObject;
-using Repository.Models.Comments;
-using Repository.Models.Recipes;
-using Repository.Models.ReportCategories;
 using Repository.Models.Users;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository.Models
+
+namespace Repository.Models.Reports
 {
     public class StaffDashboardReport
     {

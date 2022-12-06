@@ -1,12 +1,5 @@
 ﻿using BusinessObject;
-using Repository.Models;
-using Repository.Models.Product;
 using Repository.Models.Reports;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository.Interfaces
 {

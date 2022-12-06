@@ -98,9 +98,9 @@ namespace Repository
             return report;
         }
 
-        public async Task<StaffDashboardReport> generateStaffReport()
+        public async Task<StaffDashboardStatistic> generateStaffReport()
         {
-            StaffDashboardReport report = new StaffDashboardReport();
+            StaffDashboardStatistic report = new StaffDashboardStatistic();
             var db = new CakeCuriousDbContext();
             StaffDashboardCardStats cs = new StaffDashboardCardStats();
             DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);

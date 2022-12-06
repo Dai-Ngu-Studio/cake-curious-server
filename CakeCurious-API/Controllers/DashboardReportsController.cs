@@ -1,12 +1,10 @@
 ﻿using Google.Analytics.Data.V1Beta;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 using Repository.Models.DashboardReports;
 using System.Globalization;
 using System.Security.Claims;
-using System.Text;
 
 namespace CakeCurious_API.Controllers
 {
@@ -113,9 +111,9 @@ namespace CakeCurious_API.Controllers
         [HttpGet("Staff")]
         [Authorize]
 
-        public async Task<ActionResult<StaffDashboardReport>> GetStaffDashboardReport()
+        public async Task<ActionResult<StaffDashboardStatistic>> GetStaffDashboardReport()
         {
-            StaffDashboardReport dbr;
+            StaffDashboardStatistic dbr;
             dbr = await dashboardReportRepository.generateStaffReport();
             return dbr;
         }

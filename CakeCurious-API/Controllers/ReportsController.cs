@@ -1,17 +1,12 @@
 ﻿using BusinessObject;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Repository;
 using Repository.Constants.Reports;
 using Repository.Interfaces;
-using Repository.Models;
-using Repository.Models.Product;
 using Repository.Models.Reports;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Mime;
 using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
@@ -22,7 +17,7 @@ namespace CakeCurious_API.Controllers
     {
         private readonly IViolationReportRepository _ReportRepository;
 
-        public ReportsController(IViolationReportRepository ReportRepository, IRecipeRepository RecipeRepository)
+        public ReportsController(IViolationReportRepository ReportRepository)
         {
             _ReportRepository = ReportRepository;
         }

@@ -1,5 +1,4 @@
-﻿using Repository.Models.OrderDetails;
-using Repository.Models.Users;
+﻿using Repository.Models.Users;
 
 namespace Repository.Models.Orders
 {

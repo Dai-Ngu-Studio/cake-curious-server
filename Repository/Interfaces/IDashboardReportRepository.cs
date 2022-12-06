@@ -11,7 +11,7 @@ namespace Repository.Interfaces
     {
         public AdminDashboardReport generateAdminReport();
         public Task<StoreDashboardReport> generateStoreReport(Guid storeId);
-        public Task<StaffDashboardReport> generateStaffReport();
+        public Task<StaffDashboardStatistic> generateStaffReport();
 
     }
 }
