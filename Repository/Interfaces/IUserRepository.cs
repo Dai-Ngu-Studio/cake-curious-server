@@ -20,5 +20,7 @@ namespace Repository.Interfaces
         public Task<ProfileUser?> GetProfileUser(string? id, string currentUserId);
         public Task<ICollection<SimpleUser>> GetSuggestedUsers(List<string> userIds);
         public Task<int> UpdateShareUrl(string id, string shareUrl);
+        public Task<EmailSimpleUser?> GetUserByEmail(string email);
+        public Task UpdateStaff(User user, string guid);
     }
 }

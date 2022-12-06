@@ -5,7 +5,6 @@ using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Users;
-using System.Collections.Generic;
 
 namespace Repository
 {
@@ -295,6 +294,30 @@ namespace Repository
                 var rows = await db.Database.ExecuteSqlRawAsync(query, shareUrl, id);
                 await transaction.CommitAsync();
                 return rows;
+            }
+        }
+
+        public async Task<EmailSimpleUser?> GetUserByEmail(string email)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Users
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Where(x => x.Email == email)
+                .ProjectToType<EmailSimpleUser>()
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task UpdateStaff(User user, string guid)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = await db.Database.BeginTransactionAsync())
+            {
+                string query = "delete from [UserHasRole] where [UserHasRole].[user_id] = {0} ; update [User] set [User].[id] = {1} where [User].[id] = {2}";
+                await db.Database.ExecuteSqlRawAsync(query, guid, user.Id!, guid);
+                db.Users.Update(user);
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
         }
     }
