@@ -102,7 +102,6 @@ namespace CakeCurious_API.Controllers
                 Id = id,
                 Name = product.Name,
                 Description = product.Description,
-                Discount = product.Discount / 100,
                 PhotoUrl = product.PhotoUrl,
                 Quantity = product.Quantity,
                 StoreId = storeId,
@@ -125,7 +124,6 @@ namespace CakeCurious_API.Controllers
                     Name = new string[] { prod.Name! },
                     Category = prod.ProductCategoryId,
                     Price = prod.Price,
-                    Discount = prod.Discount,
                     StoreId = prod.StoreId,
                 };
 
@@ -166,7 +164,6 @@ namespace CakeCurious_API.Controllers
                     Id = product.Id ?? beforeUpdateObj.Id,
                     Name = product.Name ?? beforeUpdateObj.Name,
                     Description = product.Description ?? beforeUpdateObj.Description,
-                    Discount = product.Discount == null ? beforeUpdateObj.Discount : product.Discount / 100,
                     PhotoUrl = product.PhotoUrl ?? beforeUpdateObj.PhotoUrl,
                     Quantity = product.Quantity ?? beforeUpdateObj.Quantity,
                     Price = product.Price ?? beforeUpdateObj.Price,
@@ -187,7 +184,6 @@ namespace CakeCurious_API.Controllers
                     Name = new string[] { updateProd.Name! },
                     Category = updateProd.ProductCategoryId,
                     Price = updateProd.Price,
-                    Discount = updateProd.Discount,
                     StoreId = updateProd.StoreId,
                 };
 
@@ -342,14 +338,14 @@ namespace CakeCurious_API.Controllers
             {
                 shouldContainer.Add(descriptor
                     .Range(x => x
-                        .Field(f => f.DiscountPrice)
+                        .Field(f => f.Price)
                         .GreaterThanOrEquals(decimal.ToDouble((decimal)fromPrice))
                     )
                 );
 
                 filterContainer.Add(descriptor
                     .Range(x => x
-                        .Field(f => f.DiscountPrice)
+                        .Field(f => f.Price)
                         .GreaterThanOrEquals(decimal.ToDouble((decimal)fromPrice))
                     )
                 );
@@ -359,14 +355,14 @@ namespace CakeCurious_API.Controllers
             {
                 shouldContainer.Add(descriptor
                     .Range(x => x
-                        .Field(f => f.DiscountPrice)
+                        .Field(f => f.Price)
                         .LessThanOrEquals(decimal.ToDouble((decimal)toPrice))
                     )
                 );
 
                 filterContainer.Add(descriptor
                     .Range(x => x
-                        .Field(f => f.DiscountPrice)
+                        .Field(f => f.Price)
                         .LessThanOrEquals(decimal.ToDouble((decimal)toPrice))
                     )
                 );

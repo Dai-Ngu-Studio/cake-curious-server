@@ -43,9 +43,6 @@ namespace BusinessObject
         [Column("price", TypeName = "decimal(20,4)")]
         public decimal? Price { get; set; }
 
-        [Column("discount", TypeName = "decimal(20,4)")]
-        public decimal? Discount { get; set; }
-
         [Column("photo_url", TypeName = "nvarchar(2048)")]
         public string? PhotoUrl { get; set; }
 
@@ -54,6 +51,9 @@ namespace BusinessObject
 
         [Column("rating", TypeName = "decimal(5,2)")]
         public decimal? Rating { get; set; }
+
+        [Column("last_updated", TypeName = "datetime2(7)")]
+        public DateTime? LastUpdated { get; set; }
 
         [Column("status")]
         public int? Status { get; set; }
