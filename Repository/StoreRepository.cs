@@ -22,11 +22,11 @@ namespace Repository
 
         public IEnumerable<Store> OrderByAscCreatedDate(IEnumerable<Store> stores)
         {
-            return stores.OrderBy(p => p.Orders);
+            return stores.OrderBy(p => p.CreatedDate);
         }
         public IEnumerable<Store> OrderByDescCreatedDate(IEnumerable<Store> stores)
         {
-            return stores.OrderByDescending(p => p.Orders);
+            return stores.OrderByDescending(p => p.CreatedDate);
         }
         public IEnumerable<Store> FilterByStatusActive(IEnumerable<Store> stores)
         {
@@ -73,14 +73,13 @@ namespace Repository
                 {
                     stores = OrderByAscCreatedDate(stores);
                 }
-                return stores.Skip((pageIndex - 1) * pageSize)
-                                .Take(pageSize).Adapt<IEnumerable<AdminDashboardStore>>().ToList();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            return null;
+            return stores.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize).Adapt<IEnumerable<AdminDashboardStore>>().ToList();
         }
         public async Task<Guid> getStoreIdByUid(string uid)
         {
