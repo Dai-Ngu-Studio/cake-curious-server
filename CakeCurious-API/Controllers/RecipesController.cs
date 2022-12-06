@@ -88,8 +88,16 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult<ReportedRecipesPage>> GetReportedRecipes(string? search, string? sort, string? filter, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             ReportedRecipesPage reportedRecipesPage = new ReportedRecipesPage();
-            reportedRecipesPage.Recipes = await recipeRepository.GetReportedRecipes(search, sort, filter, page, size);
-            reportedRecipesPage.TotalPage = (int)Math.Ceiling((decimal)await recipeRepository.CountTotalReportedRecipes(search, filter) / size);
+            try
+            {
+                reportedRecipesPage.Recipes = await recipeRepository.GetReportedRecipes(search, sort, filter, page, size);
+                reportedRecipesPage.TotalPage = (int)Math.Ceiling((decimal)await recipeRepository.CountTotalReportedRecipes(search, filter) / size);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error while get reported recipes: " + ex.Message);
+                return BadRequest("Error while get reported recipes list.");
+            }
             return Ok(reportedRecipesPage);
         }
 

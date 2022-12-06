@@ -344,15 +344,17 @@ namespace Repository
 
             return reportsRecipeType!.Where(p => p.Name!.Contains(keyWord!)).ToList();
         }
+
         public async Task<IEnumerable<SimpleRecipeForReportList>> GetReportedRecipes(string? s, string? sort, string? filter, int page, int size)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<ViolationReport> reportsRecipeType = await db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Recipe).GroupBy(x => x.ItemId).Select(d => d.First()).ToListAsync();
+            IEnumerable<ViolationReport> reportsRecipeType = db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Recipe).GroupBy(x => x.ItemId).Select(d => d.First());
             List<SimpleRecipeForReportList>? isReportedRecipes = new List<SimpleRecipeForReportList>();
             if (reportsRecipeType.Count() > 0)
                 foreach (var report in reportsRecipeType)
                 {
-                    SimpleRecipeForReportList recipe = (await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!;
+                    SimpleRecipeForReportList? recipe = (await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!;
+                    if (recipe == null) throw new Exception("Get fail.ItemType is recipe but can not find any recipe.");
                     recipe.TotalPendingReports = await db.ViolationReports.Where(report => report.Status == (int)ReportStatusEnum.Pending && report.ItemId == recipe.Id).CountAsync();
                     isReportedRecipes!.Add(recipe);
                 }
@@ -382,7 +384,7 @@ namespace Repository
                     isReportedRecipes = OrderByDescTotalPendingReport(isReportedRecipes);
                 }
                 return isReportedRecipes!.Skip((page - 1) * size)
-                                .Take(size).ToList();
+                                .Take(size).OrderByDescending(recipe => recipe.PublishedDate).ToList();
             }
             catch (Exception ex)
             {

@@ -31,9 +31,17 @@ namespace CakeCurious_API.Controllers
         public async Task<ActionResult<ReportedCommentsPage>> GetReportedComment(string? filter, string? sort, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
             ReportedCommentsPage reportedCommentsPage = new ReportedCommentsPage();
-            reportedCommentsPage.Comments = await commentRepository.GetReportedCommments(filter, sort, page, size);
-            Console.WriteLine(reportedCommentsPage.Comments.Count());
-            reportedCommentsPage.TotalPage = (int)Math.Ceiling((decimal)await commentRepository.CountReportedCommmentsTotalPage(filter) / size);
+            try
+            {
+                reportedCommentsPage.Comments = await commentRepository.GetReportedCommments(filter, sort, page, size);
+                Console.WriteLine(reportedCommentsPage.Comments.Count());
+                reportedCommentsPage.TotalPage = (int)Math.Ceiling((decimal)await commentRepository.CountReportedCommmentsTotalPage(filter) / size);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error while get reported comments: " + ex.Message);
+                return BadRequest("Error while get reported comments list.");
+            }
             return Ok(reportedCommentsPage);
         }
 

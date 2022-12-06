@@ -132,7 +132,7 @@ namespace Repository
         public async Task<IEnumerable<SimpleCommentForReportList>> GetReportedCommments(string? filter, string? sort, int page, int size)
         {
             var db = new CakeCuriousDbContext();
-            IEnumerable<ViolationReport> reportsCommentType = await db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Comment).GroupBy(x => x.ItemId).Select(d => d.First()).ToListAsync();
+            IEnumerable<ViolationReport> reportsCommentType = db.ViolationReports.Where(report => report.ItemType == (int)ReportTypeEnum.Comment).GroupBy(x => x.ItemId).Select(d => d.First());
             List<SimpleCommentForReportList>? isReportedComments = new List<SimpleCommentForReportList>();
             if (reportsCommentType.Count() > 0)
                 foreach (var report in reportsCommentType)
@@ -160,7 +160,7 @@ namespace Repository
                 isReportedComments = OrderByDescTotalPendingReport(isReportedComments);
             }
             return isReportedComments!.Skip((page - 1) * size)
-                                .Take(size).ToList();
+                                .Take(size).OrderByDescending(c => c.SubmittedDate).ToList();
         }
 
         public async Task<int?> CountReportedCommmentsTotalPage(string? filter)
