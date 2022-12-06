@@ -118,7 +118,7 @@ namespace Repository
             }     
             else throw new Exception("Discount value must greater than 0");
             if (obj.ExpiryDate <= today) throw new Exception("Expire date must greater than today");
-            if (db.Coupons.Any(c => c.Code == obj!.Code!.Trim() && c.Status == (int)CouponStatusEnum.Active && c.ExpiryDate > DateTime.Now))
+            if (db.Coupons.Any(c => c.Code == obj!.Code!.Trim() && c.StoreId == obj.StoreId && c.Status == (int)CouponStatusEnum.Active && c.ExpiryDate > DateTime.Now))
                 throw new Exception("This code is already exitst");    
             db.Coupons.Add(obj);
             await db.SaveChangesAsync();
