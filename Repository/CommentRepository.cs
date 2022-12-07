@@ -159,7 +159,7 @@ namespace Repository
                 isReportedComments = OrderByDescTotalPendingReport(isReportedComments);
             }
             return isReportedComments!.Skip((page - 1) * size)
-                                .Take(size).OrderByDescending(c => c.SubmittedDate).ToList();
+                                .Take(size).OrderByDescending(c => c.TotalPendingReports).ToList();
         }
 
         public async Task<int?> CountReportedCommmentsTotalPage(string? filter)

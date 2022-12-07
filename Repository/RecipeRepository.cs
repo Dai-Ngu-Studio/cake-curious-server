@@ -384,7 +384,7 @@ namespace Repository
                     isReportedRecipes = OrderByDescTotalPendingReport(isReportedRecipes);
                 }
                 return isReportedRecipes!.Skip((page - 1) * size)
-                                .Take(size).OrderByDescending(recipe => recipe.PublishedDate).ToList();
+                                .Take(size).OrderByDescending(recipe => recipe.TotalPendingReports).ToList();
             }
             catch (Exception ex)
             {
