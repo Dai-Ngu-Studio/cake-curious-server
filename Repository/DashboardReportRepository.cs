@@ -170,6 +170,7 @@ namespace Repository
             int month = 1;
             int currentMonthProcessedReport = 0;
             int currentMonthUnprocessedReport = 0;
+
             StaffDashboardLineChart lc = new StaffDashboardLineChart();
             while (month < 13)
             {
@@ -179,6 +180,49 @@ namespace Repository
                 lc.CurrentYearUnprocessedReports[month - 1] = currentMonthUnprocessedReport;
                 month++;
             }
+            int startMonth = -1;
+            int endMonth = -1;
+            //find startMonth in CurrentYearProcessedReports
+            for (int i = 0; i < lc.CurrentYearProcessedReports.Count(); i++)
+            {
+                if (lc.CurrentYearProcessedReports[i] > 0)
+                {
+                    startMonth = i;
+                    break;
+                }
+
+            }
+            //find endMonth in CurrentYearProcessedReports
+            for (int i = lc.CurrentYearProcessedReports.Count() - 1; i >= 0; --i)
+            {
+                if (lc.CurrentYearProcessedReports[i] > 0)
+                {
+                    endMonth = i;
+                    break;
+                }
+            }
+            //find startMonth in CurrentYearUnprocessedReports
+            for (int i = 0; i < lc.CurrentYearUnprocessedReports.Count(); i++)
+            {
+                if (lc.CurrentYearUnprocessedReports[i] > 0)
+                {
+                    if (startMonth >= 0 && startMonth > i) startMonth = i;
+                    else startMonth = i;
+                    break;
+                }
+            }
+            //find endMonth in CurrentYearUnprocessedReports
+            for (int i = lc.CurrentYearUnprocessedReports.Count() - 1; i >= 0; --i)
+            {
+                if (lc.CurrentYearUnprocessedReports[i] > 0)
+                {
+                    if (endMonth < i) endMonth = i;
+                    break;
+                }
+            }
+            lc.CurrentYearProcessedReports = lc.CurrentYearProcessedReports.GetRange(startMonth + 1, endMonth - 1);
+            lc.CurrentYearUnprocessedReports = lc.CurrentYearUnprocessedReports.GetRange(startMonth + 1, endMonth - 1);
+            lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
             report.LineChart = lc;
             return report;
         }

@@ -59,9 +59,56 @@ namespace CakeCurious_API.Controllers
                 Console.WriteLine(ex.Message);
                 return BadRequest("Error when get monthly active users data from google analytic");
             }
+
+            int startMonth = -1;
+            int endMonth = -1;
+            //find startMonth in CurrentYearUnprocessedReports
+            for (int i = 0; i < lc.LastYearActiveUser.Count(); i++)
+            {
+                if (lc.LastYearActiveUser[i] > 0)
+                {
+                    startMonth = i;
+                    break;
+                }
+            }
+            //find endMonth in CurrentYearUnprocessedReports
+            for (int i = lc.LastYearActiveUser.Count() - 1; i >= 0; --i)
+            {
+                if (lc.CurrentYearActiveUser[i] > 0)
+                {
+                    endMonth = i;
+                    break;
+                }
+            }
+            //find startMonth in CurrentYearProcessedReports
+            for (int i = 0; i < lc.CurrentYearActiveUser.Count(); i++)
+            {
+                if (lc.CurrentYearActiveUser[i] > 0)
+                {
+                    if (startMonth >= 0 && startMonth > i) startMonth = i;
+                    else startMonth = i;
+                    break;
+                }
+
+
+            }
+            //find endMonth in CurrentYearProcessedReports
+            for (int i = lc.CurrentYearActiveUser.Count() - 1; i >= 0; --i)
+            {
+                if (lc.LastYearActiveUser[i] > 0)
+                {
+                    if (endMonth < i) endMonth = i;
+                    break;
+                }
+            }
+            lc.CurrentYearActiveUser = lc.CurrentYearActiveUser.GetRange(startMonth, endMonth - startMonth + 1);
+            lc.LastYearActiveUser = lc.LastYearActiveUser.GetRange(startMonth, endMonth - startMonth + 1);
+            lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
+            dbr.LineChart = lc;
+
             try
             {
-                dbr.LineChart = lc;
+
                 //Get weely Active user cost 1.x s
                 RunReportRequest requestActiveUser = new RunReportRequest
                 {
@@ -84,6 +131,8 @@ namespace CakeCurious_API.Controllers
                 Console.WriteLine(ex.Message);
                 return BadRequest("Error when get weekly active users from google analytic");
             }
+
+
             try
             {
                 // Get store visit by month cost about 2.6s
@@ -194,6 +243,50 @@ namespace CakeCurious_API.Controllers
                 Console.WriteLine(ex.Message);
                 Console.WriteLine("Error when get yearly store visit in google analytics");
             }
+            int startMonth = -1;
+            int endMonth = -1;
+            //find startMonth in LastYearStoreVisit
+            for (int i = 0; i < lc.LastYearStoreVisit.Count(); i++)
+            {
+                if (lc.LastYearStoreVisit[i] > 0)
+                {
+                    startMonth = i;
+                    break;
+                }
+
+            }
+            //find endMonth in LastYearStoreVisit
+            for (int i = lc.LastYearStoreVisit.Count() - 1; i >= 0; --i)
+            {
+                if (lc.CurrentYearStoreVisit[i] > 0)
+                {
+                    endMonth = i;
+                    break;
+                }
+            }
+            //find startMonth in CurrentYearStoreVisit
+            for (int i = 0; i < lc.CurrentYearStoreVisit.Count(); i++)
+            {
+                if (lc.CurrentYearStoreVisit[i] > 0)
+                {
+                    if (startMonth >= 0 && startMonth > i) startMonth = i;
+                    else startMonth = i;
+                    break;
+                }
+
+            }
+            //find endMonth in CurrentYearStoreVisit
+            for (int i = lc.CurrentYearStoreVisit.Count() - 1; i >= 0; --i)
+            {
+                if (lc.LastYearStoreVisit[i] > 0)
+                {
+                    if (endMonth < i) endMonth = i;
+                    break;
+                }
+            }
+            lc.CurrentYearStoreVisit = lc.CurrentYearStoreVisit.GetRange(startMonth + 1, endMonth - startMonth +1);
+            lc.LastYearStoreVisit = lc.LastYearStoreVisit.GetRange(startMonth + 1, endMonth - startMonth + 1);
+            lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
             dbr.LineChart = lc;
             return Ok(dbr);
         }
