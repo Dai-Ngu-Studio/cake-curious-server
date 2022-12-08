@@ -287,6 +287,22 @@ namespace CakeCurious_API.Controllers
             return stores;
         }
 
+        [HttpGet("active-coupons")]
+        [Authorize]
+        public async Task<ActionResult<ActiveCouponsStorePage>> GetStoresWithActiveCoupons(
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var storePage = new ActiveCouponsStorePage();
+                storePage.Stores = await storeRepository.GetActiveCouponsStore(uid, (page - 1) * take, take);
+                return Ok(storePage);
+            }
+            return Unauthorized();
+        }
+
         private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Store store)
         {
             return await DynamicLinkHelper.CreateDynamicLink(

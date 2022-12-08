@@ -1,5 +1,6 @@
 ﻿using BusinessObject;
 using Repository.Models.Stores;
+using System.Collections;
 
 namespace Repository.Interfaces
 {
@@ -19,5 +20,6 @@ namespace Repository.Interfaces
         public Task<Store> CreateStoreForUser(User user, Store store);
         public Task<ICollection<GroceryStore>> Explore(int randSeed, int take, int key);
         public Task<ICollection<GroceryStore>> GetSuggestedStores(List<Guid> storeIds);
+        public Task<ICollection<ActiveCouponsStore>> GetActiveCouponsStore(string userId, int skip, int take);
     }
 }
