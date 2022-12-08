@@ -65,7 +65,7 @@ namespace CakeCurious_API.Controllers
             //find startMonth in CurrentYearUnprocessedReports
             for (int i = 0; i < lc.LastYearActiveUser.Count(); i++)
             {
-                if (lc.LastYearActiveUser[i] > 0)
+                if (lc.LastYearActiveUser[i] != 0)
                 {
                     startMonth = i;
                     break;
@@ -74,7 +74,7 @@ namespace CakeCurious_API.Controllers
             //find endMonth in CurrentYearUnprocessedReports
             for (int i = lc.LastYearActiveUser.Count() - 1; i >= 0; --i)
             {
-                if (lc.CurrentYearActiveUser[i] > 0)
+                if (lc.CurrentYearActiveUser[i] != 0)
                 {
                     endMonth = i;
                     break;
@@ -83,7 +83,7 @@ namespace CakeCurious_API.Controllers
             //find startMonth in CurrentYearProcessedReports
             for (int i = 0; i < lc.CurrentYearActiveUser.Count(); i++)
             {
-                if (lc.CurrentYearActiveUser[i] > 0)
+                if (lc.CurrentYearActiveUser[i] != 0)
                 {
                     if (startMonth >= 0 && startMonth > i) startMonth = i;
                     else startMonth = i;
@@ -95,7 +95,7 @@ namespace CakeCurious_API.Controllers
             //find endMonth in CurrentYearProcessedReports
             for (int i = lc.CurrentYearActiveUser.Count() - 1; i >= 0; --i)
             {
-                if (lc.LastYearActiveUser[i] > 0)
+                if (lc.LastYearActiveUser[i] != 0)
                 {
                     if (endMonth < i) endMonth = i;
                     break;
@@ -248,7 +248,7 @@ namespace CakeCurious_API.Controllers
             //find startMonth in LastYearStoreVisit
             for (int i = 0; i < lc.LastYearStoreVisit.Count(); i++)
             {
-                if (lc.LastYearStoreVisit[i] > 0)
+                if (lc.LastYearStoreVisit[i] != 0)
                 {
                     startMonth = i;
                     break;
@@ -258,7 +258,7 @@ namespace CakeCurious_API.Controllers
             //find endMonth in LastYearStoreVisit
             for (int i = lc.LastYearStoreVisit.Count() - 1; i >= 0; --i)
             {
-                if (lc.CurrentYearStoreVisit[i] > 0)
+                if (lc.CurrentYearStoreVisit[i] != 0)
                 {
                     endMonth = i;
                     break;
@@ -267,7 +267,7 @@ namespace CakeCurious_API.Controllers
             //find startMonth in CurrentYearStoreVisit
             for (int i = 0; i < lc.CurrentYearStoreVisit.Count(); i++)
             {
-                if (lc.CurrentYearStoreVisit[i] > 0)
+                if (lc.CurrentYearStoreVisit[i] != 0)
                 {
                     if (startMonth >= 0 && startMonth > i) startMonth = i;
                     else startMonth = i;
@@ -278,14 +278,15 @@ namespace CakeCurious_API.Controllers
             //find endMonth in CurrentYearStoreVisit
             for (int i = lc.CurrentYearStoreVisit.Count() - 1; i >= 0; --i)
             {
-                if (lc.LastYearStoreVisit[i] > 0)
+                if (lc.LastYearStoreVisit[i] != 0)
                 {
                     if (endMonth < i) endMonth = i;
                     break;
                 }
             }
-            lc.CurrentYearStoreVisit = lc.CurrentYearStoreVisit.GetRange(startMonth + 1, endMonth - startMonth +1);
-            lc.LastYearStoreVisit = lc.LastYearStoreVisit.GetRange(startMonth + 1, endMonth - startMonth + 1);
+            Console.WriteLine(startMonth + " " + endMonth);
+            lc.CurrentYearStoreVisit = lc.CurrentYearStoreVisit.GetRange(startMonth, endMonth - startMonth + 1);
+            lc.LastYearStoreVisit = lc.LastYearStoreVisit.GetRange(startMonth, endMonth - startMonth + 1);
             lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
             dbr.LineChart = lc;
             return Ok(dbr);
