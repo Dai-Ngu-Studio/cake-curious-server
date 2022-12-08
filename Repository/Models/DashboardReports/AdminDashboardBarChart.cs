@@ -10,7 +10,7 @@ namespace Repository.Models.DashboardReports
     {
         public List<int>? CurrentMonthReport { get; set; } = new List<int>() { 0, 0, 0, 0 };
         public List<int>? LastMonthReport { get; set; } = new List<int>() { 0, 0, 0, 0 };
-        public List<string> Week { get; set; } = new List<string> { "Week1", "Week2", "Week3", "Week4" };
+        public List<string> Week { get; set; } = new List<string> { "Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4" };
 
     }
 }
