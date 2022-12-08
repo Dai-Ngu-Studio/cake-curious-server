@@ -51,7 +51,7 @@ namespace Repository
             try
             {
                 var db = new CakeCuriousDbContext();
-                IEnumerable<User> users = db.Users!.Include(u => u.HasRoles)!;
+                IEnumerable<User> users = db.Users!.Include(u => u.HasRoles)!.OrderByDescending(u => u.CreatedDate);
                 IEnumerable<AdminDashboardUser> result;
                 //Search
                 if (search != null)
