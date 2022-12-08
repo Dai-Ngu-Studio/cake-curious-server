@@ -347,12 +347,10 @@ namespace CakeCurious_API.Controllers
                 var user = await userRepository.GetUserByEmail(email);
                 if (user != null)
                 {
-                    hasRoles.Add(new UserHasRole
+                    if (user.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner))
                     {
-                        UserId = uid,
-                        RoleId = (int)RoleEnum.Baker,
-                    });
-
+                        return Conflict();
+                    }
                     hasRoles.Add(new UserHasRole
                     {
                         UserId = uid,
@@ -436,30 +434,26 @@ namespace CakeCurious_API.Controllers
                 }
                 else
                 {
-                    // User does not exist in database, creating user in database
                     try
                     {
                         // Get user information from Firebase
                         UserRecord? userRecord = await FirebaseAuth.DefaultInstance.GetUserAsync(uid);
                         bool isUserRecordExisted = userRecord != null;
-                        // Default role to be Baker
-                        var hasRoles = new HashSet<UserHasRole>();
-                        hasRoles.Add(new UserHasRole
-                        {
-                            UserId = uid,
-                            RoleId = (int)RoleEnum.Baker,
-                        });
+                        
                         // Check if email already exists in database
                         var staff = await userRepository.GetReadonlyUserByEmail(userRecord!.Email);
                         if (isUserRecordExisted && staff != null)
                         {
                             // Staff account was created prior to login
                             // Update with information from Firebase
-                            hasRoles.Add(new UserHasRole
+                            var hasRoles = new HashSet<UserHasRole>
                             {
-                                UserId = uid,
-                                RoleId = (int)RoleEnum.Staff,
-                            });
+                                new UserHasRole
+                                {
+                                    UserId = uid,
+                                    RoleId = (int)RoleEnum.Staff,
+                                }
+                            };
                             var newStaff = new User
                             {
                                 Id = uid,
@@ -484,6 +478,16 @@ namespace CakeCurious_API.Controllers
                         }
                         else
                         {
+                            // User does not exist in database, creating user in database
+                            // Default role to be Baker
+                            var hasRoles = new HashSet<UserHasRole>
+                            {
+                                new UserHasRole
+                                {
+                                    UserId = uid,
+                                    RoleId = (int)RoleEnum.Baker,
+                                }
+                            };
                             User newUser = new User
                             {
                                 Id = uid,

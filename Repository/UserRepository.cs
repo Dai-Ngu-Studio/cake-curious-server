@@ -24,7 +24,7 @@ namespace Repository
         }
         public IEnumerable<User> filterByRoleStoreOwner(IEnumerable<User> users)
         {
-            return users.Where(x => x!.HasRoles!.Count() == 1 && x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner));
+            return users.Where(x => x!.HasRoles!.Any(x => x.RoleId == (int)RoleEnum.StoreOwner));
         }
         public IEnumerable<User> filterByAdmin(IEnumerable<User> users)
         {
@@ -314,7 +314,9 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             return await db.Users
+                .AsSplitQuery()
                 .Where(x => x.Email == email)
+                .Include(x => x.HasRoles)
                 .FirstOrDefaultAsync();
         }
 

@@ -101,6 +101,15 @@ namespace Repository
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<EngEditRecipe?> GetEngEditRecipe(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes
+                .Where(x => x.Id == id)
+                .ProjectToType<EngEditRecipe>()
+                .FirstOrDefaultAsync();
+        }
+
         public async Task UpdateRecipe(Recipe recipe, Recipe updateRecipe)
         {
             var db = new CakeCuriousDbContext();

@@ -8,5 +8,6 @@ namespace Repository.Models.RecipeCategoryGroups
         public string? Name { get; set; }
         public int? GroupType { get; set; }
         public IEnumerable<EngDetachedRecipeCategory>? RecipeCategories { get; set; }
+        public int[]? SelectedRecipeCategoryIds { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using BusinessObject;
 using Mapster;
+using Repository.Constants.Coupons;
 using Repository.Constants.Products;
 using Repository.Models.Orders;
 using Repository.Models.Stores;
@@ -28,10 +29,20 @@ namespace Repository.Configuration.Mappings
                 .NewConfig()
                 .Map(dest => dest.Products, src => src.Products!
                     .Where(x => ((IEnumerable<Guid>)MapContext.Current!.Parameters["productIds"])
-                        .Any(y => y == (Guid)x.Id!) 
-                        && (Guid)x.StoreId! == (Guid)src.Id! 
+                        .Any(y => y == (Guid)x.Id!)
+                        && (Guid)x.StoreId! == (Guid)src.Id!
                         && x.Status == (int)ProductStatusEnum.Active))
                 .Map(dest => dest.Store, src => src);
+
+            TypeAdapterConfig<Store, ActiveCouponsStore>
+                .NewConfig()
+                .Map(dest => dest.Coupons, src => src.Coupons!
+                    .Take(5)
+                    .OrderByDescending(x => x.Discount)
+                    .Where(x => x.Status == (int)CouponStatusEnum.Active)
+                    .Where(x => x.ExpiryDate > DateTime.Now)
+                    .Where(x => x.MaxUses != null ? x.Orders!.Count < x.MaxUses : true)
+                    .Where(x => !(x.Orders!.Any(y => y.UserId == (string)MapContext.Current!.Parameters["userId"]))));
         }
     }
 }

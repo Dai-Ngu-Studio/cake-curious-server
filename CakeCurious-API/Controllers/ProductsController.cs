@@ -109,6 +109,8 @@ namespace CakeCurious_API.Controllers
                 Price = product.Price,
                 Status = product.Status,
                 ProductType = product.ProductType,
+                LastUpdated = DateTime.Now,
+                Rating = 0.0M,
             };
 
             try
@@ -169,12 +171,13 @@ namespace CakeCurious_API.Controllers
                     Name = product.Name ?? beforeUpdateObj.Name,
                     Description = product.Description ?? beforeUpdateObj.Description,
                     PhotoUrl = product.PhotoUrl ?? beforeUpdateObj.PhotoUrl,
-                    Quantity = product.Quantity ?? beforeUpdateObj.Quantity,
+                    Quantity = product.Quantity ?? 0,
                     Price = product.Price ?? beforeUpdateObj.Price,
                     ProductType = product.ProductType ?? beforeUpdateObj.ProductType,
                     Status = product.Status ?? beforeUpdateObj.Status,
                     StoreId = product.StoreId ?? beforeUpdateObj.StoreId,
                     ProductCategoryId = product.ProductCategoryId ?? beforeUpdateObj.ProductCategoryId,
+                    LastUpdated = DateTime.Now,
                 };
 
                 var dynamicLinkResponse = await CreateDynamicLink(updateProd);

@@ -137,7 +137,21 @@ namespace Repository
             {
                 await db.Database.ExecuteSqlRawAsync($"select [p].[quantity] from [Product] as [p] with (updlock) where [p].[id] = '{product.Id}'");
                 product.Rating = (await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == product.Id))!.Rating;
-                db.Entry<Product>(product).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                await db.Database.ExecuteSqlRawAsync("update [p] " +
+                    "set [p].[name] = {0} " +
+                    ", [p].[description] = {1} " +
+                    ", [p].[photo_url] = {2} " +
+                    ", [p].[quantity] = [p].[quantity] + {3} " +
+                    ", [p].[price] = {4} " +
+                    ", [p].[product_type] = {5} " +
+                    ", [p].[status] = {6} " +
+                    ", [p].[category_id] = {7} " +
+                    ", [p].[last_updated] = {8} " +
+                    "from [Product] as [p] with (updlock) " +
+                    "where [p].[id] = {9}", 
+                    product.Name!, product.Description!, product.PhotoUrl!, 
+                    product.Quantity!, product.Price!, product.ProductType!, 
+                    product.Status!, product.ProductCategoryId!, DateTime.Now, product.Id!);
                 await db.SaveChangesAsync();
                 await transaction.CommitAsync(); // Commit transaction, remove lock
             }

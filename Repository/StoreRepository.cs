@@ -270,6 +270,26 @@ namespace Repository
                 .ToListAsync();
         }
 
+        public async Task<ICollection<ActiveCouponsStore>> GetActiveCouponsStore(string userId, int skip, int take)
+        {
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("userId", userId);
+
+                var db = new CakeCuriousDbContext();
+                return await db.Stores
+                    .AsNoTracking()
+                    .OrderByDescending(x => x.Rating)
+                    .Where(x => x.Coupons!.Count > 0)
+                    .Where(x => x.Status == (int)StoreStatusEnum.Active)
+                    .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                    .Skip(skip)
+                    .Take(take)
+                    .ProjectToType<ActiveCouponsStore>()
+                    .ToListAsync();
+            }
+        }
+
         public async Task<ICollection<GroceryStore>> Explore(int randSeed, int take, int key)
         {
             var result = new List<GroceryStore>();
@@ -298,7 +318,7 @@ namespace Repository
                         Name = (string)reader["name"],
                         PhotoUrl = reader["photo_url"].GetType() == typeof(string) ? (string)reader["photo_url"] : null,
                         Rating = (decimal)reader["rating"],
-						Key = (int)reader["key"],
+                        Key = (int)reader["key"],
                     });
                 }
             }
