@@ -7,5 +7,6 @@
         public string? PhotoUrl { get; set; }
         public decimal? Rating { get; set; }
         public double? Score { get; set; }
+		public int? Key { get;set; }
     }
 }

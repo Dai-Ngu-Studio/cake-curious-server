@@ -298,6 +298,7 @@ namespace Repository
                         Name = (string)reader["name"],
                         PhotoUrl = reader["photo_url"].GetType() == typeof(string) ? (string)reader["photo_url"] : null,
                         Rating = (decimal)reader["rating"],
+						Key = (int)reader["key"],
                     });
                 }
             }
