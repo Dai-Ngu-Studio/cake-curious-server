@@ -80,8 +80,6 @@ namespace CakeCurious_API.Controllers
                     else startMonth = i;
                     break;
                 }
-
-
             }
             if (startMonth < 0)
             {
@@ -141,8 +139,6 @@ namespace CakeCurious_API.Controllers
                 Console.WriteLine(ex.Message);
                 return BadRequest("Error when get weekly active users from google analytic");
             }
-
-
             try
             {
                 // Get store visit by month cost about 2.6s
@@ -155,7 +151,7 @@ namespace CakeCurious_API.Controllers
                 };
                 // Make the request
                 var storeVisitRes = await client.RunReportAsync(storeVisitReq);
-                foreach (Row row in storeVisitRes.Rows.Where(r => r.DimensionValues[0].Value.Contains("StoreDemoData")))
+                foreach (Row row in storeVisitRes.Rows.Where(r => r.DimensionValues[0].Value.Contains("store")))
                 {
                     dbr!.TableStoreVisit!.Add(new TableRowStoreVisit { StoreName = row.DimensionValues[0].Value.Substring(row.DimensionValues[0].Value.LastIndexOf("/") + 1), Visitors = row.MetricValues[0].Value });
                 }
@@ -204,7 +200,7 @@ namespace CakeCurious_API.Controllers
                 var storeVisitRes = await client.RunReportAsync(storeVisitReq);
                 foreach (Row row in storeVisitRes.Rows)
                 {
-                    if (row.DimensionValues[0].Value.Contains("StoreDemoData/" + storeId.Value.ToString()))
+                    if (row.DimensionValues[0].Value.Contains("store/" + storeId.Value.ToString()))
                     {
                         dbr!.CardStats!.CurrentWeekStoreVisit = Int32.Parse(row.MetricValues[0].Value);
                     }
@@ -234,14 +230,14 @@ namespace CakeCurious_API.Controllers
                 {
                     if (Int32.Parse(row.DimensionValues[2].Value) == DateTime.Now.Year)
                     {
-                        if (row.DimensionValues[0].Value.Contains("StoreDemoData/" + storeId.Value.ToString()))
+                        if (row.DimensionValues[0].Value.Contains("store/" + storeId.Value.ToString()))
                         {
                             lc!.CurrentYearStoreVisit![Int32.Parse(row.DimensionValues[1].Value) - 1] = Int32.Parse(row.MetricValues[0].Value);
                         }
                     }
                     else
                     {
-                        if (row.DimensionValues[0].Value.Contains("StoreDemoData/" + storeId.Value.ToString()))
+                        if (row.DimensionValues[0].Value.Contains("store/" + storeId.Value.ToString()))
                         {
                             lc!.LastYearStoreVisit![Int32.Parse(row.DimensionValues[1].Value) - 1] = Int32.Parse(row.MetricValues[0].Value);
                         }
