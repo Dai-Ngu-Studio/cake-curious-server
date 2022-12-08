@@ -7,7 +7,7 @@ using Repository.Models.Users;
 
 namespace Repository.Models.Recipes
 {
-    public class EditRecipe
+    public class EngEditRecipe
     {
         public Guid? Id { get; set; }
         public SimpleUser? User { get; set; }
@@ -22,7 +22,7 @@ namespace Repository.Models.Recipes
         public IEnumerable<CreateRecipeMaterial> Equipment { get; set; } = new List<CreateRecipeMaterial>();
         public IEnumerable<CreateRecipeStep> RecipeSteps { get; set; } = new List<CreateRecipeStep>();
         public IEnumerable<CreateRecipeHasCategory>? HasCategories { get; set; }
-        public IEnumerable<DetachedRecipeCategoryGroup>? RecipeCategoryGroups { get; set; }
+        public IEnumerable<EngDetachedRecipeCategoryGroup>? RecipeCategoryGroups { get; set; }
         public IEnumerable<CreateRecipeMedia>? RecipeMedia { get; set; }
     }
 }

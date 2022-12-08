@@ -7,6 +7,7 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
+using Repository.Constants.Categories;
 using Repository.Constants.Recipes;
 using Repository.Constants.Roles;
 using Repository.Interfaces;
@@ -32,12 +33,13 @@ namespace CakeCurious_API.Controllers
         private readonly IElasticClient elasticClient;
         private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
         private readonly IViolationReportRepository reportRepository;
+        private readonly IRecipeCategoryRepository recipeCategoryRepository;
 
 
         private readonly TranslationClient translationClient;
 
         public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
-            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService, TranslationClient _translationClient, IViolationReportRepository _reportRepository)
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService, TranslationClient _translationClient, IViolationReportRepository _reportRepository, IRecipeCategoryRepository _recipeCategoryRepository)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
@@ -48,6 +50,7 @@ namespace CakeCurious_API.Controllers
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
             reportRepository = _reportRepository;
             translationClient = _translationClient;
+            recipeCategoryRepository = _recipeCategoryRepository;
         }
 
         [HttpDelete("take-down/{guid}")]
@@ -236,7 +239,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/model")]
         [Authorize]
-        public async Task<ActionResult<EditRecipe>> GetEditRecipe(Guid id)
+        public async Task<ActionResult<EditRecipe>> GetEditRecipe(Guid id, [FromQuery] int? la)
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
@@ -248,7 +251,34 @@ namespace CakeCurious_API.Controllers
                         || await UserRoleAuthorizer.AuthorizeUser(
                             new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid, userRepository))
                     {
-                        return Ok(await recipeRepository.GetEditRecipe(id));
+                        if (la == (int)CategoryLanguageEnum.English)
+                        {
+                            var recipe = await recipeRepository.GetEngEditRecipe(id);
+                            var recipeCategoryGroups = recipeCategoryRepository.GetEnglishRecipeCategoriesGrouped().ToList();
+                            var selectedCategories = recipe!.HasCategories;
+                            foreach (var categoryGroup in recipeCategoryGroups)
+                            {
+                                var selectedRecipeCategoryIds = selectedCategories!
+                                    .Join(categoryGroup.RecipeCategories!, sc => sc.RecipeCategoryId, rc => rc.Id, (sc, rc) => (int)rc.Id!);
+                                categoryGroup.SelectedRecipeCategoryIds = selectedRecipeCategoryIds.ToArray();
+                            }
+                            recipe.RecipeCategoryGroups = recipeCategoryGroups;
+                            return Ok(recipe);
+                        }
+                        else
+                        {
+                            var recipe = await recipeRepository.GetEditRecipe(id);
+                            var recipeCategoryGroups = recipeCategoryRepository.GetRecipeCategoriesGrouped().ToList();
+                            var selectedCategories = recipe!.HasCategories;
+                            foreach (var categoryGroup in recipeCategoryGroups)
+                            {
+                                var selectedRecipeCategoryIds = selectedCategories!
+                                    .Join(categoryGroup.RecipeCategories!, sc => sc.RecipeCategoryId, rc => rc.Id, (sc, rc) => (int)rc.Id!);
+                                categoryGroup.SelectedRecipeCategoryIds = selectedRecipeCategoryIds.ToArray();
+                            }
+                            recipe.RecipeCategoryGroups = recipeCategoryGroups;
+                            return Ok(recipe);
+                        }
                     }
                 }
                 return NotFound();
