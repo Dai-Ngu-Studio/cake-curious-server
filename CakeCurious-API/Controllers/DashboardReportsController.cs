@@ -280,7 +280,7 @@ namespace CakeCurious_API.Controllers
             {
                 lc.CurrentYearStoreVisit = new List<int> { };
                 lc.LastYearStoreVisit = new List<int> { };
-                lc.Month = new List<string> { };             
+                lc.Month = new List<string> { };
             }
             else
             {
