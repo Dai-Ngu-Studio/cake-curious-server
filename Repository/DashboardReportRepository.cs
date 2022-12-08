@@ -94,15 +94,6 @@ namespace Repository
                 }
 
             }
-            //find weekEnd in CurrentMonthReports
-            for (int i = bc.CurrentMonthReport.Count() - 1; i >= 0; --i)
-            {
-                if (bc.CurrentMonthReport[i] != 0)
-                {
-                    weekEnd = i;
-                    break;
-                }
-            }
             //find startWeek in LastMonthReports
             for (int i = 0; i < bc.LastMonthReport.Count(); i++)
             {
@@ -113,18 +104,38 @@ namespace Repository
                     break;
                 }
             }
-            //find weekEnd in LastMonthReports
-            for (int i = bc.LastMonthReport.Count() - 1; i >= 0; --i)
+            if (weekStart < 0)
             {
-                if (bc.LastMonthReport[i] != 0)
-                {
-                    if (weekEnd < i) weekEnd = i;
-                    break;
-                }
+                bc.CurrentMonthReport = new List<int> { };
+                bc.LastMonthReport = new List<int> { };
+                bc.Week = new List<string> { };
             }
-            bc.CurrentMonthReport = bc.CurrentMonthReport.GetRange(weekStart, weekEnd - weekStart + 1);
-            bc.LastMonthReport = bc.LastMonthReport.GetRange(weekStart, weekEnd - weekStart + 1);
-            bc.Week = bc.Week.GetRange(weekStart, weekEnd - weekStart + 1);
+            else
+            {
+                //find weekEnd in CurrentMonthReports
+                for (int i = bc.CurrentMonthReport.Count() - 1; i >= 0; --i)
+                {
+                    if (bc.CurrentMonthReport[i] != 0)
+                    {
+                        weekEnd = i;
+                        break;
+                    }
+                }
+
+                //find weekEnd in LastMonthReports
+                for (int i = bc.LastMonthReport.Count() - 1; i >= 0; --i)
+                {
+                    if (bc.LastMonthReport[i] != 0)
+                    {
+                        if (weekEnd < i) weekEnd = i;
+                        break;
+                    }
+                }
+                bc.CurrentMonthReport = bc.CurrentMonthReport.GetRange(weekStart, weekEnd - weekStart + 1);
+                bc.LastMonthReport = bc.LastMonthReport.GetRange(weekStart, weekEnd - weekStart + 1);
+                bc.Week = bc.Week.GetRange(weekStart, weekEnd - weekStart + 1);
+            }
+
             //1.5s 2nd time 0.4s
             report.BarChart = bc;
             //Get famous recipe for staticstic  0.1s       
@@ -220,15 +231,6 @@ namespace Repository
                 }
 
             }
-            //find weekEnd in CurrentMonthReports
-            for (int i = bc.CurrentMonthReports.Count() - 1; i >= 0; --i)
-            {
-                if (bc.CurrentMonthReports[i] != 0)
-                {
-                    weekEnd = i;
-                    break;
-                }
-            }
             //find startWeek in LastMonthReports
             for (int i = 0; i < bc.LastMonthReports.Count(); i++)
             {
@@ -239,18 +241,37 @@ namespace Repository
                     break;
                 }
             }
-            //find weekEnd in LastMonthReports
-            for (int i = bc.LastMonthReports.Count() - 1; i >= 0; --i)
+            if (weekStart < 0)
             {
-                if (bc.LastMonthReports[i] != 0)
-                {
-                    if (weekEnd < i) weekEnd = i;
-                    break;
-                }
+
+                bc.CurrentMonthReports = new List<int> { };
+                bc.LastMonthReports = new List<int> { };
+                bc.Week = new List<string> { };
             }
-            bc.CurrentMonthReports = bc.CurrentMonthReports.GetRange(weekStart, weekEnd - weekStart + 1);
-            bc.LastMonthReports = bc.LastMonthReports.GetRange(weekStart, weekEnd - weekStart + 1);
-            bc.Week = bc.Week.GetRange(weekStart, weekEnd - weekStart + 1);
+            else
+            {   //find weekEnd in CurrentMonthReports
+                for (int i = bc.CurrentMonthReports.Count() - 1; i >= 0; --i)
+                {
+                    if (bc.CurrentMonthReports[i] != 0)
+                    {
+                        weekEnd = i;
+                        break;
+                    }
+                }
+
+                //find weekEnd in LastMonthReports
+                for (int i = bc.LastMonthReports.Count() - 1; i >= 0; --i)
+                {
+                    if (bc.LastMonthReports[i] != 0)
+                    {
+                        if (weekEnd < i) weekEnd = i;
+                        break;
+                    }
+                }
+                bc.CurrentMonthReports = bc.CurrentMonthReports.GetRange(weekStart, weekEnd - weekStart + 1);
+                bc.LastMonthReports = bc.LastMonthReports.GetRange(weekStart, weekEnd - weekStart + 1);
+                bc.Week = bc.Week.GetRange(weekStart, weekEnd - weekStart + 1);
+            }
             report.BarChart = bc;
             //Line chart
             int month = 1;
@@ -278,15 +299,6 @@ namespace Repository
                 }
 
             }
-            //find endMonth in CurrentYearProcessedReports
-            for (int i = lc.CurrentYearProcessedReports.Count() - 1; i >= 0; --i)
-            {
-                if (lc.CurrentYearProcessedReports[i] != 0)
-                {
-                    endMonth = i;
-                    break;
-                }
-            }
             //find startMonth in CurrentYearUnprocessedReports
             for (int i = 0; i < lc.CurrentYearUnprocessedReports.Count(); i++)
             {
@@ -297,18 +309,36 @@ namespace Repository
                     break;
                 }
             }
-            //find endMonth in CurrentYearUnprocessedReports
-            for (int i = lc.CurrentYearUnprocessedReports.Count() - 1; i >= 0; --i)
+            if (startMonth < 0)
             {
-                if (lc.CurrentYearUnprocessedReports[i] != 0)
-                {
-                    if (endMonth < i) endMonth = i;
-                    break;
-                }
+                lc.CurrentYearProcessedReports = new List<int> { };
+                lc.CurrentYearUnprocessedReports = new List<int> { };
+                lc.Month = new List<string> { };
             }
-            lc.CurrentYearProcessedReports = lc.CurrentYearProcessedReports.GetRange(startMonth, endMonth - startMonth + 1);
-            lc.CurrentYearUnprocessedReports = lc.CurrentYearUnprocessedReports.GetRange(startMonth, endMonth - startMonth + 1);
-            lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
+            else
+            {
+                //find endMonth in CurrentYearProcessedReports
+                for (int i = lc.CurrentYearProcessedReports.Count() - 1; i >= 0; --i)
+                {
+                    if (lc.CurrentYearProcessedReports[i] != 0)
+                    {
+                        endMonth = i;
+                        break;
+                    }
+                }
+                //find endMonth in CurrentYearUnprocessedReports
+                for (int i = lc.CurrentYearUnprocessedReports.Count() - 1; i >= 0; --i)
+                {
+                    if (lc.CurrentYearUnprocessedReports[i] != 0)
+                    {
+                        if (endMonth < i) endMonth = i;
+                        break;
+                    }
+                }
+                lc.CurrentYearProcessedReports = lc.CurrentYearProcessedReports.GetRange(startMonth, endMonth - startMonth + 1);
+                lc.CurrentYearUnprocessedReports = lc.CurrentYearUnprocessedReports.GetRange(startMonth, endMonth - startMonth + 1);
+                lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
+            }
             report.LineChart = lc;
             return report;
         }
@@ -468,15 +498,6 @@ namespace Repository
                 }
 
             }
-            //find weekEnd in CurrentMonthReports
-            for (int i = bc.CurrentMonthSales.Count() - 1; i >= 0; --i)
-            {
-                if (bc.CurrentMonthSales[i] != 0)
-                {
-                    weekEnd = i;
-                    break;
-                }
-            }
             //find startWeek in LastMonthReports
             for (int i = 0; i < bc.LastMonthSales.Count(); i++)
             {
@@ -487,18 +508,38 @@ namespace Repository
                     break;
                 }
             }
-            //find weekEnd in LastMonthReports
-            for (int i = bc.LastMonthSales.Count() - 1; i >= 0; --i)
+            if (weekStart < 0)
             {
-                if (bc.LastMonthSales[i] != 0)
-                {
-                    if (weekEnd < i) weekEnd = i;
-                    break;
-                }
+                bc.CurrentMonthSales = new List<decimal> { };
+                bc.LastMonthSales = new List<decimal> { };
+                bc.Week = new List<string> { };
             }
-            bc.CurrentMonthSales = bc.CurrentMonthSales.GetRange(weekStart, weekEnd - weekStart + 1);
-            bc.LastMonthSales = bc.LastMonthSales.GetRange(weekStart, weekEnd - weekStart + 1);
-            bc.Week = bc.Week.GetRange(weekStart, weekEnd - weekStart + 1);
+            else
+            {
+                //find weekEnd in CurrentMonthReports
+                for (int i = bc.CurrentMonthSales.Count() - 1; i >= 0; --i)
+                {
+                    if (bc.CurrentMonthSales[i] != 0)
+                    {
+                        weekEnd = i;
+                        break;
+                    }
+                }
+
+                //find weekEnd in LastMonthReports
+                for (int i = bc.LastMonthSales.Count() - 1; i >= 0; --i)
+                {
+                    if (bc.LastMonthSales[i] != 0)
+                    {
+                        if (weekEnd < i) weekEnd = i;
+                        break;
+                    }
+                }
+
+                bc.CurrentMonthSales = bc.CurrentMonthSales.GetRange(weekStart, weekEnd - weekStart + 1);
+                bc.LastMonthSales = bc.LastMonthSales.GetRange(weekStart, weekEnd - weekStart + 1);
+                bc.Week = bc.Week.GetRange(weekStart, weekEnd - weekStart + 1);
+            }
             report.BarChart = bc;
             return report;
         }

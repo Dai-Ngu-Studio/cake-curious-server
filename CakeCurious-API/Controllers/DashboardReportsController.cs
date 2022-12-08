@@ -62,7 +62,7 @@ namespace CakeCurious_API.Controllers
 
             int startMonth = -1;
             int endMonth = -1;
-            //find startMonth in CurrentYearUnprocessedReports
+            //find startMonth in LastYearActiveUser
             for (int i = 0; i < lc.LastYearActiveUser.Count(); i++)
             {
                 if (lc.LastYearActiveUser[i] != 0)
@@ -71,16 +71,7 @@ namespace CakeCurious_API.Controllers
                     break;
                 }
             }
-            //find endMonth in CurrentYearUnprocessedReports
-            for (int i = lc.LastYearActiveUser.Count() - 1; i >= 0; --i)
-            {
-                if (lc.CurrentYearActiveUser[i] != 0)
-                {
-                    endMonth = i;
-                    break;
-                }
-            }
-            //find startMonth in CurrentYearProcessedReports
+            //find startMonth in CurrentYearActiveUser
             for (int i = 0; i < lc.CurrentYearActiveUser.Count(); i++)
             {
                 if (lc.CurrentYearActiveUser[i] != 0)
@@ -92,18 +83,37 @@ namespace CakeCurious_API.Controllers
 
 
             }
-            //find endMonth in CurrentYearProcessedReports
-            for (int i = lc.CurrentYearActiveUser.Count() - 1; i >= 0; --i)
+            if (startMonth < 0)
             {
-                if (lc.LastYearActiveUser[i] != 0)
-                {
-                    if (endMonth < i) endMonth = i;
-                    break;
-                }
+                lc.CurrentYearActiveUser = new List<int> { };
+                lc.LastYearActiveUser = new List<int> { };
+                lc.Month = new List<string> { };
             }
-            lc.CurrentYearActiveUser = lc.CurrentYearActiveUser.GetRange(startMonth, endMonth - startMonth + 1);
-            lc.LastYearActiveUser = lc.LastYearActiveUser.GetRange(startMonth, endMonth - startMonth + 1);
-            lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
+            else
+            {
+                //find endMonth in LastYearActiveUser
+                for (int i = lc.LastYearActiveUser.Count() - 1; i >= 0; --i)
+                {
+                    if (lc.CurrentYearActiveUser[i] != 0)
+                    {
+                        endMonth = i;
+                        break;
+                    }
+                }
+
+                //find endMonth in CurrentYearActiveUser
+                for (int i = lc.CurrentYearActiveUser.Count() - 1; i >= 0; --i)
+                {
+                    if (lc.LastYearActiveUser[i] != 0)
+                    {
+                        if (endMonth < i) endMonth = i;
+                        break;
+                    }
+                }
+                lc.CurrentYearActiveUser = lc.CurrentYearActiveUser.GetRange(startMonth, endMonth - startMonth + 1);
+                lc.LastYearActiveUser = lc.LastYearActiveUser.GetRange(startMonth, endMonth - startMonth + 1);
+                lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
+            }
             dbr.LineChart = lc;
 
             try
@@ -255,15 +265,6 @@ namespace CakeCurious_API.Controllers
                 }
 
             }
-            //find endMonth in LastYearStoreVisit
-            for (int i = lc.LastYearStoreVisit.Count() - 1; i >= 0; --i)
-            {
-                if (lc.CurrentYearStoreVisit[i] != 0)
-                {
-                    endMonth = i;
-                    break;
-                }
-            }
             //find startMonth in CurrentYearStoreVisit
             for (int i = 0; i < lc.CurrentYearStoreVisit.Count(); i++)
             {
@@ -275,19 +276,37 @@ namespace CakeCurious_API.Controllers
                 }
 
             }
-            //find endMonth in CurrentYearStoreVisit
-            for (int i = lc.CurrentYearStoreVisit.Count() - 1; i >= 0; --i)
+            if (startMonth < 0)
             {
-                if (lc.LastYearStoreVisit[i] != 0)
+                //find endMonth in LastYearStoreVisit
+                for (int i = lc.LastYearStoreVisit.Count() - 1; i >= 0; --i)
                 {
-                    if (endMonth < i) endMonth = i;
-                    break;
+                    if (lc.CurrentYearStoreVisit[i] != 0)
+                    {
+                        endMonth = i;
+                        break;
+                    }
                 }
+
+                //find endMonth in CurrentYearStoreVisit
+                for (int i = lc.CurrentYearStoreVisit.Count() - 1; i >= 0; --i)
+                {
+                    if (lc.LastYearStoreVisit[i] != 0)
+                    {
+                        if (endMonth < i) endMonth = i;
+                        break;
+                    }
+                }
+                lc.CurrentYearStoreVisit = lc.CurrentYearStoreVisit.GetRange(startMonth, endMonth - startMonth + 1);
+                lc.LastYearStoreVisit = lc.LastYearStoreVisit.GetRange(startMonth, endMonth - startMonth + 1);
+                lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
             }
-            Console.WriteLine(startMonth + " " + endMonth);
-            lc.CurrentYearStoreVisit = lc.CurrentYearStoreVisit.GetRange(startMonth, endMonth - startMonth + 1);
-            lc.LastYearStoreVisit = lc.LastYearStoreVisit.GetRange(startMonth, endMonth - startMonth + 1);
-            lc.Month = lc.Month.GetRange(startMonth, endMonth - startMonth + 1);
+            else
+            {
+                lc.CurrentYearStoreVisit = new List<int> { };
+                lc.LastYearStoreVisit = new List<int> { };
+                lc.Month = new List<string> { };
+            }
             dbr.LineChart = lc;
             return Ok(dbr);
         }
