@@ -110,6 +110,7 @@ namespace CakeCurious_API.Controllers
                 Status = product.Status,
                 ProductType = product.ProductType,
                 LastUpdated = DateTime.Now,
+                Rating = 0.0M,
             };
 
             try
