@@ -305,6 +305,8 @@ namespace CakeCurious_API.Controllers
 
                         var elastisearchMaterials = updateRecipe.Ingredients
                                 .Select(x => x.MaterialName!.Trim()).ToList();
+                        var elasticsearchEquipment = updateRecipe.Equipment
+                                .Select(x => x.MaterialName!.Trim()).ToList();
                         var elastisearchCategories = updateRecipe.HasCategories!
                             .Where(x => x.RecipeCategoryId.HasValue)
                             .Select(x => x.RecipeCategoryId!.Value);
@@ -315,12 +317,14 @@ namespace CakeCurious_API.Controllers
                         // Translation
                         esNames = await TranslationHelper.TranslateSingle(translationClient, updateRecipe.Name!, esNames);
                         elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
+                        elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
 
                         var elastisearchRecipe = new ElasticsearchRecipe
                         {
                             Id = recipe.Id,
                             Name = esNames.ToArray(),
                             Materials = elastisearchMaterials.ToArray(),
+                            Equipment = elasticsearchEquipment.ToArray(),
                             Categories = elastisearchCategories.ToArray(),
                         };
 
@@ -369,6 +373,8 @@ namespace CakeCurious_API.Controllers
 
                 var elastisearchMaterials = createRecipe.Ingredients
                     .Select(x => x.MaterialName!.Trim()).ToList();
+                var elasticsearchEquipment = createRecipe.Equipment
+                    .Select(x => x.MaterialName!.Trim()).ToList();
                 var elastisearchCategories = createRecipe.HasCategories!
                     .Where(x => x.RecipeCategoryId.HasValue)
                     .Select(x => x.RecipeCategoryId!.Value);
@@ -379,12 +385,14 @@ namespace CakeCurious_API.Controllers
                 // Translate
                 esNames = await TranslationHelper.TranslateSingle(translationClient, recipe.Name!, esNames);
                 elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
+                elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
 
                 var elastisearchRecipe = new ElasticsearchRecipe
                 {
                     Id = recipe.Id,
                     Name = esNames.ToArray(),
                     Materials = elastisearchMaterials.ToArray(),
+                    Equipment = elasticsearchEquipment.ToArray(),
                     Categories = elastisearchCategories.ToArray(),
                 };
 
