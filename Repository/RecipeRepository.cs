@@ -354,12 +354,13 @@ namespace Repository
                 foreach (var report in reportsRecipeType)
                 {
                     SimpleRecipeForReportList? recipe = (await db.Recipes.ProjectToType<SimpleRecipeForReportList>().FirstOrDefaultAsync(r => r.Id == report!.ItemId))!;
-                    if (recipe == null) throw new Exception("Get fail.ItemType is recipe but can not find any recipe.");
+                    if (recipe == null) throw new Exception("Get fail. ItemType is recipe but can not find any recipe.");
                     recipe.TotalPendingReports = await db.ViolationReports.Where(report => report.Status == (int)ReportStatusEnum.Pending && report.ItemId == recipe.Id).CountAsync();
                     isReportedRecipes!.Add(recipe);
                 }
             try
             {
+                isReportedRecipes = isReportedRecipes.OrderByDescending(recipe => recipe.TotalPendingReports).ToList();
                 //search
                 if (s != null)
                 {
@@ -384,7 +385,7 @@ namespace Repository
                     isReportedRecipes = OrderByDescTotalPendingReport(isReportedRecipes);
                 }
                 return isReportedRecipes!.Skip((page - 1) * size)
-                                .Take(size).OrderByDescending(recipe => recipe.TotalPendingReports).ToList();
+                                .Take(size);
             }
             catch (Exception ex)
             {

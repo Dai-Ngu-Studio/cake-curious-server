@@ -140,6 +140,7 @@ namespace Repository
                     comment.TotalPendingReports = await db.ViolationReports.Where(report => report.Status == (int)ReportStatusEnum.Pending && report.ItemId == comment.Id).CountAsync();
                     isReportedComments!.Add(comment);
                 }
+            isReportedComments = isReportedComments.OrderByDescending(c => c.TotalPendingReports).ToList();
             //filter
             if (filter != null && filter == CommentStatusEnum.Active.ToString())
             {
@@ -159,7 +160,7 @@ namespace Repository
                 isReportedComments = OrderByDescTotalPendingReport(isReportedComments);
             }
             return isReportedComments!.Skip((page - 1) * size)
-                                .Take(size).OrderByDescending(c => c.TotalPendingReports).ToList();
+                                .Take(size);
         }
 
         public async Task<int?> CountReportedCommmentsTotalPage(string? filter)
