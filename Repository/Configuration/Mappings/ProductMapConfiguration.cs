@@ -11,6 +11,10 @@ namespace Repository.Configuration.Mappings
             TypeAdapterConfig<Product, BundleDetailProduct>
                 .NewConfig()
                 .Map(dest => dest.Ingredient, src => ((Dictionary<Guid, string>)MapContext.Current!.Parameters["productIngredients"])[(Guid)src.Id!]);
+
+            TypeAdapterConfig<Product, DetailProduct>
+                .NewConfig()
+                .Map(dest => dest.RatingCount, src => src.OrderDetails!.Where(x => x.Rating != null).Count());
         }
     }
 }

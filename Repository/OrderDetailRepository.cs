@@ -21,8 +21,10 @@ namespace Repository
                     "from [Product] as [p] with (updlock) where [p].[id] = {0}", orderDetail.ProductId!);
                 db.OrderDetails.Update(orderDetail);
                 await db.SaveChangesAsync();
-                var count = await db.OrderDetails.Where(x => x.ProductId == orderDetail.ProductId).Where(x => x.Rating != null).CountAsync();
-                var sum = await db.OrderDetails.Where(x => x.ProductId == orderDetail.ProductId).Where(x => x.Rating != null).SumAsync(x => x.Rating);
+                var count = await db.OrderDetails
+                    .Where(x => x.ProductId == orderDetail.ProductId).Where(x => x.Rating != null).CountAsync();
+                var sum = await db.OrderDetails
+                    .Where(x => x.ProductId == orderDetail.ProductId).Where(x => x.Rating != null).SumAsync(x => x.Rating);
                 var rating = sum / count * 1.0M;
                 await db.Database.ExecuteSqlRawAsync("update [p] " +
                     "set [p].[rating] = {0} " +
