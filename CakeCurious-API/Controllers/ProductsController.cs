@@ -138,6 +138,10 @@ namespace CakeCurious_API.Controllers
                 if (productRepository.GetById(prod.Id.Value) != null)
                     return Conflict("This product already exist.");
             }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
             return Ok(prod);
         }
 
@@ -491,7 +495,7 @@ namespace CakeCurious_API.Controllers
             var bundleOrders = new BundleOrders
             {
                 Orders = bundles.OrderByDescending(x => x.Products!.Count()),
-            };       
+            };
             return Ok(bundleOrders);
         }
     }

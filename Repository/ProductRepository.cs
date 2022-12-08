@@ -15,6 +15,8 @@ namespace Repository
         public async Task Add(Product obj)
         {
             var db = new CakeCuriousDbContext();
+            if (obj.Price <= 0) throw new Exception("Product price or quantity must greater than 0");
+            if (obj.Quantity < 0) throw new Exception("Product quantity must greater than or equal 0");
             db.Products.Add(obj);
             await db.SaveChangesAsync();
         }
