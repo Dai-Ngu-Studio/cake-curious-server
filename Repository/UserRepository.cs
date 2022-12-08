@@ -238,8 +238,11 @@ namespace Repository
         {
             var db = new CakeCuriousDbContext();
             //Remove all role of current update user
-            IEnumerable<UserHasRole> uhr = db.UserHasRoles.Where(uhr => uhr.UserId == obj.Id);
-            if (uhr.Count() > 0) db.UserHasRoles.RemoveRange(uhr);
+            if (obj.HasRoles != null && obj.HasRoles.Count() > 0)
+            {
+                IEnumerable<UserHasRole> uhr = db.UserHasRoles.Where(uhr => uhr.UserId == obj.Id);
+                if (uhr.Count() > 0) db.UserHasRoles.RemoveRange(uhr);
+            }
             db.Users.Update(obj);
             await db.SaveChangesAsync();
         }

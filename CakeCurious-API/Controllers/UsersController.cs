@@ -94,8 +94,7 @@ namespace CakeCurious_API.Controllers
                     Id = newUser.Id ?? user.Id,
                     CitizenshipNumber = newUser.CitizenshipNumber ?? user.CitizenshipNumber,
                 };
-                try
-                {
+                if (newUser.Roles != null)
                     foreach (int role in newUser!.Roles!)
                     {
                         updateUser.HasRoles!.Add(new UserHasRole
@@ -104,13 +103,6 @@ namespace CakeCurious_API.Controllers
                             RoleId = role,
                         });
                     }
-                    // Add role to user
-                }
-                catch (Exception)
-                {
-                    return BadRequest();
-                }
-
                 var dynamicLinkResponse = await CreateUserDynamicLink(updateUser);
                 updateUser.ShareUrl = dynamicLinkResponse.ShortLink;
 
