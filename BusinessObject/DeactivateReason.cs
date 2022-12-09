@@ -19,6 +19,9 @@ namespace BusinessObject
 
         [Column("staff_id", TypeName = "varchar(128)")]
         public string? StaffId { get; set; }
+		
+        [ForeignKey("StaffId")]
+        public User? Staff { get; set; }
 
         [Column("reason", TypeName = "nvarchar(512)")]
         public string? Reason { get; set; }

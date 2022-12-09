@@ -19,6 +19,7 @@ namespace BusinessObject
             Bookmarks = new HashSet<Bookmark>();
             Followers = new HashSet<UserFollow>();
             Followings = new HashSet<UserFollow>();
+            DeactivateReasons = new HashSet<DeactivateReason>();
         }
 
         [Key]
@@ -106,6 +107,9 @@ namespace BusinessObject
 
         [InverseProperty("Follower")]
         public ICollection<UserFollow>? Followings { get; set; }
+		
+        [InverseProperty("Staff")]
+        public ICollection<DeactivateReason>? DeactivateReasons { get; set; }
 
     }
 }
