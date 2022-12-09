@@ -30,6 +30,8 @@ namespace BusinessObject
         public DbSet<Coupon> Coupons { get; set; } = null!;
         public DbSet<DeactivateReason> DeactivateReasons { get; set; } = null!;
         public DbSet<Like> Likes { get; set; } = null!;
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<NotificationContent> NotificationContents { get; set; }
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
         public DbSet<Product> Products { get; set; } = null!;
