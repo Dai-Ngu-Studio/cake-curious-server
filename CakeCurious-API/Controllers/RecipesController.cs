@@ -303,51 +303,58 @@ namespace CakeCurious_API.Controllers
                         var adaptedUpdateRecipe = updateRecipe.Adapt<Recipe>();
                         await recipeRepository.UpdateRecipe(recipe, adaptedUpdateRecipe);
 
-                        var elastisearchMaterials = updateRecipe.Ingredients
-                                .Select(x => x.MaterialName!.Trim()).ToList();
-                        var elasticsearchEquipment = updateRecipe.Equipment
-                                .Select(x => x.MaterialName!.Trim()).ToList();
-                        var elastisearchCategories = updateRecipe.HasCategories!
-                            .Where(x => x.RecipeCategoryId.HasValue)
-                            .Select(x => x.RecipeCategoryId!.Value);
-
-                        var esNames = new List<string>();
-                        esNames.Add(updateRecipe.Name!.Trim());
-
-                        // Translation
-                        esNames = await TranslationHelper.TranslateSingle(translationClient, updateRecipe.Name!, esNames);
-                        elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
-                        if (elasticsearchEquipment.Count > 0)
+                        try
                         {
-                            elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
+                            var elastisearchMaterials = updateRecipe.Ingredients
+                                    .Select(x => x.MaterialName!.Trim()).ToList();
+                            var elasticsearchEquipment = updateRecipe.Equipment
+                                    .Select(x => x.MaterialName!.Trim()).ToList();
+                            var elastisearchCategories = updateRecipe.HasCategories!
+                                .Where(x => x.RecipeCategoryId.HasValue)
+                                .Select(x => x.RecipeCategoryId!.Value);
+
+                            var esNames = new List<string>();
+                            esNames.Add(updateRecipe.Name!.Trim());
+
+                            // Translation
+                            esNames = await TranslationHelper.TranslateSingle(translationClient, updateRecipe.Name!, esNames);
+                            elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
+                            if (elasticsearchEquipment.Count > 0)
+                            {
+                                elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
+                            }
+
+                            var elastisearchRecipe = new ElasticsearchRecipe
+                            {
+                                Id = recipe.Id,
+                                Name = esNames.ToArray(),
+                                Materials = elastisearchMaterials.ToArray(),
+                                Equipment = elasticsearchEquipment.ToArray(),
+                                Categories = elastisearchCategories.ToArray(),
+                            };
+
+                            // Does doc exist on Elasticsearch?
+                            var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "recipes", recipe.Id));
+                            if (!existsResponse.Exists)
+                            {
+                                // Doc doesn't exist, create new
+                                var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
+                            }
+                            else
+                            {
+                                // Doc exists, update
+                                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchRecipe>(recipe.Id, x => x
+                                        .Doc(elastisearchRecipe)
+                                    );
+                            }
+
+                            var dynamicLinkResponse = await CreateDynamicLink(recipe);
+                            await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
                         }
-
-                        var elastisearchRecipe = new ElasticsearchRecipe
+                        catch (Exception)
                         {
-                            Id = recipe.Id,
-                            Name = esNames.ToArray(),
-                            Materials = elastisearchMaterials.ToArray(),
-                            Equipment = elasticsearchEquipment.ToArray(),
-                            Categories = elastisearchCategories.ToArray(),
-                        };
-
-                        // Does doc exist on Elasticsearch?
-                        var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "recipes", recipe.Id));
-                        if (!existsResponse.Exists)
-                        {
-                            // Doc doesn't exist, create new
-                            var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
+                            // just catching so request does not fail because of failed translation or elasticsearch indexing
                         }
-                        else
-                        {
-                            // Doc exists, update
-                            var updateResponse = await elasticClient.UpdateAsync<ElasticsearchRecipe>(recipe.Id, x => x
-                                    .Doc(elastisearchRecipe)
-                                );
-                        }
-
-                        var dynamicLinkResponse = await CreateDynamicLink(recipe);
-                        await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
 
                         return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
                     }
@@ -374,39 +381,46 @@ namespace CakeCurious_API.Controllers
 
                 await recipeRepository.AddRecipe(recipe);
 
-                var elastisearchMaterials = createRecipe.Ingredients
-                    .Select(x => x.MaterialName!.Trim()).ToList();
-                var elasticsearchEquipment = createRecipe.Equipment
-                    .Select(x => x.MaterialName!.Trim()).ToList();
-                var elastisearchCategories = createRecipe.HasCategories!
-                    .Where(x => x.RecipeCategoryId.HasValue)
-                    .Select(x => x.RecipeCategoryId!.Value);
-
-                var esNames = new List<string>();
-                esNames.Add(recipe.Name!.Trim());
-
-                // Translate
-                esNames = await TranslationHelper.TranslateSingle(translationClient, recipe.Name!, esNames);
-                elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
-                if (elasticsearchEquipment.Count > 0)
+                try
                 {
-                    elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
+                    var elastisearchMaterials = createRecipe.Ingredients
+                        .Select(x => x.MaterialName!.Trim()).ToList();
+                    var elasticsearchEquipment = createRecipe.Equipment
+                        .Select(x => x.MaterialName!.Trim()).ToList();
+                    var elastisearchCategories = createRecipe.HasCategories!
+                        .Where(x => x.RecipeCategoryId.HasValue)
+                        .Select(x => x.RecipeCategoryId!.Value);
+
+                    var esNames = new List<string>();
+                    esNames.Add(recipe.Name!.Trim());
+
+                    // Translate
+                    esNames = await TranslationHelper.TranslateSingle(translationClient, recipe.Name!, esNames);
+                    elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
+                    if (elasticsearchEquipment.Count > 0)
+                    {
+                        elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
+                    }
+
+                    var elastisearchRecipe = new ElasticsearchRecipe
+                    {
+                        Id = recipe.Id,
+                        Name = esNames.ToArray(),
+                        Materials = elastisearchMaterials.ToArray(),
+                        Equipment = elasticsearchEquipment.ToArray(),
+                        Categories = elastisearchCategories.ToArray(),
+                    };
+
+                    var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
+
+                    var dynamicLinkResponse = await CreateDynamicLink(recipe);
+                    await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
+
                 }
-
-                var elastisearchRecipe = new ElasticsearchRecipe
+                catch (Exception)
                 {
-                    Id = recipe.Id,
-                    Name = esNames.ToArray(),
-                    Materials = elastisearchMaterials.ToArray(),
-                    Equipment = elasticsearchEquipment.ToArray(),
-                    Categories = elastisearchCategories.ToArray(),
-                };
-
-                var asyncIndexResponse = await elasticClient.IndexDocumentAsync(elastisearchRecipe);
-
-                var dynamicLinkResponse = await CreateDynamicLink(recipe);
-                await recipeRepository.UpdateShareUrl((Guid)recipe.Id!, dynamicLinkResponse.ShortLink);
-
+                    // just catching so request does not fail because of failed translation or elasticsearch indexing
+                }
                 return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
             }
             return Unauthorized();
