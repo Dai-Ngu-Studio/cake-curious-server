@@ -16,14 +16,14 @@ namespace Repository
             coupons = coupons.Where(p => p!.Name!.ToLower().Contains(keyWord!.ToLower()));
             return coupons;
         }
-        public IEnumerable<Coupon> OrderByAscName(IEnumerable<Coupon> coupons)
+        public IEnumerable<Coupon> OrderByAscExpireDate(IEnumerable<Coupon> coupons)
         {
 
-            return coupons.OrderBy(p => p.Name);
+            return coupons.OrderBy(p => p.ExpiryDate);
         }
-        public IEnumerable<Coupon> OrderByDescName(IEnumerable<Coupon> coupons)
+        public IEnumerable<Coupon> OrderByDescExpireDate(IEnumerable<Coupon> coupons)
         {
-            return coupons.OrderByDescending(p => p.Name);
+            return coupons.OrderByDescending(p => p.ExpiryDate);
         }
         public IEnumerable<Coupon> FilterByActiveStatus(IEnumerable<Coupon> coupons)
         {
@@ -53,13 +53,13 @@ namespace Repository
                     coupons = FilterByInActiveStatus(coupons);
                 }
                 //Orderby
-                if (order_by != null && order_by == CouponOrderByEnum.AscName.ToString())
+                if (order_by != null && order_by == CouponOrderByEnum.AscExpireDate.ToString())
                 {
-                    coupons = OrderByAscName(coupons);
+                    coupons = OrderByAscExpireDate(coupons);
                 }
-                else if (order_by != null && order_by == CouponOrderByEnum.DescName.ToString())
+                else if (order_by != null && order_by == CouponOrderByEnum.DescExpireDate.ToString())
                 {
-                    coupons = OrderByDescName(coupons);
+                    coupons = OrderByDescExpireDate(coupons);
                 }
                 return coupons.Adapt<IEnumerable<StoreDashboardCoupon>>().Skip((pageIndex - 1) * pageSize)
                             .Take(pageSize).ToList();

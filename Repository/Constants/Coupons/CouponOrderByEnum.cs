@@ -8,7 +8,7 @@ namespace Repository.Constants.Coupons
 {
     public enum CouponOrderByEnum
     {
-        AscName,
-        DescName,
+        AscExpireDate,
+        DescExpireDate,
     }
 }
