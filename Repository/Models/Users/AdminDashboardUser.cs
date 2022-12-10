@@ -10,6 +10,7 @@
         public string? Gender { get; set; }
         public string? FullName { get; set; }
         public int? Status { get; set; }
+        public DateTime? CreatedDate { get; set; }
         public List<int>? Roles { get; set; } = new List<int>();
     }
 }
