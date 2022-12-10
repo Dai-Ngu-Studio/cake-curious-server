@@ -453,7 +453,7 @@ namespace CakeCurious_API.Controllers
                             )
                         )
                         .Source(so => so)
-                        .Size(10)
+                        .Size(13)
                         .MinScore(0.01D)
                         .Sort(ss => ss
                             .Descending(SortSpecialField.Score)
@@ -493,7 +493,9 @@ namespace CakeCurious_API.Controllers
 
             var storeIds = elasticsearchBundles.Select(x => x.Key).ToList();
             var productIds = elasticsearchBundles.SelectMany(x => x.Value.Select(x => (Guid)x.Id!)).ToList();
-            var bundles = await productRepository.GetBundles(storeIds, productIds, productIngredients);
+            var bundles = (await productRepository.GetBundles(storeIds, productIds, productIngredients)).ToList();
+
+            bundles.RemoveAll(x => x.Products?.Count() == 0);
 
             var bundleOrders = new BundleOrders
             {
