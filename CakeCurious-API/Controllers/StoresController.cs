@@ -148,7 +148,7 @@ namespace CakeCurious_API.Controllers
                     PhotoUrl = Store.PhotoUrl == null ? beforeUpdateObj.PhotoUrl : Store.PhotoUrl,
                     Name = Store.Name == null ? beforeUpdateObj.Name : Store.Name,
                     UserId = Store.UserId == null ? beforeUpdateObj.UserId : Store.UserId,
-                    Rating = Store.Rating == null ? beforeUpdateObj.Rating : Store.Rating,
+                    Rating = beforeUpdateObj.Rating,
                     Status = Store.Status == null ? beforeUpdateObj.Status : Store.Status,
                 };
 

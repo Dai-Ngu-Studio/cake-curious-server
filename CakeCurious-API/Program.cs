@@ -53,6 +53,7 @@ builder.Services.AddCors();
 ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
 
 builder.Services.AddHostedService<CouponExpireCheckService>();
+builder.Services.AddHostedService<StoreRatingTallyService>();
 
 builder.Services.AddDbContext<CakeCuriousDbContext>();
 
