@@ -10,6 +10,7 @@ namespace Repository.Models.OrderDetails
     public class StoreDashboardOrderDetailPage
     {
         public IEnumerable<SimpleOrderDetail>? orderDetails { get; set; }
+        public decimal? TotalPrice { get; set; }
         public int TotalPage { get; set; }
     }
 }

@@ -6,5 +6,7 @@ namespace Repository.Interfaces
     {
         public Task<OrderDetail?> GetOrderDetail(Guid id);
         public Task RateOrderDetail(OrderDetail orderDetail);
+
+        public Task<IEnumerable<OrderDetail>> GetOrderDetails(Guid id);
     }
 }

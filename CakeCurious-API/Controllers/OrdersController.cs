@@ -24,13 +24,15 @@ namespace CakeCurious_API.Controllers
         private readonly IStoreRepository storeRepository;
         private readonly IProductRepository productRepository;
         private readonly ICouponRepository couponRepository;
+        private readonly IOrderDetailRepository orderDetailRepository;
 
-        public OrdersController(IOrderRepository _orderRepository, IStoreRepository _storeRepository, IProductRepository _productRepository, ICouponRepository _couponRepository)
+        public OrdersController(IOrderRepository _orderRepository, IStoreRepository _storeRepository, IProductRepository _productRepository, ICouponRepository _couponRepository, IOrderDetailRepository _orderDetailRepository)
         {
             orderRepository = _orderRepository;
             storeRepository = _storeRepository;
             productRepository = _productRepository;
             couponRepository = _couponRepository;
+            orderDetailRepository = _orderDetailRepository;
         }
 
         [HttpGet]
@@ -65,10 +67,25 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("store-order-detail/{guid}")]
         [Authorize]
-        public async Task<ActionResult<StoreDashboardOrderDetailPage>> GetStoreOrderDetail(string? sort, string? filter, Guid guid, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
+        public async Task<ActionResult<StoreDashboardOrderDetailPage>> GetStoreOrderDetail(string? sort, Guid guid, [Range(1, int.MaxValue)] int page = 1, [Range(1, int.MaxValue)] int size = 10)
         {
+            Order? order = await orderRepository.GetById(guid);
+            if (order == null) return BadRequest("This order not exsit");
             StoreDashboardOrderDetailPage orderDetailPage = new StoreDashboardOrderDetailPage();
             orderDetailPage.orderDetails = await orderRepository.GetOrderDetailForStore(guid, sort, page, size);
+            orderDetailPage.TotalPrice = 0;
+            IEnumerable<OrderDetail> orderDetails = await orderDetailRepository.GetOrderDetails(guid);
+            if (orderDetails.Count() > 0)
+            {
+                foreach (var orderdetail in orderDetails)
+                {
+                    orderDetailPage.TotalPrice = orderDetailPage.TotalPrice + orderdetail!.Price!.Value * orderdetail!.Quantity!.Value;
+                }
+            }
+            if (order.Coupon != null && order.Coupon.DiscountType != null)
+            {
+                orderDetailPage.TotalPrice -= order!.Coupon!.DiscountType == (int)CouponDiscountTypeEnum.FixedDecrease ? order!.Coupon!.Discount : (orderDetailPage.TotalPrice * order!.Coupon!.Discount);
+            }
             orderDetailPage.TotalPage = (int)Math.Ceiling((decimal)await orderRepository.OrderDetailCount(guid, sort) / size);
             return Ok(orderDetailPage);
         }

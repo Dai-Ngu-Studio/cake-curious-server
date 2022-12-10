@@ -12,6 +12,12 @@ namespace Repository
             return await db.OrderDetails.FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<IEnumerable<OrderDetail>> GetOrderDetails(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.OrderDetails.Where(ord => ord.OrderId == id).ToListAsync();
+        }
+
         public async Task RateOrderDetail(OrderDetail orderDetail)
         {
             var db = new CakeCuriousDbContext();

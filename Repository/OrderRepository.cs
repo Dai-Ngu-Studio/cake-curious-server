@@ -189,7 +189,7 @@ namespace Repository
                 else if (filter_Order != null && filter_Order == OrderStatusEnum.Completed.ToString())
                 {
                     orders = FilterByStatusComplete(orders);
-                }               
+                }
             }
             catch (Exception ex)
             {
@@ -207,7 +207,7 @@ namespace Repository
         public async Task<Order?> GetById(Guid guid)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Orders.FirstOrDefaultAsync(x => x.Id == guid);
+            return await db.Orders.Include(o => o.Coupon).FirstOrDefaultAsync(x => x.Id == guid);
         }
 
         public async Task AddOrder(Order order, string query)
