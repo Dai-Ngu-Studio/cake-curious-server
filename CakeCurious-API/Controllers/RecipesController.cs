@@ -317,7 +317,10 @@ namespace CakeCurious_API.Controllers
                         // Translation
                         esNames = await TranslationHelper.TranslateSingle(translationClient, updateRecipe.Name!, esNames);
                         elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
-                        elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
+                        if (elasticsearchEquipment.Count > 0)
+                        {
+                            elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
+                        }
 
                         var elastisearchRecipe = new ElasticsearchRecipe
                         {
@@ -385,7 +388,10 @@ namespace CakeCurious_API.Controllers
                 // Translate
                 esNames = await TranslationHelper.TranslateSingle(translationClient, recipe.Name!, esNames);
                 elastisearchMaterials = await TranslationHelper.TranslateList(translationClient, elastisearchMaterials, elastisearchMaterials);
-                elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
+                if (elasticsearchEquipment.Count > 0)
+                {
+                    elasticsearchEquipment = await TranslationHelper.TranslateList(translationClient, elasticsearchEquipment, elasticsearchEquipment);
+                }
 
                 var elastisearchRecipe = new ElasticsearchRecipe
                 {
