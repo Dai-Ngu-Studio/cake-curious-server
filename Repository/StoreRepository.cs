@@ -8,6 +8,7 @@ using Repository.Constants.Stores;
 using Repository.Constants.Orders;
 using Repository.Constants.Users;
 using Microsoft.Data.SqlClient;
+using BusinessObject.FunctionMappings;
 
 namespace Repository
 {
@@ -42,6 +43,22 @@ namespace Repository
         {
 
             return stores.Where(p => p.Name!.ToLower().Contains(keyWord!.ToLower()));
+        }
+
+        public IEnumerable<Store> GetStoresAfter(int take, Guid? lastGuid)
+        {
+            var db = new CakeCuriousDbContext();
+            if (lastGuid != null)
+            {
+                return db.Stores
+                    .OrderBy(x => x.Id)
+                    .Where(x => ((Guid)x.Id!).IsGreaterThan((Guid)lastGuid!))
+                    .Take(take);
+            }
+            else
+            {
+                return db.Stores.OrderBy(x => x.Id).Take(take);
+            }
         }
 
         public IEnumerable<AdminDashboardStore>? GetStores(string? s, string? order_by, string? filter_Store, int pageSize, int pageIndex)
@@ -181,6 +198,22 @@ namespace Repository
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public async Task UpdateRange(IEnumerable<Store> stores)
+        {
+            var db = new CakeCuriousDbContext();
+            db.Stores.UpdateRange(stores);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task<decimal> GetRatingForStore(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Products
+                .Where(x => x.Rating > 0)
+                .Where(x => x.StoreId == id)
+                .AverageAsync(x => x.Rating) ?? 0;
         }
 
         public int CountDashboardStores(string? s, string? filter_Store)
