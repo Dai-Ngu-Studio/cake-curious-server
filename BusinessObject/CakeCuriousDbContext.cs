@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BusinessObject.FunctionMappings;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace BusinessObject
@@ -20,6 +21,7 @@ namespace BusinessObject
                 .AddJsonFile("appsettings.json")
                 .Build();
             var connectionString = configuration.GetConnectionString("CakeCuriousDb");
+            optionsBuilder.EnableSensitiveDataLogging();
             optionsBuilder.UseSqlServer(connectionString);
             optionsBuilder.LogTo(Console.WriteLine);
         }
@@ -30,8 +32,8 @@ namespace BusinessObject
         public DbSet<Coupon> Coupons { get; set; } = null!;
         public DbSet<DeactivateReason> DeactivateReasons { get; set; } = null!;
         public DbSet<Like> Likes { get; set; } = null!;
-        public DbSet<Notification> Notifications { get; set; }
-        public DbSet<NotificationContent> NotificationContents { get; set; }
+        public DbSet<Notification> Notifications { get; set; } = null!;
+        public DbSet<NotificationContent> NotificationContents { get; set; } = null!;
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
         public DbSet<Product> Products { get; set; } = null!;
@@ -80,6 +82,9 @@ namespace BusinessObject
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
+
+            // Function mappings
+            GuidFunctions.Register(modelBuilder);
         }
     }
 }
