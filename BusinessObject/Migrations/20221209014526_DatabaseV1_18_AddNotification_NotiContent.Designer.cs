@@ -4,6 +4,7 @@ using BusinessObject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(CakeCuriousDbContext))]
-    partial class CakeCuriousDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221209014526_DatabaseV1_18_AddNotification_NotiContent")]
+    partial class DatabaseV1_18_AddNotification_NotiContent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -192,8 +194,6 @@ namespace BusinessObject.Migrations
                         .HasColumnName("staff_id");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("StaffId");
 
                     b.ToTable("DeactivateReason");
                 });
@@ -1108,15 +1108,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("BusinessObject.DeactivateReason", b =>
-                {
-                    b.HasOne("BusinessObject.User", "Staff")
-                        .WithMany("DeactivateReasons")
-                        .HasForeignKey("StaffId");
-
-                    b.Navigation("Staff");
-                });
-
             modelBuilder.Entity("BusinessObject.Like", b =>
                 {
                     b.HasOne("BusinessObject.Recipe", "Recipe")
@@ -1444,8 +1435,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("Bookmarks");
 
                     b.Navigation("Comments");
-
-                    b.Navigation("DeactivateReasons");
 
                     b.Navigation("Followers");
 

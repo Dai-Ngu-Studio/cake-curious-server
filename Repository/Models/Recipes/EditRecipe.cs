@@ -20,7 +20,7 @@ namespace Repository.Models.Recipes
         public string? ShareUrl { get; set; }
         public IEnumerable<CreateRecipeMaterial> Ingredients { get; set; } = new List<CreateRecipeMaterial>();
         public IEnumerable<CreateRecipeMaterial> Equipment { get; set; } = new List<CreateRecipeMaterial>();
-        public IEnumerable<CreateRecipeStep> RecipeSteps { get; set; } = new List<CreateRecipeStep>();
+        public IEnumerable<EditRecipeStep> RecipeSteps { get; set; } = new List<EditRecipeStep>();
         public IEnumerable<CreateRecipeHasCategory>? HasCategories { get; set; }
         public IEnumerable<DetachedRecipeCategoryGroup>? RecipeCategoryGroups { get; set; }
         public IEnumerable<CreateRecipeMedia>? RecipeMedia { get; set; }
