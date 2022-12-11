@@ -727,7 +727,7 @@ namespace CakeCurious_API.Controllers
                 if (!string.IsNullOrWhiteSpace(FcmToken))
                 {
                     // Check if device existed in database
-                    var userDevice = await userDeviceRepository.Get(FcmToken);
+                    var userDevice = await userDeviceRepository.GetReadonly(FcmToken);
                     if (userDevice == null)
                     {
                         // Device does not exist, adding to database

@@ -38,11 +38,11 @@ namespace CakeCurious_API.Services
             if (!int.TryParse(inputGMT, out int gmt)) gmt = DEFAULT_GMT;
             var scheduledTime = GetScheduledTime();
             var currentTime = TimeSpan.Parse(DateTime.Now.TimeOfDay.Add(TimeSpan.FromHours(gmt)).ToString("hh\\:mm"));
-            Console.WriteLine(currentTime.ToString());
+            Console.WriteLine($"CURRENT TIME: {currentTime}");
             var timeToDelay = scheduledTime >= currentTime
                 ? scheduledTime - currentTime
                 : new TimeSpan(24, 0, 0) - currentTime + scheduledTime;
-            Console.WriteLine(timeToDelay.ToString());
+            Console.WriteLine($"DAILY TIMER WAITS FOR: {timeToDelay}");
             return timeToDelay;
         }
 
@@ -70,7 +70,7 @@ namespace CakeCurious_API.Services
                     _logger!.LogInformation("Notifying daily.");
                     var userDeviceRepository = scope.ServiceProvider.GetRequiredService<IUserDeviceRepository>();
                     var batches = new List<IEnumerable<UserDevice>>();
-                    var initialBatch = userDeviceRepository.GetDevicesAfter(TAKE, "0");
+                    var initialBatch = userDeviceRepository.GetDevicesReadonlyAfter(TAKE, "0");
                     batches.Add(initialBatch);
                     while (batches.Count > 0)
                     {
@@ -98,7 +98,7 @@ namespace CakeCurious_API.Services
                                 _logger!.LogInformation(fbme.Message);
                             }
 
-                            var nextBatch = userDeviceRepository.GetDevicesAfter(TAKE, userDevices.LastOrDefault()!.Token!);
+                            var nextBatch = userDeviceRepository.GetDevicesReadonlyAfter(TAKE, userDevices.LastOrDefault()!.Token!);
                             batches.RemoveAt(0);
                             if (nextBatch != null && nextBatch.Count() > 0)
                             {

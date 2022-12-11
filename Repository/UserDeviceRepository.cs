@@ -13,16 +13,26 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
-        public async Task<UserDevice?> Get(string token)
+        public async Task<UserDevice?> GetReadonly(string token)
         {
             var db = new CakeCuriousDbContext();
-            return await db.UserDevices.FirstOrDefaultAsync(x => x.Token == token);
+            return await db.UserDevices.AsNoTracking().FirstOrDefaultAsync(x => x.Token == token);
         }
 
-        public IEnumerable<UserDevice> GetDevicesAfter(int take, string lastToken)
+        public IEnumerable<UserDevice> GetDevicesReadonlyAfter(int take, string lastToken)
         {
             var db = new CakeCuriousDbContext();
-            return db.UserDevices.OrderBy(x => x.Token).Where(x => x.Token!.CompareTo(lastToken) > 0).Take(take);
+            return db.UserDevices.AsNoTracking()
+                .OrderBy(x => x.Token)
+                .Where(x => x.Token!.CompareTo(lastToken) > 0)
+                .Take(take);
+        }
+
+        public IEnumerable<UserDevice> GetDevicesOfUserReadonly(string uid)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.UserDevices.AsNoTracking()
+                .Where(x => x.UserId == uid);
         }
 
         public async Task RemoveRange(List<string> tokens)
