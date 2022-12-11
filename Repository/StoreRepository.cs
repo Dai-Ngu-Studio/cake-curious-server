@@ -113,11 +113,19 @@ namespace Repository
             }
             return Guid.Empty;
         }
+
         public async Task<Store?> GetById(Guid id)
         {
             var db = new CakeCuriousDbContext();
             return await db.Stores.FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task<SimpleStore?> GetNameByIdReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Stores.AsNoTracking().ProjectToType<SimpleStore>().FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<int> DeleteAllOrderOfInActiveStore(Guid guid)
         {
 

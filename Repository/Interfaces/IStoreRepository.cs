@@ -10,6 +10,7 @@ namespace Repository.Interfaces
         public Task Add(Store obj);
         public Task<Store?> Delete(Guid? id);
         public Task<Store?> GetById(Guid id);
+        public Task<SimpleStore?> GetNameByIdReadonly(Guid id);
         public Task<bool> IsStoreExisted(Guid id);
         public Task<StoreDetail?> GetByUserId(string? id);
         public Task<AdminDashboardStore?> GetStoreDetailForWeb(Guid guid);
