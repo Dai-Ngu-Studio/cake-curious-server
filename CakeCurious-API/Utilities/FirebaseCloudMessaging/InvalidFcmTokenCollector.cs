@@ -14,17 +14,24 @@ namespace CakeCurious_API.Utilities.FirebaseCloudMessaging
         /// <returns></returns>
         public static async Task HandleBatchResponse(BatchResponse response, List<Message> messages, IUserDeviceRepository userDeviceRepository)
         {
-            if (response.FailureCount > 0)
+            try
             {
-                var failedTokens = new List<string>();
-                for (var i = 0; i < response.Responses.Count; i++)
+                if (response.FailureCount > 0)
                 {
-                    if (!response.Responses[i].IsSuccess)
+                    var failedTokens = new List<string>();
+                    for (var i = 0; i < response.Responses.Count; i++)
                     {
-                        failedTokens.Add(messages[i].Token);
+                        if (!response.Responses[i].IsSuccess)
+                        {
+                            failedTokens.Add(messages[i].Token);
+                        }
                     }
+                    await userDeviceRepository.RemoveRange(failedTokens);
                 }
-                await userDeviceRepository.RemoveRange(failedTokens);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"{e.Message}\n{e.InnerException}\n{e.StackTrace}");
             }
         }
 
@@ -37,17 +44,24 @@ namespace CakeCurious_API.Utilities.FirebaseCloudMessaging
         /// <returns></returns>
         public static async Task HandleMulticastBatchResponse(BatchResponse response, List<string> tokens, IUserDeviceRepository userDeviceRepository)
         {
-            if (response.FailureCount > 0)
+            try
             {
-                var failedTokens = new List<string>();
-                for (var i = 0; i < response.Responses.Count; i++)
+                if (response.FailureCount > 0)
                 {
-                    if (!response.Responses[i].IsSuccess)
+                    var failedTokens = new List<string>();
+                    for (var i = 0; i < response.Responses.Count; i++)
                     {
-                        failedTokens.Add(tokens[i]);
+                        if (!response.Responses[i].IsSuccess)
+                        {
+                            failedTokens.Add(tokens[i]);
+                        }
                     }
+                    await userDeviceRepository.RemoveRange(failedTokens);
                 }
-                await userDeviceRepository.RemoveRange(failedTokens);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"{e.Message}\n{e.InnerException}\n{e.StackTrace}");
             }
         }
     }

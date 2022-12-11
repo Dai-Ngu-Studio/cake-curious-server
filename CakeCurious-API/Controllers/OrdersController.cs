@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using CakeCurious_API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,14 +26,21 @@ namespace CakeCurious_API.Controllers
         private readonly IProductRepository productRepository;
         private readonly ICouponRepository couponRepository;
         private readonly IOrderDetailRepository orderDetailRepository;
+        private readonly IUserDeviceRepository userDeviceRepository;
+        private readonly INotificationRepository notificationRepository;
 
-        public OrdersController(IOrderRepository _orderRepository, IStoreRepository _storeRepository, IProductRepository _productRepository, ICouponRepository _couponRepository, IOrderDetailRepository _orderDetailRepository)
+        public OrdersController(IOrderRepository _orderRepository, IStoreRepository _storeRepository, 
+            IProductRepository _productRepository, ICouponRepository _couponRepository, 
+            IOrderDetailRepository _orderDetailRepository, IUserDeviceRepository _userDeviceRepository,
+            INotificationRepository _notificationRepository)
         {
             orderRepository = _orderRepository;
             storeRepository = _storeRepository;
             productRepository = _productRepository;
             couponRepository = _couponRepository;
             orderDetailRepository = _orderDetailRepository;
+            userDeviceRepository = _userDeviceRepository;
+            notificationRepository = _notificationRepository;
         }
 
         [HttpGet]
@@ -90,13 +98,13 @@ namespace CakeCurious_API.Controllers
             return Ok(orderDetailPage);
         }
 
-        [HttpPut("{guid}")]
+        [HttpPut("{id:guid}")]
         [Authorize]
-        public async Task<ActionResult> PutOrder(Guid guid, Order order)
+        public async Task<ActionResult> PutOrder(Guid id, Order order)
         {
             try
             {
-                if (guid != order.Id) return BadRequest();
+                if (id != order.Id) return BadRequest();
                 Order? beforeUpdateObj = await orderRepository.GetById(order.Id.Value);
                 if (beforeUpdateObj == null) throw new Exception("Order that need to update does not exist");
                 if (beforeUpdateObj.Status != null
@@ -127,6 +135,8 @@ namespace CakeCurious_API.Controllers
                     if (order.Status == (int)OrderStatusEnum.Completed)
                         return BadRequest("Current order status is Pending .Can not change to others status except processing or cancelled");
                 }
+
+                var initialStatus = beforeUpdateObj.Status;
                 Order updateOrder = new Order()
                 {
                     Id = order.Id == null ? beforeUpdateObj.Id : order.Id,
@@ -142,10 +152,16 @@ namespace CakeCurious_API.Controllers
                     UserId = order.UserId ?? beforeUpdateObj.UserId,
                 };
                 await orderRepository.UpdateOrder(updateOrder);
+
+                if (initialStatus != updateOrder.Status)
+                {
+                    var simpleStore = await storeRepository.GetNameByIdReadonly((Guid)updateOrder.StoreId!);
+                    _ = Task.Run(() => NotificationUtility.NotifyOrderStatus(userDeviceRepository, notificationRepository, updateOrder, updateOrder.UserId!, simpleStore!.Name!));
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (orderRepository.GetById(guid) == null)
+                if (orderRepository.GetById(id) == null)
                 {
                     return NotFound();
                 }
