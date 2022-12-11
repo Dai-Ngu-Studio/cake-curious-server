@@ -110,6 +110,18 @@ namespace CakeCurious_API.Controllers
 
                 await userRepository.Update(updateUser);
 
+                try
+                {
+                    if (updateUser.Status == (int)UserStatusEnum.Inactive)
+                    {
+                        await FirebaseAuth.DefaultInstance.RevokeRefreshTokensAsync(updateUser.Id!);
+                    }
+                }
+                catch (Exception)
+                {
+                    // do nothing
+                }
+
                 var elasticsearchUser = new ElasticsearchUser
                 {
                     Id = user.Id,
