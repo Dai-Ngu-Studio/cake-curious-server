@@ -24,6 +24,8 @@ namespace CakeCurious_API.Utilities
             services.AddScoped<IDashboardReportRepository, DashboardReportRepository>();
             services.AddScoped<IReportCategoryRepository, ReportCategoryRepository>();
             services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IDeactivateReasonRepository, DeactivateReasonRepository>();
         }
     }
 }
