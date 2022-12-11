@@ -20,6 +20,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.DeactivateReasons
                 .AsNoTracking()
+                .OrderByDescending(x => x.DeactivateDate)
                 .Where(x => x.ItemId == itemId)
                 .ProjectToType<DetailDeactivateReason>()
                 .FirstOrDefaultAsync();
