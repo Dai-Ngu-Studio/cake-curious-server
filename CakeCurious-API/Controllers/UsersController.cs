@@ -14,7 +14,6 @@ using Repository.Constants.Users;
 using Repository.Interfaces;
 using Repository.Models.Orders;
 using Repository.Models.Recipes;
-using Repository.Models.Roles;
 using Repository.Models.Stores;
 using Repository.Models.Users;
 using System.ComponentModel.DataAnnotations;
@@ -32,11 +31,13 @@ namespace CakeCurious_API.Controllers
         private readonly IRecipeRepository recipeRepository;
         private readonly IStoreRepository storeRepository;
         private readonly IOrderRepository orderRepository;
+        private readonly IDeactivateReasonRepository deactivateReasonRepository;
         private readonly IElasticClient elasticClient;
         private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
 
         public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository,
-            IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IStoreRepository _storeRepository, IOrderRepository _orderRepository,
+            IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IStoreRepository _storeRepository,
+            IOrderRepository _orderRepository, IDeactivateReasonRepository _deactivateReasonRepository,
             IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService)
         {
             userRepository = _userRepository;
@@ -45,6 +46,7 @@ namespace CakeCurious_API.Controllers
             recipeRepository = _recipeRepository;
             storeRepository = _storeRepository;
             orderRepository = _orderRepository;
+            deactivateReasonRepository = _deactivateReasonRepository;
             elasticClient = _elasticClient;
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
         }
@@ -429,6 +431,21 @@ namespace CakeCurious_API.Controllers
                                 .Index("users")
                             );
                     }
+
+                    // Check if user is deactivated
+                    if (user.Status == (int)UserStatusEnum.Inactive)
+                    {
+                        var userItemId = ConvertUtility.ToGuid(user.Id!);
+                        Console.WriteLine($"USERGUID: {userItemId}");
+                        user.DeactivateReason = await deactivateReasonRepository.GetReasonByItemIdReadonly(userItemId);
+                    }
+
+                    // Check if store is deactivated
+                    if (user.Store?.Status == (int)StoreStatusEnum.Inactive)
+                    {
+                        user.Store!.DeactivateReason = await deactivateReasonRepository.GetReasonByItemIdReadonly((Guid)user.Store.Id!);
+                    }
+
                     // Return user with no collection attached (except roles)
                     return Ok(user);
                 }
@@ -439,7 +456,7 @@ namespace CakeCurious_API.Controllers
                         // Get user information from Firebase
                         UserRecord? userRecord = await FirebaseAuth.DefaultInstance.GetUserAsync(uid);
                         bool isUserRecordExisted = userRecord != null;
-                        
+
                         // Check if email already exists in database
                         var staff = await userRepository.GetReadonlyUserByEmail(userRecord!.Email);
                         if (isUserRecordExisted && staff != null)
