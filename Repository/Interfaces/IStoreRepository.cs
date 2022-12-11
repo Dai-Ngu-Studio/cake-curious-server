@@ -1,6 +1,5 @@
 ﻿using BusinessObject;
 using Repository.Models.Stores;
-using System.Collections;
 
 namespace Repository.Interfaces
 {
@@ -11,6 +10,7 @@ namespace Repository.Interfaces
         public Task Add(Store obj);
         public Task<Store?> Delete(Guid? id);
         public Task<Store?> GetById(Guid id);
+        public Task<bool> IsStoreExisted(Guid id);
         public Task<StoreDetail?> GetByUserId(string? id);
         public Task<AdminDashboardStore?> GetStoreDetailForWeb(Guid guid);
         public IEnumerable<Store> GetStoresAfter(int take, Guid? lastGuid);

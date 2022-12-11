@@ -5,6 +5,7 @@ using Repository.Constants.Comments;
 using Repository.Constants.Reports;
 using Repository.Constants.Users;
 using Repository.Interfaces;
+using Repository.Models;
 using Repository.Models.Comments;
 
 namespace Repository
@@ -191,6 +192,12 @@ namespace Repository
             SimpleComment? simpleComment = await db.Comments.Include(c => c.User).ProjectToType<SimpleComment>().FirstOrDefaultAsync(c => c.Id == id);
             return simpleComment!;
 
+        }
+
+        public async Task<bool> IsCommentExisted(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Comments.AsNoTracking().AnyAsync(x => x.Id == id);
         }
     }
 }

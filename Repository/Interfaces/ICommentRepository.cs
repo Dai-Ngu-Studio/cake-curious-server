@@ -6,6 +6,7 @@ namespace Repository.Interfaces
     public interface ICommentRepository
     {
         public Task<Comment?> GetCommentReadonly(Guid id);
+        public Task<bool> IsCommentExisted(Guid id);
         public Task<Comment?> GetCommentWithRootReadonly(Guid id);
         public Task<RecipeComment?> GetRecipeComment(Guid id);
         public Task Add(Comment comment);

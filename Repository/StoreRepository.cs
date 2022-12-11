@@ -139,22 +139,7 @@ namespace Repository
             }
             return 1;
         }
-        public async Task<int> DeleteAllProductOfInActiveStore(Guid guid)
-        {
-            if (guid == Guid.Empty) { return -1; }
-            else
-            {
-                var db = new CakeCuriousDbContext();
-                IEnumerable<Product> products = await db.Products.Where(p => p.StoreId == guid).ToListAsync();
-                foreach (var product in products)
-                {
-                    product.Status = (int)ProductStatusEnum.Inactive;
-                    db.Entry<Product>(product).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                    await db.SaveChangesAsync();
-                }
-            }
-            return 1;
-        }
+        
         public async Task<Store?> Delete(Guid? id)
         {
             Store? store = null;
@@ -168,8 +153,6 @@ namespace Repository
                 await db.SaveChangesAsync();
                 int deleteOrderStatus = await DeleteAllOrderOfInActiveStore(id.Value);
                 if (deleteOrderStatus < 0) throw new Exception("Delete Store Success .But Delete Store's orders fail");
-                int deleteProductStatus = await DeleteAllProductOfInActiveStore(id.Value);
-                if (deleteProductStatus < 0) throw new Exception("Delete Store Success .But Delete Store's products fail");
                 return store;
             }
             catch (Exception ex)
@@ -190,8 +173,6 @@ namespace Repository
                 {
                     int deleteOrderStatus = await DeleteAllOrderOfInActiveStore(updateObj!.Id!.Value);
                     if (deleteOrderStatus < 0) throw new Exception("Delete Store Success .But Delete Store's orders fail");
-                    int deleteProductStatus = await DeleteAllProductOfInActiveStore(updateObj!.Id!.Value);
-                    if (deleteProductStatus < 0) throw new Exception("Delete Store Success .But Delete Store's products fail");
                 }
             }
             catch (Exception ex)
@@ -360,6 +341,12 @@ namespace Repository
                 await cmd.Connection!.CloseAsync();
             }
             return result;
+        }
+
+        public async Task<bool> IsStoreExisted(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Stores.AsNoTracking().AnyAsync(x => x.Id == id);
         }
     }
 }

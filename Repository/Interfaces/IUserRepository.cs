@@ -8,6 +8,7 @@ namespace Repository.Interfaces
         public IEnumerable<AdminDashboardUser>? GetList(string? search, string? order_by, string? filter, int page, int size);
         public Task<User?> Get(string uid);
         public Task<DetachedUser?> GetDetached(string uid);
+        public Task<bool> IsUserExisted(string uid);
         public Task Add(User obj);
         public Task Update(User obj);
         public Task<int> CountFollowersOfUser(string uid);

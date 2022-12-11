@@ -1,5 +1,4 @@
 ﻿using BusinessObject;
-using Repository.Models.RecipeMaterials;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeSteps;
 
@@ -17,6 +16,7 @@ namespace Repository.Interfaces
         public Task<ICollection<ExploreRecipe>> Explore(int randSeed, int skip, int take);
         public Task<int> Delete(Guid id);
         public Task<Recipe?> GetRecipeReadonly(Guid id);
+        public Task<bool> IsRecipeExisted(Guid id);
         public Task<IEnumerable<SimpleRecipeForReportList>> GetReportedRecipes(string? s, string? sort, string? filter, int page, int size);
         public Task<int?> CountTotalReportedRecipes(string? s, string? filter);
         public Task<Recipe?> GetRecipeWithStepsReadonly(Guid id);

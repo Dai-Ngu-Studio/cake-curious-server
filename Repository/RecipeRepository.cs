@@ -436,5 +436,11 @@ namespace Repository
             }
             return isReportedRecipes!.Count();
         }
+
+        public async Task<bool> IsRecipeExisted(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes.AsNoTracking().AnyAsync(x => x.Id == id);
+        }
     }
 }

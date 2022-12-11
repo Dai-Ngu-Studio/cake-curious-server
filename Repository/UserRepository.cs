@@ -203,6 +203,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Users.Include(x => x.HasRoles).FirstOrDefaultAsync(x => x.Id == uid);
         }
+
         public async Task<UserDetailForWeb?> GetUserDetailForWeb(string uid)
         {
             var db = new CakeCuriousDbContext();
@@ -224,7 +225,7 @@ namespace Repository
         public async Task<DetachedUser?> GetDetached(string uid)
         {
             var db = new CakeCuriousDbContext();
-            return await db.Users.Where(x => x.Id == uid).ProjectToType<DetachedUser>().FirstOrDefaultAsync();
+            return await db.Users.AsNoTracking().Where(x => x.Id == uid).ProjectToType<DetachedUser>().FirstOrDefaultAsync();
         }
 
         public async Task Add(User obj)
@@ -331,6 +332,12 @@ namespace Repository
                 await db.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
+        }
+
+        public async Task<bool> IsUserExisted(string uid)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Users.AsNoTracking().AnyAsync(x => x.Id == uid);
         }
     }
 }
