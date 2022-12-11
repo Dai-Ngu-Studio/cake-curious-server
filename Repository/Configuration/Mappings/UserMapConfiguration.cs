@@ -1,5 +1,7 @@
 ﻿using BusinessObject;
 using Mapster;
+using Repository.Constants.Recipes;
+using Repository.Constants.Users;
 using Repository.Models.Users;
 
 namespace Repository.Configuration.Mappings
@@ -26,9 +28,14 @@ namespace Repository.Configuration.Mappings
 
             TypeAdapterConfig<User, ProfileUser>
                 .NewConfig()
-                .Map(dest => dest.Followers, src => src.Followers!.Count)
-                .Map(dest => dest.Following, src => src.Followings!.Count)
-                .Map(dest => dest.Recipes, src => src.Recipes!.Count)
+                .Map(dest => dest.Followers, src => src.Followers!
+                    .Where(x => x.Follower!.Status == (int)UserStatusEnum.Active).Count())
+                .Map(dest => dest.Following, src => src.Followings!
+                    .Where(x => x.Follower!.Status == (int)UserStatusEnum.Active).Count())
+                .Map(dest => dest.Recipes, src => src.Recipes!
+                    .Where(x => x.Status == (int)RecipeStatusEnum.Active)
+                    .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
+                    .Count())
                 .Map(dest => dest.IsFollowedByCurrentUser, src => src.Followers!
                     .Any(x => x.FollowerId == (string)MapContext.Current!.Parameters["userId"]));
         }

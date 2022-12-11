@@ -157,6 +157,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.UserFollows
                 .Where(x => x.FollowerId == uid)
+                .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                 .CountAsync();
         }
 
@@ -168,6 +169,7 @@ namespace Repository
                 var db = new CakeCuriousDbContext();
                 return await db.UserFollows
                     .Where(x => x.FollowerId == uid)
+                    .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                     .Skip(skip)
                     .Take(take)
                     .ProjectToType<FollowingUser>()
@@ -180,6 +182,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.UserFollows
                 .Where(x => x.UserId == uid)
+                .Where(x => x.Follower!.Status == (int)UserStatusEnum.Active)
                 .CountAsync();
         }
 
@@ -191,6 +194,7 @@ namespace Repository
                 var db = new CakeCuriousDbContext();
                 return await db.UserFollows
                     .Where(x => x.UserId == uid)
+                    .Where(x => x.Follower!.Status == (int)UserStatusEnum.Active)
                     .Skip(skip)
                     .Take(take)
                     .ProjectToType<FollowerUser>()
