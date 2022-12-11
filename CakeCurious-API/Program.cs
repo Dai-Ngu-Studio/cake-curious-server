@@ -25,7 +25,9 @@ var appConfiguration = new ConfigurationBuilder()
 
 // Set web app info
 var appInfo = appConfiguration.GetSection("CakeCuriousInfo");
-EnvironmentHelper.AddEnvironmentVariables(appInfo);
+var serviceConfiguration = appConfiguration.GetSection("ServiceConfiguration");
+EnvironmentHelper.AddAppInfoEnvironmentVariables(appInfo);
+EnvironmentHelper.AddServiceConfigurationEnvironmentVariables(serviceConfiguration);
 
 // Add services to the container.
 builder.Services.AddRouting(o =>
@@ -54,6 +56,7 @@ ScopedRepositoryRegister.AddScopedRepositories(builder.Services);
 
 builder.Services.AddHostedService<CouponExpireCheckService>();
 builder.Services.AddHostedService<StoreRatingTallyService>();
+builder.Services.AddHostedService<DailyNotificationService>();
 
 builder.Services.AddDbContext<CakeCuriousDbContext>();
 
