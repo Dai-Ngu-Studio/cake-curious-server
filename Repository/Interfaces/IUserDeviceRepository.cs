@@ -4,8 +4,9 @@ namespace Repository.Interfaces
 {
     public interface IUserDeviceRepository
     {
-        public ICollection<UserDevice> GetList();
-        public Task<UserDevice?> Get(string token);
         public Task Add(UserDevice obj);
+        public Task<UserDevice?> Get(string token);
+        public IEnumerable<UserDevice> GetDevicesAfter(int take, string lastToken);
+        public Task RemoveRange(List<string> tokens);
     }
 }

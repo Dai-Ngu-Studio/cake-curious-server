@@ -19,9 +19,18 @@ namespace Repository
             return await db.UserDevices.FirstOrDefaultAsync(x => x.Token == token);
         }
 
-        public ICollection<UserDevice> GetList()
+        public IEnumerable<UserDevice> GetDevicesAfter(int take, string lastToken)
         {
-            throw new NotImplementedException();
+            var db = new CakeCuriousDbContext();
+            return db.UserDevices.Take(take).OrderBy(x => x.Token).Where(x => x.Token!.CompareTo(lastToken) > 0);
+        }
+
+        public async Task RemoveRange(List<string> tokens)
+        {
+            var db = new CakeCuriousDbContext();
+            var devices = db.UserDevices.Where(x => tokens.Any(y => y == x.Token));
+            db.UserDevices.RemoveRange(devices);
+            await db.SaveChangesAsync();
         }
     }
 }
