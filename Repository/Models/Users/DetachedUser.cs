@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using Repository.Models.DeactivateReasons;
 using Repository.Models.Stores;
 
 namespace Repository.Models.Users
@@ -18,9 +19,10 @@ namespace Repository.Models.Users
         public string? CitizenshipNumber { get; set; }
         public DateTime? CitizenshipDate { get; set; }
         public Guid? StoreId { get; set; }
-        public GroceryStore? Store { get; set; }
+        public LoginStore? Store { get; set; }
         public int? Status { get; set; }
         public IEnumerable<UserHasRole>? HasRoles { get; set; }
         public string? ShareUrl { get; set; }
+        public DetailDeactivateReason? DeactivateReason { get; set; }
     }
 }
