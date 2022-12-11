@@ -15,7 +15,6 @@ namespace CakeCurious_API.Utilities
             var sharePrefixUri = Environment.GetEnvironmentVariable(EnvironmentHelper.ShareUriPrefix);
             var androidPackageName = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidPackageName);
             var androidMinPackageVersion = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidMinPackageVersionCode);
-            var androidFallbackLink = Environment.GetEnvironmentVariable(EnvironmentHelper.AndroidFallbackLink);
             var suffixOption = Environment.GetEnvironmentVariable(EnvironmentHelper.SuffixOption);
 
             var nameEncoded = HttpUtility.UrlEncode(name);
@@ -30,7 +29,6 @@ namespace CakeCurious_API.Utilities
                     {
                         AndroidPackageName = androidPackageName,
                         AndroidMinPackageVersionCode = androidMinPackageVersion,
-                        AndroidFallbackLink = androidFallbackLink,
                     },
                     SocialMetaTagInfo = new SocialMetaTagInfo
                     {
