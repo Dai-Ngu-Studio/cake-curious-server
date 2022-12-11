@@ -12,6 +12,7 @@ using Repository.Constants.Products;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
+using Repository.Models.Notifications;
 using Repository.Models.Orders;
 using Repository.Models.Recipes;
 using Repository.Models.Stores;
@@ -32,12 +33,14 @@ namespace CakeCurious_API.Controllers
         private readonly IStoreRepository storeRepository;
         private readonly IOrderRepository orderRepository;
         private readonly IDeactivateReasonRepository deactivateReasonRepository;
+        private readonly INotificationRepository notificationRepository;
         private readonly IElasticClient elasticClient;
         private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
 
         public UsersController(IUserRepository _userRepository, IUserDeviceRepository _userDeviceRepository,
             IUserFollowRepository _userFollowRepository, IRecipeRepository _recipeRepository, IStoreRepository _storeRepository,
             IOrderRepository _orderRepository, IDeactivateReasonRepository _deactivateReasonRepository,
+            INotificationRepository _notifcationRepository,
             IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService)
         {
             userRepository = _userRepository;
@@ -47,6 +50,7 @@ namespace CakeCurious_API.Controllers
             storeRepository = _storeRepository;
             orderRepository = _orderRepository;
             deactivateReasonRepository = _deactivateReasonRepository;
+            notificationRepository = _notifcationRepository;
             elasticClient = _elasticClient;
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
         }
@@ -692,6 +696,31 @@ namespace CakeCurious_API.Controllers
                 return BadRequest();
             }
             return Unauthorized();
+        }
+
+        [HttpGet("{id:length(1,128)}/notifications")]
+        [Authorize]
+        public ActionResult<DetailNotificationPage> GetNotificationsOfUser(
+            string id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    if (id == "current")
+                    {
+                        id = uid;
+                    }
+                    var notificationPage = new DetailNotificationPage();
+                    notificationPage.Notifications = notificationRepository.GetNotificationsOfUser(id, (page - 1) * take, take);
+                    return Ok(notificationPage);
+                }
+                return BadRequest();
+            }
+            return BadRequest();
         }
 
         [HttpGet("{id:length(1,128)}/addresses")]

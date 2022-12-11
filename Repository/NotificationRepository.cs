@@ -1,5 +1,7 @@
 ﻿using BusinessObject;
+using Mapster;
 using Repository.Interfaces;
+using Repository.Models.Notifications;
 
 namespace Repository
 {
@@ -14,6 +16,17 @@ namespace Repository
                 await db.SaveChangesAsync();
                 await db.Database.CommitTransactionAsync();
             }
+        }
+
+        public IEnumerable<DetailNotifcation> GetNotificationsOfUser(string uid, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.Notifications
+                .OrderByDescending(x => x.Content!.NotificationDate)
+                .Where(x => x.UserId == uid)
+                .Skip(skip)
+                .Take(take)
+                .ProjectToType<DetailNotifcation>();
         }
     }
 }
