@@ -22,7 +22,7 @@ namespace Repository
         public IEnumerable<UserDevice> GetDevicesAfter(int take, string lastToken)
         {
             var db = new CakeCuriousDbContext();
-            return db.UserDevices.Take(take).OrderBy(x => x.Token).Where(x => x.Token!.CompareTo(lastToken) > 0);
+            return db.UserDevices.OrderBy(x => x.Token).Where(x => x.Token!.CompareTo(lastToken) > 0).Take(take);
         }
 
         public async Task RemoveRange(List<string> tokens)
