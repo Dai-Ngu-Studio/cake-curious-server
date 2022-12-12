@@ -258,11 +258,11 @@ namespace Repository
             return db.Orders
                 .AsNoTracking()
                 .OrderByDescending(x => x.OrderDate)
-                .Skip(skip)
-                .Take(take)
                 .Where(x => x.UserId == userId)
                 .Select(x => x.Address)
-                .Distinct();
+                .Distinct()
+                .Skip(skip)
+                .Take(take);
         }
 
         public async Task<DetailOrder?> GetOrderDetails(Guid id)
