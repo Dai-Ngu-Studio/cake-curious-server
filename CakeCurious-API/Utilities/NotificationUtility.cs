@@ -4,6 +4,7 @@ using Repository.Constants.NotificationContents;
 using Repository.Constants.Notifications;
 using Repository.Constants.Orders;
 using Repository.Interfaces;
+using Repository.Models.Notifications;
 
 namespace CakeCurious_API.Utilities
 {
@@ -76,7 +77,7 @@ namespace CakeCurious_API.Utilities
                             { "notificationType", notificationContent.NotificationType.ToString()! }
                         }
                     };
-                    var response=await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
+                    var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
                     await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
                 }
             }
@@ -84,6 +85,30 @@ namespace CakeCurious_API.Utilities
             {
                 Console.WriteLine($"{e.Message}\n{e.InnerException}\n{e.StackTrace}");
             }
+        }
+
+        public static async Task NotifyChatToBaker(IUserDeviceRepository userDeviceRepository,
+            PushNotification notification, Guid storeId)
+        {
+            var userDevices = userDeviceRepository.GetDevicesOfUserReadonly(notification.ReceiverId!);
+            var tokens = userDevices.Select(x => x.Token).ToList();
+            var multicastMessage = new FirebaseAdmin.Messaging.MulticastMessage
+            {
+                Tokens = tokens,
+                Notification = new FirebaseAdmin.Messaging.Notification
+                {
+                    Title = notification.Title,
+                    Body = notification.Content,
+                },
+                Data = new Dictionary<string, string>
+                {
+                    { "itemType", notification.ItemType.ToString()! },
+                    { "itemId", storeId.ToString() },
+                    { "notificationType", ((int)NotificationContentTypeEnum.Chat).ToString() }
+                }
+            };
+            var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
+            await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
         }
     }
 }
