@@ -9,5 +9,7 @@
         ReportedCommentTakenDown,
         OwnRecipeTakenDown,
         OwnCommentTakenDown,
+        Generic,
+        Chat,
     }
 }

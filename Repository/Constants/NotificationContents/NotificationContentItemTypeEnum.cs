@@ -6,5 +6,8 @@
         Recipe,
         Comment,
         DeactivateReason,
+        Generic,
+        StoreChat,
+        BakerChat,
     }
 }
