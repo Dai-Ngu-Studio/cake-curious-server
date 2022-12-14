@@ -85,6 +85,7 @@ namespace CakeCurious_API.Controllers
                 if (id != newUser.Id) return BadRequest("Input id must match with id of input user obj");
                 User? user = await userRepository.Get(newUser.Id);
                 if (user == null) return BadRequest("user that need to update does not exist");
+                var initialStatus = user!.Status;
                 updateUser = new User()
                 {
                     Address = newUser.Address ?? user.Address,
@@ -116,9 +117,26 @@ namespace CakeCurious_API.Controllers
 
                 try
                 {
-                    if (updateUser.Status == (int)UserStatusEnum.Inactive)
+                    if (updateUser.Status != initialStatus)
                     {
-                        await FirebaseAuth.DefaultInstance.RevokeRefreshTokensAsync(updateUser.Id!);
+                        var userRecord = await FirebaseAuth.DefaultInstance.GetUserAsync(updateUser.Id);
+                        if (userRecord != null)
+                        {
+                            var args = new UserRecordArgs
+                            {
+                                Uid = userRecord.Uid,
+                            };
+                            switch (updateUser.Status)
+                            {
+                                case (int)UserStatusEnum.Inactive:
+                                    args.Disabled = true;
+                                    break;
+                                case (int)UserStatusEnum.Active:
+                                    args.Disabled = false;
+                                    break;
+                            }
+                            await FirebaseAuth.DefaultInstance.UpdateUserAsync(args);
+                        }
                     }
                 }
                 catch (Exception)
