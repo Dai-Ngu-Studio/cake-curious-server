@@ -52,7 +52,7 @@ namespace Repository
             IEnumerable<Order> orders = db.Orders.Include(o => o.User).Include(o => o.Store).Where(o => o.Store!.UserId == uid).OrderByDescending(o => o.OrderDate);
             try
             {
-                if (s != null)
+                if (!string.IsNullOrWhiteSpace(s))
                 {
                     orders = SearchOrder(s, orders);
                 }

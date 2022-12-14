@@ -29,8 +29,8 @@ namespace CakeCurious_API.Controllers
         private readonly IUserDeviceRepository userDeviceRepository;
         private readonly INotificationRepository notificationRepository;
 
-        public OrdersController(IOrderRepository _orderRepository, IStoreRepository _storeRepository, 
-            IProductRepository _productRepository, ICouponRepository _couponRepository, 
+        public OrdersController(IOrderRepository _orderRepository, IStoreRepository _storeRepository,
+            IProductRepository _productRepository, ICouponRepository _couponRepository,
             IOrderDetailRepository _orderDetailRepository, IUserDeviceRepository _userDeviceRepository,
             INotificationRepository _notificationRepository)
         {
@@ -49,6 +49,10 @@ namespace CakeCurious_API.Controllers
         {
             var result = new StoreDashboardOrderPage();
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = ConvertUtility.ParseShortGuid(search).ToString();
+            }
             result.Orders = orderRepository.GetOrdersOfAStore(uid!, search, sort, filter, size, page);
             result.TotalPage = (int)Math.Ceiling((decimal)orderRepository.CountDashboardOrders(uid!, search!, filter!) / size);
             return Ok(result);
@@ -58,7 +62,13 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult<StoreDashboardOrder>> GetOrderById(Guid id)
         {
-            return Ok(await orderRepository.GetOrderDetailById(id));
+            var order = await orderRepository.GetOrderDetailById(id);
+            if (order != null)
+            {
+                order.Code = ConvertUtility.ToShortGuid((Guid)order.Id!);
+                return Ok(order);
+            }
+            return NotFound();
         }
 
         [HttpGet("{id:guid}/details")]
@@ -68,6 +78,7 @@ namespace CakeCurious_API.Controllers
             var order = await orderRepository.GetOrderDetails(id);
             if (order != null)
             {
+                order.Code = ConvertUtility.ToShortGuid((Guid)order.Id!);
                 return Ok(order);
             }
             return NotFound();
