@@ -5,6 +5,7 @@ namespace Repository.Models.Orders
     public class StoreDashboardOrder
     {
         public Guid? Id { get; set; }
+        public string? Code { get; set; }
         public SimpleUser? User { get; set; }
         public string? Address { get; set; }
         public decimal? DiscountedTotal { get; set; }

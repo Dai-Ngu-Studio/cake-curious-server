@@ -7,6 +7,7 @@ namespace Repository.Models.Orders
     public class DetailOrder
     {
         public Guid? Id { get; set; }
+        public string? Code { get; set; }
         public GroceryStore? Store { get; set; }
         public decimal? Total { get; set; }
         public decimal? DiscountedTotal { get; set; }
