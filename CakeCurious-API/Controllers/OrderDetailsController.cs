@@ -28,7 +28,7 @@ namespace CakeCurious_API.Controllers
                 await orderDetailRepository.RateOrderDetail(orderDetail);
                 return Ok();
             }
-            return BadRequest();
+            return NotFound();
         }
     }
 }

@@ -240,20 +240,11 @@ namespace CakeCurious_API.Controllers
             {
                 if (await userFollowRepository.IsUserFollowedByFollower(id, uid))
                 {
-                    // Remove follow
-                    try
-                    {
-                        await userFollowRepository.Remove(id, uid);
-                        return Ok();
-                    }
-                    catch (Exception)
-                    {
-                        return BadRequest();
-                    }
+                    await userFollowRepository.Remove(id, uid);
+                    return Ok();
                 }
                 else
                 {
-                    // Add follow
                     try
                     {
                         await userFollowRepository.Add(id, uid);
@@ -261,11 +252,11 @@ namespace CakeCurious_API.Controllers
                     }
                     catch (Exception)
                     {
-                        return BadRequest();
+                        return NotFound();
                     }
                 }
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         private async Task<Store> CreateStoreForUser(CreateStoreRequest request, User user)
@@ -366,7 +357,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return BadRequest();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpPost("staff")]
@@ -418,7 +409,7 @@ namespace CakeCurious_API.Controllers
                 await userRepository.Add(newUser);
                 return Ok();
             }
-            return BadRequest();
+            return Forbid();
         }
 
         [HttpPost("login")]
@@ -638,7 +629,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return BadRequest();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpGet("{id:length(1,128)}/profile")]
@@ -659,7 +650,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return BadRequest();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpPut("{id:length(1,128)}/profile")]
@@ -700,7 +691,7 @@ namespace CakeCurious_API.Controllers
                     }
                 }
             }
-            return BadRequest();
+            return Forbid();
         }
 
         [HttpGet("{id:length(1,128)}/recipes")]
@@ -727,7 +718,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return BadRequest();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpGet("{id:length(1,128)}/orders")]
@@ -755,7 +746,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return BadRequest();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpGet("{id:length(1,128)}/notifications")]
@@ -781,7 +772,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return BadRequest();
             }
-            return BadRequest();
+            return Forbid();
         }
 
         [HttpGet("{id:length(1,128)}/addresses")]
@@ -807,7 +798,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return BadRequest();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         private async Task CheckAndAddDevice(string? FcmToken, string uid)

@@ -66,7 +66,7 @@ namespace CakeCurious_API.Controllers
                 await _ReportRepository.Add(report);
                 return Ok();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpPut("bulk-update")]

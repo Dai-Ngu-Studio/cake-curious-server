@@ -55,7 +55,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return BadRequest();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         // Upload-Url is optional
@@ -66,102 +66,65 @@ namespace CakeCurious_API.Controllers
         [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024L * 1024L * 1024L)]
         public ActionResult Upload([FromForm] IFormFile file)
         {
-            try
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrWhiteSpace(uid))
+                // Get file extension
+                var contentType = file.ContentType.Split('/');
+                var fileExtension = contentType[1];
+
+                // Set destination
+                string destination = $"{Guid.NewGuid()}.{fileExtension}";
+                // If Upload-Url was included, use Upload-Url for destination instead
+                var uploadUrl = Request.Headers["Upload-Url"].FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(uploadUrl) && uploadUrl.Contains(BaseUrl))
                 {
-                    // Get file extension
-                    var contentType = file.ContentType.Split('/');
-                    var fileExtension = contentType[1];
+                    destination = uploadUrl.Substring(uploadUrl.LastIndexOf('/') + 1);
+                }
 
-                    // Set destination
-                    string destination = $"{Guid.NewGuid()}.{fileExtension}";
-                    // If Upload-Url was included, use Upload-Url for destination instead
-                    var uploadUrl = Request.Headers["Upload-Url"].FirstOrDefault();
-                    if (!string.IsNullOrWhiteSpace(uploadUrl) && uploadUrl.Contains(BaseUrl))
+                // Upload to Firebase Cloud Storage
+                Google.Apis.Storage.v1.Data.Object gObject = storageClient.UploadObject(BucketName, $"{uid}/{destination}", file.ContentType, file.OpenReadStream());
+
+                // If Thumbnail-Url was included, use Thumbnail-Url for compressed destination
+                var thumbnailUrl = Request.Headers["Thumbnail-Url"].FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(thumbnailUrl) && thumbnailUrl.Contains(BaseUrl))
+                {
+                    var compressedDestination = thumbnailUrl.Substring(thumbnailUrl.LastIndexOf('/') + 1);
+                    try
                     {
-                        destination = uploadUrl.Substring(uploadUrl.LastIndexOf('/') + 1);
-                    }
-
-                    // Upload to Firebase Cloud Storage
-                    Google.Apis.Storage.v1.Data.Object gObject = storageClient.UploadObject(BucketName, $"{uid}/{destination}", file.ContentType, file.OpenReadStream());
-
-                    // If Thumbnail-Url was included, use Thumbnail-Url for compressed destination
-                    var thumbnailUrl = Request.Headers["Thumbnail-Url"].FirstOrDefault();
-                    if (!string.IsNullOrWhiteSpace(thumbnailUrl) && thumbnailUrl.Contains(BaseUrl))
-                    {
-                        var compressedDestination = thumbnailUrl.Substring(thumbnailUrl.LastIndexOf('/') + 1);
-                        try
+                        // Upload compressed to Firebase Cloud Storage
+                        using (var readStream = file.OpenReadStream())
                         {
-                            // Upload compressed to Firebase Cloud Storage
-                            using (var readStream = file.OpenReadStream())
+                            using (var image = new MagickImage(readStream))
                             {
-                                using (var image = new MagickImage(readStream))
-                                {
-                                    var imageWidth = int.Parse(Environment.GetEnvironmentVariable(EnvironmentHelper.ShareImageWidth) ?? "300");
-                                    var imageHeight = int.Parse(Environment.GetEnvironmentVariable(EnvironmentHelper.ShareImageHeight) ?? "200");
-                                    var size = new MagickGeometry(imageWidth, imageHeight);
-                                    var memoryStream = new MemoryStream();
-                                    image.Resize(size);
-                                    image.WriteAsync(memoryStream);
-                                    Google.Apis.Storage.v1.Data.Object compressedGObject = storageClient.UploadObject(BucketName, $"{uid}/{compressedDestination}", file.ContentType, memoryStream);
-                                }
+                                var imageWidth = int.Parse(Environment.GetEnvironmentVariable(EnvironmentHelper.ShareImageWidth) ?? "300");
+                                var imageHeight = int.Parse(Environment.GetEnvironmentVariable(EnvironmentHelper.ShareImageHeight) ?? "200");
+                                var size = new MagickGeometry(imageWidth, imageHeight);
+                                var memoryStream = new MemoryStream();
+                                image.Resize(size);
+                                image.WriteAsync(memoryStream);
+                                Google.Apis.Storage.v1.Data.Object compressedGObject = storageClient.UploadObject(BucketName, $"{uid}/{compressedDestination}", file.ContentType, memoryStream);
                             }
                         }
-                        catch (MagickException)
-                        {
-                            thumbnailUrl = NoImageAvailable;
-                        }
-
-                        return Ok(new
-                        {
-                            PhotoUrl = $"{GoogleStorage}{gObject.Bucket}/{gObject.Name}",
-                            ThumbnailUrl = thumbnailUrl,
-                        });
                     }
-                    else
+                    catch (MagickException)
                     {
-                        return Ok($"{GoogleStorage}{gObject.Bucket}/{gObject.Name}");
+                        thumbnailUrl = NoImageAvailable;
                     }
 
+                    return Ok(new
+                    {
+                        PhotoUrl = $"{GoogleStorage}{gObject.Bucket}/{gObject.Name}",
+                        ThumbnailUrl = thumbnailUrl,
+                    });
                 }
-                return Unauthorized();
+                else
+                {
+                    return Ok($"{GoogleStorage}{gObject.Bucket}/{gObject.Name}");
+                }
+
             }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
-        }
-
-        // Example from documentation
-        [HttpGet("temporary/analytics")]
-        public ActionResult TemporaryAnalytics()
-        {
-            BetaAnalyticsDataClient client = new BetaAnalyticsDataClientBuilder
-            {
-                CredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS"),
-            }.Build();
-
-            // Initialize request argument(s)
-            RunReportRequest request = new RunReportRequest
-            {
-                Property = "properties/" + AnalyticsPropertyId,
-                Dimensions = { new Dimension { Name = "city" }, },
-                Metrics = { new Metric { Name = "totalUsers" }, },
-                DateRanges = { new DateRange { StartDate = "2022-09-05", EndDate = "today" }, },
-            };
-
-            // Make the request
-            var response = client.RunReport(request);
-
-            var stringBuilder = new StringBuilder();
-            foreach (Row row in response.Rows)
-            {
-                stringBuilder.AppendLine($"{row.DimensionValues[0].Value} {row.MetricValues[0].Value}");
-            }
-
-            return Ok(stringBuilder.ToString());
+            return Forbid();
         }
     }
 }

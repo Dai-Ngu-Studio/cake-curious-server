@@ -76,52 +76,6 @@ namespace CakeCurious_API.Controllers
             return NotFound();
         }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<ActionResult<Store>> PostStore(Store store)
-        {
-            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrWhiteSpace(uid))
-            {
-                Guid id = Guid.NewGuid();
-                var newStore = new Store
-                {
-                    Address = store.Address,
-                    Description = store.Description,
-                    Id = id,
-                    PhotoUrl = store.PhotoUrl,
-                    Name = store.Name,
-                    UserId = uid,
-                    Rating = store.Rating,
-                    Status = 0,
-                };
-                try
-                {
-                    await storeRepository.Add(newStore);
-                    var elasticsearchStore = new ElasticsearchStore
-                    {
-                        Id = newStore.Id,
-                        Name = newStore.Name,
-                        Rating = newStore.Rating,
-                    };
-
-                    var createResponse = await elasticClient.CreateAsync<ElasticsearchStore>(elasticsearchStore,
-                        x => x
-                            .Id(newStore.Id)
-                            .Index("stores")
-                        );
-
-                    return Ok(newStore);
-                }
-                catch (DbUpdateException)
-                {
-                    if (storeRepository.GetById(store.Id!.Value) != null)
-                        return Conflict();
-                }
-            }
-            return Unauthorized();
-        }
-
         [HttpDelete("{id:guid}")]
         [Authorize]
         public async Task<ActionResult> DeleteStore(Guid? id)
@@ -209,7 +163,7 @@ namespace CakeCurious_API.Controllers
                 couponPage.Coupons = couponRepository.GetValidSimpleCouponsOfStoreForUser(id, uid, (page - 1) * take, take);
                 return Ok(couponPage);
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         /// <summary>
@@ -249,7 +203,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return NotFound();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpGet("{id:guid}/ingredients")]
@@ -300,7 +254,7 @@ namespace CakeCurious_API.Controllers
                 storePage.Stores = await storeRepository.GetActiveCouponsStore(uid, (page - 1) * take, take);
                 return Ok(storePage);
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Store store)

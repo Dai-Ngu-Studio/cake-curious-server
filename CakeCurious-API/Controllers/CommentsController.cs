@@ -96,9 +96,9 @@ namespace CakeCurious_API.Controllers
                         return (rows > 0) ? Ok(await commentRepository.GetRecipeComment(id)) : BadRequest();
                     }
                 }
-                return BadRequest();
+                return NotFound();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpPost]
@@ -126,7 +126,7 @@ namespace CakeCurious_API.Controllers
                 await commentRepository.Add(comment);
                 return Ok(await commentRepository.GetRecipeComment((Guid)comment.Id!));
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpDelete("take-down/{guid}")]
@@ -185,9 +185,9 @@ namespace CakeCurious_API.Controllers
                         return (rows > 0) ? Ok() : BadRequest();
                     }
                 }
-                return BadRequest();
+                return NotFound();
             }
-            return Unauthorized();
+            return Forbid();
         }
     }
 }
