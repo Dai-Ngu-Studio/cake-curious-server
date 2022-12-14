@@ -1,6 +1,7 @@
 ﻿using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Repository.Constants.Exceptions;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
 using Repository.Interfaces;
@@ -270,6 +271,33 @@ namespace Repository
                 Console.WriteLine(ex.Message);
             }
             return null;
+        }
+
+        public async Task UpdateUserProfile(string id, UpdateProfileUser updateProfile)
+        {
+            var db = new CakeCuriousDbContext();
+            using (var transaction = db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(updateProfile.Username?.Trim()))
+                    {
+                        await db.Database.ExecuteSqlRawAsync("update [User] set [User].[username] = {0} where [User].[id] = {1}", updateProfile.Username.Trim(), id);
+                    }
+                }
+                catch (Exception)
+                {
+                    await db.Database.RollbackTransactionAsync();
+                    await db.DisposeAsync();
+                    throw new UsernameTakenException();
+                }
+                if (!string.IsNullOrWhiteSpace(updateProfile.DisplayName?.Trim()))
+                {
+                    await db.Database.ExecuteSqlRawAsync("update [User] set [User].[display_name] = {0} where [User].[id] = {1}", updateProfile.DisplayName.Trim(), id);
+                }
+                await db.SaveChangesAsync();
+                await db.Database.CommitTransactionAsync();
+            }
         }
 
         public async Task<ProfileUser?> GetProfileUser(string? id, string currentUserId)

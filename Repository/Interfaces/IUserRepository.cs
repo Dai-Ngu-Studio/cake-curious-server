@@ -18,6 +18,7 @@ namespace Repository.Interfaces
         public int CountDashboardUser(string? search, string? filter);
         public Task<UserDetailForWeb?> GetUserDetailForWeb(string uid);
         public Task<User?> DeleteUser(string? id);
+        public Task UpdateUserProfile(string id, UpdateProfileUser updateProfile);
         public Task<ProfileUser?> GetProfileUser(string? id, string currentUserId);
         public Task<ICollection<SimpleUser>> GetSuggestedUsers(List<string> userIds);
         public Task<int> UpdateShareUrl(string id, string shareUrl);

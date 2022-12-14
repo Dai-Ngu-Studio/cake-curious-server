@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nest;
+using Repository.Constants.Exceptions;
 using Repository.Constants.Products;
 using Repository.Constants.Roles;
 using Repository.Constants.Users;
@@ -659,6 +660,35 @@ namespace CakeCurious_API.Controllers
                 return BadRequest();
             }
             return Unauthorized();
+        }
+
+        [HttpPut("{id:length(1,128)}/profile")]
+        [Authorize]
+        public async Task<ActionResult> UpdateUserProfile(string id, UpdateProfileUser updateProfile)
+        {
+            // Get ID Token
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                if (id == uid || await UserRoleAuthorizer
+                .AuthorizeUser(new RoleEnum[] { RoleEnum.Administrator, RoleEnum.Staff }, uid!, userRepository))
+                {
+                    if (id == "current")
+                    {
+                        id = uid!;
+                    }
+                    try
+                    {
+                        await userRepository.UpdateUserProfile(id, updateProfile);
+                        return Ok();
+                    }
+                    catch (UsernameTakenException)
+                    {
+                        return Conflict();
+                    }
+                }
+            }
+            return BadRequest();
         }
 
         [HttpGet("{id:length(1,128)}/recipes")]
