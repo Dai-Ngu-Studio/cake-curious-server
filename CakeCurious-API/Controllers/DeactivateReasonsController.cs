@@ -7,6 +7,7 @@ using Repository.Constants.DeactivateReasons;
 using Repository.Constants.Roles;
 using Repository.Interfaces;
 using Repository.Models.DeactivateReasons;
+using Repository.Models.Users;
 using System.Security.Claims;
 
 namespace CakeCurious_API.Controllers
@@ -30,6 +31,18 @@ namespace CakeCurious_API.Controllers
             commentRepository = _commentRepository;
             userRepository = _userRepository;
             storeRepository = _storeRepository;
+        }
+
+        [HttpPost("by-email")]
+        public async Task<ActionResult> GetDeactivateReasonForEmail(EmailUser emailUser)
+        {
+            var user = await userRepository.GetReadonlyUserByEmail(emailUser.Email!);
+            if (user != null)
+            {
+                var guid = ConvertUtility.ToGuid(user.Id!);
+                return Ok(await deactivateReasonRepository.GetReasonByItemIdReadonly(guid));
+            }
+            return NotFound();
         }
 
         [HttpPost]
