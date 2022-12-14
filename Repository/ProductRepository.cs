@@ -220,8 +220,8 @@ namespace Repository
             var result = new List<GroceryProduct>();
             var db = new CakeCuriousDbContext();
             string query = (storeId != null)
-                ? $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] left join [Store] as [s] on [p].[store_id] = [s].[id] left join [User] as [u] on [s].[user_id] = [u].[id] where abs(checksum([p].id, rand(@randSeed)* rand(@randSeed))) > @key and ([p].[product_type] = @productType) and ([p].[status] = @productStatus) and ([s].[status] = @storeStatus) and ([u].[status] = @userStatus) and ([s].[id] = @storeId) order by abs(checksum([p].id, rand(@randSeed) * rand(@randSeed)))"
-                : $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[photo_url], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] left join [Store] as [s] on [p].[store_id] = [s].[id] left join [User] as [u] on [s].[user_id] = [u].[id] where abs(checksum([p].id, rand(@randSeed)* rand(@randSeed))) > @key and ([p].[product_type] = @productType) and ([p].[status] = @productStatus) and ([s].[status] = @storeStatus) and ([u].[status] = @userStatus) order by abs(checksum([p].id, rand(@randSeed) * rand(@randSeed)))";
+                ? $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[photo_url], [p].[rating], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] left join [Store] as [s] on [p].[store_id] = [s].[id] left join [User] as [u] on [s].[user_id] = [u].[id] where abs(checksum([p].id, rand(@randSeed)* rand(@randSeed))) > @key and ([p].[product_type] = @productType) and ([p].[status] = @productStatus) and ([s].[status] = @storeStatus) and ([u].[status] = @userStatus) and ([s].[id] = @storeId) order by abs(checksum([p].id, rand(@randSeed) * rand(@randSeed)))"
+                : $"select top {take} [p].[id], [p].[product_type], [p].[name], [p].[price], [p].[photo_url], [p].[rating], abs(checksum([p].id, rand(@randSeed)*rand(@randSeed))) as [key] from [Product] as [p] left join [Store] as [s] on [p].[store_id] = [s].[id] left join [User] as [u] on [s].[user_id] = [u].[id] where abs(checksum([p].id, rand(@randSeed)* rand(@randSeed))) > @key and ([p].[product_type] = @productType) and ([p].[status] = @productStatus) and ([s].[status] = @storeStatus) and ([u].[status] = @userStatus) order by abs(checksum([p].id, rand(@randSeed) * rand(@randSeed)))";
             var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = query;
             var productStatus = (int)ProductStatusEnum.Active;
@@ -253,6 +253,7 @@ namespace Repository
                         ProductType = (int)reader["product_type"],
                         Price = (decimal)reader["price"],
                         PhotoUrl = (string)reader["photo_url"],
+                        Rating = (decimal)reader["rating"],
                         Key = (int)reader["key"],
                     });
                 }
