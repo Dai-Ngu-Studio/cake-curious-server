@@ -7,5 +7,7 @@ namespace Repository.Interfaces
     {
         public Task CreateNotificationContent(NotificationContent content);
         public IEnumerable<DetailNotifcation> GetNotificationsOfUser(string uid, int skip, int take);
+        public Task SwitchNotificationStatus(Guid id);
+        public Task UpdateRangeNotificationStatus(List<Guid> ids, int status);
     }
 }

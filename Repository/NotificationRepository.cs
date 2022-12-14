@@ -1,7 +1,9 @@
 ﻿using BusinessObject;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Models.Notifications;
+using System.Text;
 
 namespace Repository
 {
@@ -27,6 +29,24 @@ namespace Repository
                 .Skip(skip)
                 .Take(take)
                 .ProjectToType<DetailNotifcation>();
+        }
+
+        public async Task SwitchNotificationStatus(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            string query = "update [Notification] set [Notification].[status] = abs([Notification].[status] - 1) where [Notification].[id] = {0}";
+            await db.Database.ExecuteSqlRawAsync(query, id);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task UpdateRangeNotificationStatus(List<Guid> ids, int status)
+        {
+            var db = new CakeCuriousDbContext();
+            var query = "update [Notification] set [Notification].[status] = {0} where [Notification].[id] in ";
+            var formattedIds = ids.Select(x => $"'{x}'");
+            query += $"({string.Join(",", formattedIds)})";
+            await db.Database.ExecuteSqlRawAsync(query, status);
+            await db.SaveChangesAsync();
         }
     }
 }

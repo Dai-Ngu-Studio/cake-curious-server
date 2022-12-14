@@ -1,6 +1,4 @@
 ﻿using CakeCurious_API.Utilities;
-using CakeCurious_API.Utilities.FirebaseCloudMessaging;
-using FirebaseAdmin.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Constants.NotificationContents;
@@ -30,9 +28,10 @@ namespace CakeCurious_API.Controllers
 
         [HttpPut("{id:guid}/read")]
         [Authorize]
-        public ActionResult MarkAsRead(Guid id)
+        public async Task<ActionResult> MarkAsRead(Guid id)
         {
-            return StatusCode(501);
+            await notificationRepository.SwitchNotificationStatus(id);
+            return Ok();
         }
 
         [HttpPut("read-selected")]
