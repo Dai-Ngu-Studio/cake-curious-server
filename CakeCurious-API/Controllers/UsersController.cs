@@ -677,9 +677,21 @@ namespace CakeCurious_API.Controllers
                     {
                         id = uid!;
                     }
+
                     try
                     {
                         await userRepository.UpdateUserProfile(id, updateProfile);
+                        try
+                        {
+                            var user = await userRepository.GetDetached(id);
+                            var temp = new User { Id = user!.Id, DisplayName = user.DisplayName, PhotoUrl = user.PhotoUrl };
+                            var dynamicLinkResponse = await CreateUserDynamicLink(temp);
+                            await userRepository.UpdateShareUrl(id, dynamicLinkResponse.ShortLink);
+                        }
+                        catch (Exception)
+                        {
+                            // do nothing
+                        }
                         return Ok();
                     }
                     catch (UsernameTakenException)
