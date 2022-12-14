@@ -760,7 +760,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:length(1,128)}/notifications")]
         [Authorize]
-        public ActionResult<DetailNotificationPage> GetNotificationsOfUser(
+        public async Task<ActionResult<DetailNotificationPage>> GetNotificationsOfUser(
             string id,
             [Range(1, int.MaxValue)] int page = 1,
             [Range(1, int.MaxValue)] int take = 5)
@@ -775,6 +775,7 @@ namespace CakeCurious_API.Controllers
                         id = uid;
                     }
                     var notificationPage = new DetailNotificationPage();
+                    notificationPage.UnreadCount = await notificationRepository.CountUnreadOfUser(id);
                     notificationPage.Notifications = notificationRepository.GetNotificationsOfUser(id, (page - 1) * take, take);
                     return Ok(notificationPage);
                 }

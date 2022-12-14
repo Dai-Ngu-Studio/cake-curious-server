@@ -1,9 +1,9 @@
 ﻿using BusinessObject;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Repository.Constants.Notifications;
 using Repository.Interfaces;
 using Repository.Models.Notifications;
-using System.Text;
 
 namespace Repository
 {
@@ -20,10 +20,21 @@ namespace Repository
             }
         }
 
+        public async Task<int> CountUnreadOfUser(string uid)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Notifications
+                .AsNoTracking()
+                .Where(x => x.UserId == uid)
+                .Where(x => x.Status == (int)NotificationStatusEnum.Unread)
+                .CountAsync();
+        }
+
         public IEnumerable<DetailNotifcation> GetNotificationsOfUser(string uid, int skip, int take)
         {
             var db = new CakeCuriousDbContext();
             return db.Notifications
+                .AsNoTracking()
                 .OrderByDescending(x => x.Content!.NotificationDate)
                 .Where(x => x.UserId == uid)
                 .Skip(skip)
