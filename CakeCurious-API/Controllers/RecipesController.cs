@@ -127,9 +127,9 @@ namespace CakeCurious_API.Controllers
                         return (rows > 0) ? Ok() : BadRequest();
                     }
                 }
-                return BadRequest();
+                return NotFound();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpGet("explore")]
@@ -158,7 +158,7 @@ namespace CakeCurious_API.Controllers
                 recipePage.Recipes = recipeRepository.GetLatestRecipesForFollower(uid, (page - 1) * take, take);
                 return Ok(recipePage);
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpPost("{id:guid}/bookmark")]
@@ -170,20 +170,11 @@ namespace CakeCurious_API.Controllers
             {
                 if (await bookmarkRepository.IsRecipeBookmarkedByUser(uid, id))
                 {
-                    // Remove bookmark
-                    try
-                    {
-                        await bookmarkRepository.Remove(uid, id);
-                        return Ok();
-                    }
-                    catch (Exception)
-                    {
-                        return BadRequest();
-                    }
+                    await bookmarkRepository.Remove(uid, id);
+                    return Ok();
                 }
                 else
                 {
-                    // Add bookmark
                     try
                     {
                         await bookmarkRepository.Add(uid, id);
@@ -191,12 +182,11 @@ namespace CakeCurious_API.Controllers
                     }
                     catch (Exception)
                     {
-                        // Recipe might not exist
-                        return BadRequest();
+                        return NotFound();
                     }
                 }
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpPost("{id:guid}/like")]
@@ -208,20 +198,11 @@ namespace CakeCurious_API.Controllers
             {
                 if (await likeRepository.IsRecipeLikedByUser(uid, id))
                 {
-                    // Remove like
-                    try
-                    {
-                        await likeRepository.Remove(uid, id);
-                        return Ok();
-                    }
-                    catch (Exception)
-                    {
-                        return BadRequest();
-                    }
+                    await likeRepository.Remove(uid, id);
+                    return Ok();
                 }
                 else
                 {
-                    // Add like
                     try
                     {
                         await likeRepository.Add(uid, id);
@@ -229,8 +210,7 @@ namespace CakeCurious_API.Controllers
                     }
                     catch (Exception)
                     {
-                        // Recipe might not exist
-                        return BadRequest();
+                        return NotFound();
                     }
                 }
             }
@@ -283,7 +263,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return NotFound();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpPut("{id:guid}")]
@@ -359,9 +339,9 @@ namespace CakeCurious_API.Controllers
                         return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
                     }
                 }
-                return BadRequest();
+                return NotFound();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpPost]
@@ -423,7 +403,7 @@ namespace CakeCurious_API.Controllers
                 }
                 return Ok(await recipeRepository.GetRecipeDetails((Guid)recipe.Id!, uid));
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpGet("trending")]
@@ -454,54 +434,40 @@ namespace CakeCurious_API.Controllers
                 }
                 return NotFound();
             }
-            return Unauthorized();
+            return Forbid();
         }
 
         [HttpGet("{id:guid}/steps")]
         [Authorize]
         public async Task<ActionResult<DetailRecipeSteps>> GetAllRecipeStepDetails(Guid id)
         {
-            try
+            var recipe = await recipeRepository.GetRecipeWithStepsReadonly(id);
+            if (recipe != null)
             {
-                var recipe = await recipeRepository.GetRecipeWithStepsReadonly(id);
-                if (recipe != null)
+                var steps = new DetailRecipeSteps();
+                for (int i = 1; i <= recipe.RecipeSteps!.Count; i++)
                 {
-                    var steps = new DetailRecipeSteps();
-                    for (int i = 1; i <= recipe.RecipeSteps!.Count; i++)
+                    var step = await recipeRepository.GetRecipeStepDetails(id, i);
+                    if (step != null)
                     {
-                        var step = await recipeRepository.GetRecipeStepDetails(id, i);
-                        if (step != null)
-                        {
-                            steps.RecipeSteps!.Enqueue(step);
-                        }
+                        steps.RecipeSteps!.Enqueue(step);
                     }
-                    return Ok(steps);
                 }
-                return NotFound();
+                return Ok(steps);
             }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            return NotFound();
         }
 
         [HttpGet("{id:guid}/steps/{step:int}")]
         [Authorize]
         public async Task<ActionResult<DetailRecipeStep>> GetRecipeStepDetails(Guid id, [Range(1, int.MaxValue)] int step)
         {
-            try
+            var recipeStep = await recipeRepository.GetRecipeStepDetails(id, step);
+            if (recipeStep != null)
             {
-                var recipeStep = await recipeRepository.GetRecipeStepDetails(id, step);
-                if (recipeStep != null)
-                {
-                    return Ok(recipeStep);
-                }
-                return NotFound();
+                return Ok(recipeStep);
             }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            return NotFound();
         }
 
         [HttpGet("{id:guid}/comments")]

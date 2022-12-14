@@ -106,7 +106,7 @@ namespace CakeCurious_API.Controllers
                     }
                 }
             }
-            return BadRequest();
+            return Forbid();
         }
     }
 }
