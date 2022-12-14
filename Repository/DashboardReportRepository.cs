@@ -400,90 +400,58 @@ namespace Repository
             //init value for current week sale
             decimal currentWeekSale = 0;
             //get data for week1 sale of this month
-            foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek1 && ord!.OrderDate! <= endOfCurrentMonthWeek1 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
+            foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek1 && ord!.OrderDate! <= endOfCurrentMonthWeek1 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-                foreach (var orderDetail in ord!.OrderDetails!)
-                {
-                    currentWeekSale += orderDetail!.Quantity!.Value * orderDetail!.Price!.Value;
-                }
-                currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
+                currentWeekSale += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.CurrentMonthSales![0] = currentWeekSale;
             //get data for week2 sale of this month
             currentWeekSale = 0;
-            foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek2 && ord!.OrderDate! <= endOfCurrentMonthWeek2 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
+            foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek2 && ord!.OrderDate! <= endOfCurrentMonthWeek2 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-                foreach (var orderDetail in ord!.OrderDetails!)
-                {
-                    currentWeekSale += orderDetail!.Quantity!.Value * orderDetail!.Price!.Value;
-                }
-                currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
+                currentWeekSale += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.CurrentMonthSales![1] = currentWeekSale;
             //get data for week3 sale of this month
             currentWeekSale = 0;
-            foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek3 && ord!.OrderDate! <= endOfCurrentMonthWeek3 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
+            foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek3 && ord!.OrderDate! <= endOfCurrentMonthWeek3 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-                foreach (var orderDetail in ord!.OrderDetails!)
-                {
-                    currentWeekSale += orderDetail!.Quantity!.Value * orderDetail!.Price!.Value;
-                }
-                currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
+                currentWeekSale += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.CurrentMonthSales![2] = currentWeekSale;
             //get data for week4 sale of this month
             currentWeekSale = 0;
-            foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek4 && ord!.OrderDate! <= endOfCurrentMonthWeek4 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
+            foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek4 && ord!.OrderDate! <= endOfCurrentMonthWeek4 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-                foreach (var orderDetail in ord!.OrderDetails!)
-                {
-                    currentWeekSale += orderDetail!.Quantity!.Value * orderDetail!.Price!.Value;
-                }
-                currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
+                currentWeekSale += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.CurrentMonthSales![3] = currentWeekSale;
             //get data for week1 sale of last month
             currentWeekSale = 0;
-            foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek1.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek1.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
+            foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek1.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek1.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-                foreach (var orderDetail in ord!.OrderDetails!)
-                {
-                    currentWeekSale += orderDetail!.Quantity!.Value * orderDetail!.Price!.Value;
-                }
-                currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
+                currentWeekSale += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.LastMonthSales![0] = currentWeekSale;
             //get data for week1 sale of last month
             currentWeekSale = 0;
-            foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek2.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek2.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
+            foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek2.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek2.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-                foreach (var orderDetail in ord!.OrderDetails!)
-                {
-                    currentWeekSale += orderDetail!.Quantity!.Value * orderDetail!.Price!.Value;
-                }
-                currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
+                currentWeekSale += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.LastMonthSales![1] = currentWeekSale;
             //get data for week1 sale of last month
             currentWeekSale = 0;
-            foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek3.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek3.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
+            foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek3.AddMonths(-1) && ord!.OrderDate! <= endOfCurrentMonthWeek3.AddMonths(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-                foreach (var orderDetail in ord!.OrderDetails!)
-                {
-                    currentWeekSale += orderDetail!.Quantity!.Value * orderDetail!.Price!.Value;
-                }
-                currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
+                currentWeekSale += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.LastMonthSales![2] = currentWeekSale;
             //get data for week4 sale of last month
             currentWeekSale = 0;
-            foreach (var ord in db.Orders.Include(ord => ord.OrderDetails).Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek4.AddMonths(-1) && ord!.OrderDate! <= endOfLastMonthWeek4 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
+            foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startOfCurrentMonthWeek4.AddMonths(-1) && ord!.OrderDate! <= endOfLastMonthWeek4 && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-                foreach (var orderDetail in ord!.OrderDetails!)
-                {
-                    currentWeekSale += orderDetail!.Quantity!.Value * orderDetail!.Price!.Value;
-                }
-                currentWeekSale -= ord!.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
+                currentWeekSale += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             bc!.LastMonthSales![3] = currentWeekSale;
             int weekStart = -1;
