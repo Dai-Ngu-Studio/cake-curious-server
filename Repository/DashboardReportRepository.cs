@@ -20,7 +20,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             AdminDashboardCardStats cs = new AdminDashboardCardStats();
             //new report by week cost not much
-            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
+            DateTime startAtSunday = new DateTime(DateTime.UtcNow.AddHours(7).Year, DateTime.UtcNow.AddHours(7).Month, DateTime.UtcNow.AddHours(7).Day).AddDays(DayOfWeek.Sunday - DateTime.UtcNow.AddHours(7).DayOfWeek);
             IEnumerable<ViolationReport> TwoLastWeekReport = db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= DateTime.Now);
             cs.CurrentWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= DateTime.Now).Count();
             decimal lastWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= startAtSunday.AddDays(-1)).Count();
@@ -163,10 +163,10 @@ namespace Repository
             StaffDashboardStatistic report = new StaffDashboardStatistic();
             var db = new CakeCuriousDbContext();
             StaffDashboardCardStats cs = new StaffDashboardCardStats();
-            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
+            DateTime startAtSunday = new DateTime(DateTime.UtcNow.AddHours(7).Year, DateTime.UtcNow.AddHours(7).Month, DateTime.UtcNow.AddHours(7).Day).AddDays(DayOfWeek.Sunday - DateTime.UtcNow.AddHours(7).DayOfWeek);
             DateTime lastWeekSunday = startAtSunday.AddDays(-7);
             //Today repots sended
-            DateTime today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            System.DateTime today = new System.DateTime(System.DateTime.Now.Year, System.DateTime.Now.Month, System.DateTime.UtcNow.AddHours(+7).Day);
             DateTime yesterday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(-1).Day);
             cs.TodayReports = await db.ViolationReports.Where(r => r.SubmittedDate == today).CountAsync();
             int yesterdayReports = await db.ViolationReports.Where(r => r.SubmittedDate == yesterday).CountAsync();
@@ -368,7 +368,7 @@ namespace Repository
                 : 0;
             cs.SinceLastMonthProductSold = Math.Round(sinceLastMonthNewUser, 2);
             //Sales by week
-            DateTime startAtSunday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(DayOfWeek.Sunday - DateTime.Now.DayOfWeek);
+            DateTime startAtSunday = new DateTime(DateTime.UtcNow.AddHours(7).Year, DateTime.UtcNow.AddHours(7).Month, DateTime.UtcNow.AddHours(7).Day).AddDays(DayOfWeek.Sunday - DateTime.UtcNow.AddHours(7).DayOfWeek);
             foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startAtSunday && ord!.OrderDate! <= DateTime.Now && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
               
@@ -381,7 +381,7 @@ namespace Repository
                 lastWeekSales += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0; ;
             }
             double sinceLastWeekSales = cs.CurrentWeekSales > 0 || lastWeekSales > 0 ? 
-                (double)((cs.CurrentWeekSales - lastWeekSales) / (cs.CurrentWeekSales < lastWeekSales ? cs.CurrentMonthTotalCompletedOrder > 0 ? cs.CurrentWeekSales : 1 : lastWeekSales > 0 ? lastWeekSales : 1)) 
+                (double)((cs.CurrentWeekSales - lastWeekSales) / (cs.CurrentWeekSales < lastWeekSales ? cs.CurrentWeekSales > 0 ? cs.CurrentWeekSales : 1 : lastWeekSales > 0 ? lastWeekSales : 1)) 
                 : 0;
             cs.SinceLastWeekSales = Math.Round(sinceLastWeekSales, 2);
             //Order Complete by month
