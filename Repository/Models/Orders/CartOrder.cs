@@ -8,6 +8,6 @@ namespace Repository.Models.Orders
     {
         public CartStore? Store { get; set; }
         public IEnumerable<CartDetailProduct>? Products { get; set; }
-        public SimpleCoupon? Coupon { get; set; }
+        public UserAwareSimpleCoupon? Coupon { get; set; }
     }
 }

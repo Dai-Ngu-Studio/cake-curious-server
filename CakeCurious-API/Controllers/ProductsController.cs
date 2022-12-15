@@ -230,28 +230,33 @@ namespace CakeCurious_API.Controllers
         [Authorize]
         public async Task<ActionResult<CartOrders>> GetCartOrdersRequest(CartOrdersRequest ordersRequest)
         {
-            var cartOrdersRequests = ordersRequest.CartOrderRequests;
-            if (cartOrdersRequests != null)
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                List<Guid> storeIds = cartOrdersRequests.Select(x => (Guid)x.StoreId!).ToList();
-                List<Guid> productIds = cartOrdersRequests.SelectMany(x => x.ProductIds ?? Enumerable.Empty<Guid>()).ToList();
-                List<Guid?> couponIds = cartOrdersRequests.Select(x => x.CouponId).ToList();
-                var cartOrders = await productRepository.GetCartOrders(storeIds, productIds, couponIds);
-                var orders = new CartOrders
+                var cartOrdersRequests = ordersRequest.CartOrderRequests;
+                if (cartOrdersRequests != null)
                 {
-                    Orders = storeIds.Join(cartOrders, id => id, od => (Guid)od.Store!.Id!, (id, od) => od),
-                };
+                    List<Guid> storeIds = cartOrdersRequests.Select(x => (Guid)x.StoreId!).ToList();
+                    List<Guid> productIds = cartOrdersRequests.SelectMany(x => x.ProductIds ?? Enumerable.Empty<Guid>()).ToList();
+                    List<Guid?> couponIds = cartOrdersRequests.Select(x => x.CouponId).ToList();
+                    var cartOrders = await productRepository.GetCartOrders(storeIds, productIds, couponIds, uid);
+                    var orders = new CartOrders
+                    {
+                        Orders = storeIds.Join(cartOrders, id => id, od => (Guid)od.Store!.Id!, (id, od) => od),
+                    };
 
-                foreach (var order in orders.Orders)
-                {
-                    var orderProductIds = cartOrdersRequests
-                        .Where(x => x.StoreId == order.Store!.Id)
-                        .SelectMany(x => x.ProductIds ?? Enumerable.Empty<Guid>());
-                    order.Products = orderProductIds.Join(order.Products!, id => id, pd => (Guid)pd.Id!, (id, pd) => pd);
+                    foreach (var order in orders.Orders)
+                    {
+                        var orderProductIds = cartOrdersRequests
+                            .Where(x => x.StoreId == order.Store!.Id)
+                            .SelectMany(x => x.ProductIds ?? Enumerable.Empty<Guid>());
+                        order.Products = orderProductIds.Join(order.Products!, id => id, pd => (Guid)pd.Id!, (id, pd) => pd);
+                    }
+                    return Ok(orders);
                 }
-                return Ok(orders);
+                return BadRequest();
             }
-            return BadRequest();
+            return Forbid();
         }
 
         private async Task<CreateShortDynamicLinkResponse> CreateDynamicLink(Product product)

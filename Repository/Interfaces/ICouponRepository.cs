@@ -16,6 +16,7 @@ namespace Repository.Interfaces
         public Task<SimpleCoupon?> GetByIdForWeb(Guid guid);
         public Task UpdateRange(Coupon[] coupons);
         public Task<IEnumerable<Coupon>> GetAllActiveCoupon();
-        public IEnumerable<SimpleCoupon> GetValidSimpleCouponsOfStoreForUser(Guid storeId, string userId, int skip, int take);
+        public Task<ICollection<UserAwareSimpleCoupon>> GetUsableSimpleCouponsOfStoreForUser(Guid storeId, string currentUserId, int skip, int take);
+        public Task<ICollection<UserAwareSimpleCoupon>> GetValidSimpleCouponsOfStoreForUser(Guid storeId, string currentUserId, int skip, int take);
     }
 }

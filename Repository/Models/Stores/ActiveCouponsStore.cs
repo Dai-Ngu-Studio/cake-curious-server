@@ -8,7 +8,8 @@ namespace Repository.Models.Stores
         public string? Name { get; set; }
         public string? PhotoUrl { get; set; }
         public decimal? Rating { get; set; }
-        public IEnumerable<SimpleCoupon>? Coupons { get; set; }
+        public int? TotalCoupons { get; set; }
+        public IEnumerable<UserAwareSimpleCoupon>? Coupons { get; set; }
         public int? Status { get; set; }
     }
 }

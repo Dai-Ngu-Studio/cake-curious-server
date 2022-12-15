@@ -152,15 +152,31 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("{id:guid}/coupons")]
         [Authorize]
-        public ActionResult<SimpleCouponPage> GetValidSimpleCouponsOfStore(Guid id,
+        public async Task<ActionResult<UserAwareSimpleCouponPage>> GetValidSimpleCouponsOfStore(Guid id,
             [Range(1, int.MaxValue)] int page = 1,
             [Range(1, int.MaxValue)] int take = 5)
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrWhiteSpace(uid))
             {
-                var couponPage = new SimpleCouponPage();
-                couponPage.Coupons = couponRepository.GetValidSimpleCouponsOfStoreForUser(id, uid, (page - 1) * take, take);
+                var couponPage = new UserAwareSimpleCouponPage();
+                couponPage.Coupons = await couponRepository.GetValidSimpleCouponsOfStoreForUser(id, uid, (page - 1) * take, take);
+                return Ok(couponPage);
+            }
+            return Forbid();
+        }
+
+        [HttpGet("{id:guid}/usable-coupons")]
+        [Authorize]
+        public async Task<ActionResult<UserAwareSimpleCouponPage>> GetUsableSimpleCouponsOfStore(Guid id,
+            [Range(1, int.MaxValue)] int page = 1,
+            [Range(1, int.MaxValue)] int take = 5)
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                var couponPage = new UserAwareSimpleCouponPage();
+                couponPage.Coupons = await couponRepository.GetUsableSimpleCouponsOfStoreForUser(id, uid, (page - 1) * take, take);
                 return Ok(couponPage);
             }
             return Forbid();
