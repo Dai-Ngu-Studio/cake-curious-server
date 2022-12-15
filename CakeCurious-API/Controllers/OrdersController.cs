@@ -262,7 +262,7 @@ namespace CakeCurious_API.Controllers
                                         if (product.LastUpdated != null)
                                         {
                                             if (DateTime.Now <= product.LastUpdated!.Value.AddDays(7)
-                                                && DateTime.Now >= product.LastUpdated!.Value.AddDays(-7))
+                                                && DateTime.Now >= product.LastUpdated!.Value)
                                             {
                                                 if (checkoutOrder.CouponId != null)
                                                 {
