@@ -165,6 +165,7 @@ namespace CakeCurious_API.Controllers
                 if (id != product.Id) return BadRequest();
                 Product? beforeUpdateObj = await productRepository.GetById(product.Id.Value);
                 if (beforeUpdateObj == null) return BadRequest("Product does not exist.");
+                var initialPrice = beforeUpdateObj.Price;
                 Product updateProd = new Product()
                 {
                     Id = product.Id ?? beforeUpdateObj.Id,
@@ -177,13 +178,19 @@ namespace CakeCurious_API.Controllers
                     Status = product.Status ?? beforeUpdateObj.Status,
                     StoreId = product.StoreId ?? beforeUpdateObj.StoreId,
                     ProductCategoryId = product.ProductCategoryId ?? beforeUpdateObj.ProductCategoryId,
-                    LastUpdated = DateTime.Now,
+                    LastUpdated = beforeUpdateObj.LastUpdated,
                 };
 
                 var dynamicLinkResponse = await CreateDynamicLink(updateProd);
                 updateProd.ShareUrl = dynamicLinkResponse.ShortLink;
 
+                if (initialPrice != updateProd.Price)
+                {
+                    updateProd.LastUpdated = DateTime.Now;
+                }
+
                 await productRepository.Update(updateProd);
+
 
                 var elasticsearchProduct = new ElasticsearchProduct
                 {
