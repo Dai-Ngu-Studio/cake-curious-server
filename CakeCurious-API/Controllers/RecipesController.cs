@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nest;
 using Repository.Constants.Categories;
 using Repository.Constants.Recipes;
+using Repository.Constants.Reports;
 using Repository.Constants.Roles;
 using Repository.Interfaces;
 using Repository.Models.Bookmarks;
@@ -30,41 +31,46 @@ namespace CakeCurious_API.Controllers
         private readonly ILikeRepository likeRepository;
         private readonly IBookmarkRepository bookmarkRepository;
         private readonly IUserRepository userRepository;
-        private readonly IElasticClient elasticClient;
-        private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
         private readonly IViolationReportRepository reportRepository;
         private readonly IRecipeCategoryRepository recipeCategoryRepository;
-
-
+        private readonly IUserDeviceRepository userDeviceRepository;
+        private readonly INotificationRepository notificationRepository;
+        private readonly IElasticClient elasticClient;
+        private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
         private readonly TranslationClient translationClient;
 
         public RecipesController(IRecipeRepository _recipeRepository, ICommentRepository _commentRepository,
-            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository, IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService, TranslationClient _translationClient, IViolationReportRepository _reportRepository, IRecipeCategoryRepository _recipeCategoryRepository)
+            ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository,
+            IViolationReportRepository _reportRepository, IRecipeCategoryRepository _recipeCategoryRepository,
+            IUserDeviceRepository _userDeviceRepository, INotificationRepository _notificationRepository,
+            IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService, TranslationClient _translationClient)
         {
             recipeRepository = _recipeRepository;
             commentRepository = _commentRepository;
             likeRepository = _likeRepository;
             bookmarkRepository = _bookmarkRepository;
             userRepository = _userRepository;
+            recipeCategoryRepository = _recipeCategoryRepository;
+            reportRepository = _reportRepository;
+            userDeviceRepository = _userDeviceRepository;
+            notificationRepository = _notificationRepository;
             elasticClient = _elasticClient;
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
-            reportRepository = _reportRepository;
             translationClient = _translationClient;
-            recipeCategoryRepository = _recipeCategoryRepository;
         }
 
-        [HttpDelete("take-down/{guid}")]
+        [HttpDelete("take-down/{id:guid}")]
         [Authorize]
-        public async Task<ActionResult> TakeDownAnRecipe(Guid? guid)
+        public async Task<ActionResult> TakeDownAnRecipe(Guid? id)
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (guid == null)
+            if (id == null)
             {
                 return BadRequest("Missing input id");
             }
             try
             {
-                await recipeRepository.Delete(guid.Value);
+                await recipeRepository.Delete(id.Value);
             }
             catch (Exception)
             {
@@ -75,12 +81,14 @@ namespace CakeCurious_API.Controllers
             {
                 if (uid != null)
                 {
-                    await reportRepository.UpdateAllReportStatusOfAnItem(guid.Value, uid!);
+                    await reportRepository.UpdateAllReportStatusOfAnItem(id.Value, uid!);
+                    _ = Task.Run(() => NotificationUtility
+                        .NotifyReporters(userDeviceRepository, notificationRepository, reportRepository,
+                            recipeRepository, commentRepository, id.Value, (int)ReportTypeEnum.Recipe));
                 }
             }
             catch (Exception)
             {
-
                 return BadRequest("Error when change all reports status of an item to censored");
             }
             return Ok("Take down item success.");

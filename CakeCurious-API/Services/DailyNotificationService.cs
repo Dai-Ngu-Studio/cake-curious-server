@@ -100,7 +100,7 @@ namespace CakeCurious_API.Services
 
                             var nextBatch = userDeviceRepository.GetDevicesReadonlyAfter(TAKE, userDevices.LastOrDefault()!.Token!);
                             batches.RemoveAt(0);
-                            if (nextBatch != null && nextBatch.Count() > 0)
+                            if (nextBatch != null && nextBatch.Any())
                             {
                                 batches.Add(nextBatch);
                             }

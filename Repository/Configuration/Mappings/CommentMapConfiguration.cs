@@ -17,6 +17,10 @@ namespace Repository.Configuration.Mappings
                     .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
                     .Count())
                 .MaxDepth(5);
+
+            TypeAdapterConfig<Comment, NameOnlyComment>
+                .NewConfig()
+                .Map(dest => dest.UserDisplayName, src => src.User!.DisplayName);
         }
     }
 }

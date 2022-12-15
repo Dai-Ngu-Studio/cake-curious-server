@@ -2,6 +2,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Repository.Constants.Coupons;
+using Repository.Constants.Orders;
 using Repository.Constants.Products;
 using Repository.Constants.Users;
 using Repository.Interfaces;
@@ -156,19 +157,45 @@ namespace Repository
             return await db.Coupons.ProjectToType<SimpleCoupon>().FirstOrDefaultAsync(x => x.Id == guid);
         }
 
-        public IEnumerable<SimpleCoupon> GetValidSimpleCouponsOfStoreForUser(Guid storeId, string userId, int skip, int take)
+        public async Task<ICollection<UserAwareSimpleCoupon>> GetUsableSimpleCouponsOfStoreForUser(Guid storeId, string currentUserId, int skip, int take)
         {
-            var db = new CakeCuriousDbContext();
-            return db.Coupons
-                .OrderByDescending(x => x.ExpiryDate)
-                .Where(x => x.ExpiryDate > DateTime.Now)
-                .Where(x => x.Status == (int)CouponStatusEnum.Active)
-                .Where(x => x.StoreId == storeId)
-                .Where(x => x.MaxUses != null ? x.Orders!.Count < x.MaxUses : true)
-                .Where(x => !(x.Orders!.Any(y => y.UserId == userId)))
-                .Skip(skip)
-                .Take(take)
-                .ProjectToType<SimpleCoupon>();
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("userId", currentUserId);
+
+                var db = new CakeCuriousDbContext();
+                return await db.Coupons
+                    .OrderByDescending(x => x.ExpiryDate)
+                    .Where(x => x.ExpiryDate > DateTime.Now)
+                    .Where(x => x.Status == (int)CouponStatusEnum.Active)
+                    .Where(x => x.StoreId == storeId)
+                    .Where(x => x.MaxUses != null ? x.Orders!.Count < x.MaxUses : true)
+                    .Where(x => !(x.Orders!.Any(y => y.UserId == currentUserId && y.Status != (int)OrderStatusEnum.Cancelled)))
+                    .Skip(skip)
+                    .Take(take)
+                    .ProjectToType<UserAwareSimpleCoupon>()
+                    .ToListAsync();
+            }
+        }
+
+        public async Task<ICollection<UserAwareSimpleCoupon>> GetValidSimpleCouponsOfStoreForUser(Guid storeId, string currentUserId, int skip, int take)
+        {
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("userId", currentUserId);
+
+                var db = new CakeCuriousDbContext();
+                return await db.Coupons
+                    .OrderByDescending(x => x.ExpiryDate)
+                    .Where(x => x.ExpiryDate > DateTime.Now)
+                    .Where(x => x.Status == (int)CouponStatusEnum.Active)
+                    .Where(x => x.StoreId == storeId)
+                    .Where(x => x.MaxUses != null ? x.Orders!.Count < x.MaxUses : true)
+                    .Skip(skip)
+                    .Take(take)
+                    .ProjectToType<UserAwareSimpleCoupon>()
+                    .ToListAsync();
+            }
         }
 
         public async Task<SimpleCoupon?> GetSimpleCouponOfStoreByCode(Guid storeId, string code)
@@ -184,13 +211,14 @@ namespace Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<SimpleCoupon?> GetActiveSimpleCouponOfStoreById(Guid id)
+        public async Task<SimpleCoupon?> GetActiveSimpleCouponOfStoreById(Guid id, Guid storeId)
         {
             var db = new CakeCuriousDbContext();
             return await db.Coupons
                 .AsNoTracking()
                 .AsSplitQuery()
                 .Where(x => x.Id == id)
+                .Where(x => x.StoreId == storeId)
                 .Where(x => x.ExpiryDate > DateTime.Now)
                 .Where(x => x.Status == (int)CouponStatusEnum.Active)
                 .Where(x => x.Store!.Status == (int)StoreStatusEnum.Active)

@@ -36,13 +36,17 @@ namespace Repository.Configuration.Mappings
 
             TypeAdapterConfig<Store, ActiveCouponsStore>
                 .NewConfig()
+                .Map(dest => dest.TotalCoupons, src => src.Coupons!
+                    .Where(x => x.Status == (int)CouponStatusEnum.Active)
+                    .Where(x => x.ExpiryDate > DateTime.Now)
+                    .Where(x => x.MaxUses != null ? x.Orders!.Count < x.MaxUses : true)
+                    .Count())
                 .Map(dest => dest.Coupons, src => src.Coupons!
                     .Take(5)
                     .OrderByDescending(x => x.Discount)
                     .Where(x => x.Status == (int)CouponStatusEnum.Active)
                     .Where(x => x.ExpiryDate > DateTime.Now)
-                    .Where(x => x.MaxUses != null ? x.Orders!.Count < x.MaxUses : true)
-                    .Where(x => !(x.Orders!.Any(y => y.UserId == (string)MapContext.Current!.Parameters["userId"]))));
+                    .Where(x => x.MaxUses != null ? x.Orders!.Count < x.MaxUses : true));
         }
     }
 }

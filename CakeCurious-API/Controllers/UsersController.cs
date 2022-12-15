@@ -678,6 +678,35 @@ namespace CakeCurious_API.Controllers
                             var temp = new User { Id = user!.Id, DisplayName = user.DisplayName, PhotoUrl = user.PhotoUrl };
                             var dynamicLinkResponse = await CreateUserDynamicLink(temp);
                             await userRepository.UpdateShareUrl(id, dynamicLinkResponse.ShortLink);
+
+                            var elasticsearchUser = new ElasticsearchUser
+                            {
+                                Id = user.Id,
+                                Username = user.Username,
+                                DisplayName = user.DisplayName,
+                                Roles = user.HasRoles!.Select(x => (int)x.RoleId!).ToArray(),
+                            };
+
+                            // Does doc exist on Elasticsearch?
+                            var existsResponse = await elasticClient.DocumentExistsAsync(new DocumentExistsRequest(index: "users", user.Id));
+                            if (!existsResponse.Exists)
+                            {
+                                // Doc doesn't exist, create new
+                                var createResponse = await elasticClient.CreateAsync<ElasticsearchUser>(elasticsearchUser,
+                                    x => x
+                                        .Id(user.Id)
+                                        .Index("users")
+                                    );
+                            }
+                            else
+                            {
+                                // Doc exists, update
+                                var updateResponse = await elasticClient.UpdateAsync<ElasticsearchUser>(user.Id,
+                                    x => x
+                                        .Index("users")
+                                        .Doc(elasticsearchUser)
+                                    );
+                            }
                         }
                         catch (Exception)
                         {
@@ -855,7 +884,7 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("search")]
         [Authorize]
-        public async Task<ActionResult<SimpleUserPage>> SearchUsers(
+        public async Task<ActionResult<FollowAwareSimpleUserPage>> SearchUsers(
             [FromQuery] string? query,
             [FromQuery] int[]? roles,
             [FromQuery] string? lastId,
@@ -880,10 +909,16 @@ namespace CakeCurious_API.Controllers
             if (!string.IsNullOrWhiteSpace(query))
             {
                 shouldContainer.Add(descriptor
-                    .MultiMatch(m => m
-                        .Fields(f => f
-                            .Field(ff => ff.DisplayName)
-                            .Field(ff => ff.Username))
+                    .Match(m => m
+                        .Field(f => f.Username)
+                        .Query(query)
+                        .Fuzziness(Fuzziness.EditDistance(2))
+                    )
+                );
+
+                shouldContainer.Add(descriptor
+                    .Match(m => m
+                        .Field(f => f.DisplayName)
                         .Query(query)
                         .Fuzziness(Fuzziness.EditDistance(2))
                     )
@@ -937,13 +972,14 @@ namespace CakeCurious_API.Controllers
                 );
             }
 
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userIds = elasticsearchUsers.Select(x => x.Key).ToList();
-            var suggestedUsers = await userRepository.GetSuggestedUsers(userIds);
+            var suggestedUsers = await userRepository.GetSuggestedUsers(userIds, uid ?? "");
 
             var users = elasticsearchUsers
                 .Join(suggestedUsers, es => es.Key, us => us.Id!, (es, us) => { us.Score = es.Value; return us; });
 
-            var userPage = new SimpleUserPage();
+            var userPage = new FollowAwareSimpleUserPage();
             userPage.Users = users;
 
             return Ok(userPage);

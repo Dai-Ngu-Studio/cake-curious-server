@@ -13,7 +13,7 @@ namespace Repository
     {
         public IEnumerable<User> searchUserByDisplayName(string key, IEnumerable<User> users)
         {
-            return users.Where(x => x!.DisplayName!.ToLower().Contains(key.ToLower()));
+            return users.Where(x => x!.DisplayName!.ToLower().Contains(key.ToLower()) || x.Username!.ToLower().Contains(key.ToLower()));
         }
         public IEnumerable<User> filterByInactiveStatus(IEnumerable<User> users)
         {
@@ -310,15 +310,20 @@ namespace Repository
             }
         }
 
-        public async Task<ICollection<SimpleUser>> GetSuggestedUsers(List<string> userIds)
+        public async Task<ICollection<FollowAwareSimpleUser>> GetSuggestedUsers(List<string> userIds, string currentUserId)
         {
-            var db = new CakeCuriousDbContext();
-            return await db.Users
-                .AsNoTracking()
-                .Where(x => userIds.Any(y => y == x.Id))
-                .Where(x => x.Status == (int)UserStatusEnum.Active)
-                .ProjectToType<SimpleUser>()
-                .ToListAsync();
+            using (var scope = new MapContextScope())
+            {
+                scope.Context.Parameters.Add("userId", currentUserId);
+
+                var db = new CakeCuriousDbContext();
+                return await db.Users
+                    .AsNoTracking()
+                    .Where(x => userIds.Any(y => y == x.Id))
+                    .Where(x => x.Status == (int)UserStatusEnum.Active)
+                    .ProjectToType<FollowAwareSimpleUser>()
+                    .ToListAsync();
+            }
         }
 
         public async Task<int> UpdateShareUrl(string id, string shareUrl)

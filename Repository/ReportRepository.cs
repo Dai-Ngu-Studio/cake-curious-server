@@ -286,5 +286,19 @@ namespace Repository
             db.UpdateRange(reports);
             await db.SaveChangesAsync();
         }
+
+        public IEnumerable<string> GetReportersOfAnItemReadonly(Guid itemId, int skip, int take)
+        {
+            var db = new CakeCuriousDbContext();
+            return db.ViolationReports
+                .AsNoTracking()
+                .OrderBy(x => x.Id)
+                .Where(x => x.ItemId == itemId)
+                .Select(x => x.ReporterId!)
+                .Distinct()
+                .OrderBy(x => x)
+                .Skip(skip)
+                .Take(take);
+        }
     }
 }
