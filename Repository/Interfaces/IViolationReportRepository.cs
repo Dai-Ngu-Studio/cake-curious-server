@@ -15,6 +15,6 @@ namespace Repository.Interfaces
         public Task<IEnumerable<StaffDashboardReport>?> GetReportsOfAnItem(Guid itemId, string? s, string? order_by, string? filter, int PageSize, int PageIndex);
         public int CountDashboardViolationReportsOfAnItem(Guid itemId, string? s, string? filter);
         public Task<int> CountPendingReportOfAnItem(Guid itemId);
-
+        public IEnumerable<string> GetReportersOfAnItemReadonly(Guid itemId, int skip, int take);
     }
 }

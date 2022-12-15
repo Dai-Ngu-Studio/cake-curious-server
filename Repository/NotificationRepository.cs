@@ -20,6 +20,13 @@ namespace Repository
             }
         }
 
+        public async Task CreateNotifications(List<Notification> notifications)
+        {
+            var db = new CakeCuriousDbContext();
+            db.Notifications.AddRange(notifications);
+            await db.SaveChangesAsync();
+        }
+
         public async Task<int> CountUnreadOfUser(string uid)
         {
             var db = new CakeCuriousDbContext();

@@ -35,6 +35,16 @@ namespace Repository
                 .Where(x => x.UserId == uid);
         }
 
+        public async Task<List<string>> GetDeviceTokensOfUsersReadonly(IEnumerable<string> userIds)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.UserDevices
+                .AsNoTracking()
+                .Where(x => userIds.Any(y => y == x.UserId!))
+                .Select(x => x.Token!)
+                .ToListAsync();
+        }
+
         public async Task RemoveRange(List<string> tokens)
         {
             var db = new CakeCuriousDbContext();
