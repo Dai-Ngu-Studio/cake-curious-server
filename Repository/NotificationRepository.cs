@@ -50,6 +50,22 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
+        public async Task MarkAsRead(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            string query = "update [Notification] set [Notification].[status] = {0} where [Notification].[id] = {1}";
+            await db.Database.ExecuteSqlRawAsync(query, (int)NotificationStatusEnum.Read, id);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task MarkAllAsRead(string userId)
+        {
+            var db = new CakeCuriousDbContext();
+            var query = "update [Notification] set [Notification].[status] = {0} where [Notification].[user_id] = {1}";
+            await db.Database.ExecuteSqlRawAsync(query, (int)NotificationStatusEnum.Read, userId);
+            await db.SaveChangesAsync();
+        }
+
         public async Task UpdateRangeNotificationStatus(List<Guid> ids, int status)
         {
             var db = new CakeCuriousDbContext();

@@ -26,23 +26,33 @@ namespace CakeCurious_API.Controllers
             userDeviceRepository = _userDeviceRepository;
         }
 
-        [HttpPut("{id:guid}/read")]
+        [HttpPut("{id:guid}/toggle-read")]
         [Authorize]
-        public async Task<ActionResult> MarkAsRead(Guid id)
+        public async Task<ActionResult> ToggleRead(Guid id)
         {
             await notificationRepository.SwitchNotificationStatus(id);
             return Ok();
         }
 
-        [HttpPut("read-selected")]
+        [HttpPut("{id:guid}/read")]
         [Authorize]
-        public ActionResult MarkSelectedAsRead(NotificationIds notifications)
+        public async Task<ActionResult> MarkAsRead(Guid id)
         {
-            if (notifications.Ids!.Count() > 0)
+            await notificationRepository.MarkAsRead(id);
+            return Ok();
+        }
+
+        [HttpPut("read-all")]
+        [Authorize]
+        public async Task<ActionResult> MarkAllAsRead()
+        {
+            string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                return StatusCode(501);
+                await notificationRepository.MarkAllAsRead(uid);
+                return Ok();
             }
-            return StatusCode(501);
+            return Forbid();
         }
 
         [HttpPost("push")]
