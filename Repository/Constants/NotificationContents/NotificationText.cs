@@ -9,11 +9,23 @@
         public const string OrderCompleted = "đã được giao";
         public const string OrderCancelled = "đã bị hủy";
 
+        public const string ReportProcessed = "Cập nhật báo cáo vi phạm";
+        public const string Recipe = "Công thức";
+        public const string CommentOf = "Một bình luận của";
+        public const string TakenDown = "đã được gỡ bỏ";
+        public const string ThankYou = "Cảm ơn sự hỗ trợ của bạn";
+
         // English
         public const string OrderStatusTitleEn = "Order status updated";
         public const string OrderForStorePrefixEn = "Order for";
         public const string OrderProcessedEn = "has been processed";
         public const string OrderCompletedEn = "has been delivered";
         public const string OrderCancelledEn = "has been cancelled";
+
+        public const string ReportProcessedEn = "Report processed";
+        public const string RecipeEn = "Recipe";
+        public const string CommentOfEn = "A comment of";
+        public const string TakenDownEn = "has been taken down";
+        public const string ThankYouEn = "Thank you for your assistance";
     }
 }

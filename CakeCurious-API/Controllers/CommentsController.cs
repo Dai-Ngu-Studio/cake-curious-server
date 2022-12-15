@@ -4,6 +4,7 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Constants.Comments;
+using Repository.Constants.Reports;
 using Repository.Constants.Roles;
 using Repository.Interfaces;
 using Repository.Models.Comments;
@@ -19,10 +20,19 @@ namespace CakeCurious_API.Controllers
         private readonly ICommentRepository commentRepository;
         private readonly IUserRepository userRepository;
         private readonly IViolationReportRepository reportRepository;
-        public CommentsController(ICommentRepository _commentRepository, IUserRepository _userRepository, IViolationReportRepository _reportRepository)
+        private readonly IUserDeviceRepository userDeviceRepository;
+        private readonly IRecipeRepository recipeRepository;
+        private readonly INotificationRepository notificationRepository;
+
+        public CommentsController(ICommentRepository _commentRepository, IUserRepository _userRepository,
+            IUserDeviceRepository _userDeviceRepository, INotificationRepository _notificationRepository,
+            IRecipeRepository _recipeRepository, IViolationReportRepository _reportRepository)
         {
             commentRepository = _commentRepository;
             userRepository = _userRepository;
+            userDeviceRepository = _userDeviceRepository;
+            notificationRepository = _notificationRepository;
+            recipeRepository = _recipeRepository;
             reportRepository = _reportRepository;
         }
 
@@ -129,18 +139,18 @@ namespace CakeCurious_API.Controllers
             return Forbid();
         }
 
-        [HttpDelete("take-down/{guid}")]
+        [HttpDelete("take-down/{id:guid}")]
         [Authorize]
-        public async Task<ActionResult> TakeDownAnComment(Guid? guid)
+        public async Task<ActionResult> TakeDownAnComment(Guid? id)
         {
             string? uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (guid == null)
+            if (id == null)
             {
                 return BadRequest("Missing input id");
             }
             try
             {
-                await commentRepository.Delete(guid.Value);
+                await commentRepository.Delete(id.Value);
             }
             catch (Exception)
             {
@@ -151,12 +161,14 @@ namespace CakeCurious_API.Controllers
             {
                 if (uid != null)
                 {
-                    await reportRepository.UpdateAllReportStatusOfAnItem(guid.Value, uid!);
+                    await reportRepository.UpdateAllReportStatusOfAnItem(id.Value, uid!);
+                    _ = Task.Run(() => NotificationUtility
+                        .NotifyReporters(userDeviceRepository, notificationRepository, reportRepository,
+                            recipeRepository, commentRepository, id.Value, (int)ReportTypeEnum.Comment));
                 }
             }
             catch (Exception)
             {
-
                 return BadRequest("Error when change all reports status of an item to censored");
             }
             return Ok("Take down item success.");

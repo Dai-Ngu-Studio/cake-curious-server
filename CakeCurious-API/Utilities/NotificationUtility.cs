@@ -3,6 +3,7 @@ using CakeCurious_API.Utilities.FirebaseCloudMessaging;
 using Repository.Constants.NotificationContents;
 using Repository.Constants.Notifications;
 using Repository.Constants.Orders;
+using Repository.Constants.Reports;
 using Repository.Interfaces;
 using Repository.Models.Notifications;
 
@@ -15,8 +16,6 @@ namespace CakeCurious_API.Utilities
         {
             try
             {
-                var userDevices = userDeviceRepository.GetDevicesOfUserReadonly(userId);
-                var tokens = userDevices.Select(x => x.Token).ToList();
                 // Create notification content
                 var notificationContent = new NotificationContent
                 {
@@ -52,6 +51,8 @@ namespace CakeCurious_API.Utilities
 
                 if (notificationContent.NotificationType != null)
                 {
+                    var userDevices = userDeviceRepository.GetDevicesOfUserReadonly(userId);
+                    var tokens = userDevices.Select(x => x.Token).ToList();
                     // Create notification target
                     var notificationTarget = new Notification
                     {
@@ -61,24 +62,28 @@ namespace CakeCurious_API.Utilities
                     notificationContent.Notifications!.Add(notificationTarget);
                     // Save changes in database
                     await notificationRepository.CreateNotificationContent(notificationContent);
-                    // Send cloud message
-                    var multicastMessage = new FirebaseAdmin.Messaging.MulticastMessage
+
+                    if (tokens.Count > 0)
                     {
-                        Tokens = tokens,
-                        Notification = new FirebaseAdmin.Messaging.Notification
+                        // Send cloud message
+                        var multicastMessage = new FirebaseAdmin.Messaging.MulticastMessage
                         {
-                            Title = notificationContent.Title,
-                            Body = notificationContent.Content,
-                        },
-                        Data = new Dictionary<string, string>
+                            Tokens = tokens,
+                            Notification = new FirebaseAdmin.Messaging.Notification
+                            {
+                                Title = notificationContent.Title,
+                                Body = notificationContent.Content,
+                            },
+                            Data = new Dictionary<string, string>
                         {
                             { "itemType", notificationContent.ItemType.ToString()! },
                             { "itemId", notificationContent.ItemId.ToString()! },
                             { "notificationType", notificationContent.NotificationType.ToString()! }
                         }
-                    };
-                    var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
-                    await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
+                        };
+                        var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
+                        await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
+                    }
                 }
             }
             catch (Exception e)
@@ -92,23 +97,144 @@ namespace CakeCurious_API.Utilities
         {
             var userDevices = userDeviceRepository.GetDevicesOfUserReadonly(notification.ReceiverId!);
             var tokens = userDevices.Select(x => x.Token).ToList();
-            var multicastMessage = new FirebaseAdmin.Messaging.MulticastMessage
+            if (tokens.Count > 0)
             {
-                Tokens = tokens,
-                Notification = new FirebaseAdmin.Messaging.Notification
+                var multicastMessage = new FirebaseAdmin.Messaging.MulticastMessage
                 {
-                    Title = notification.Title,
-                    Body = notification.Content,
-                },
-                Data = new Dictionary<string, string>
+                    Tokens = tokens,
+                    Notification = new FirebaseAdmin.Messaging.Notification
+                    {
+                        Title = notification.Title,
+                        Body = notification.Content,
+                    },
+                    Data = new Dictionary<string, string>
                 {
                     { "itemType", notification.ItemType.ToString()! },
                     { "itemId", storeId.ToString() },
                     { "notificationType", ((int)NotificationContentTypeEnum.Chat).ToString() }
                 }
-            };
-            var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
-            await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
+                };
+                var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
+                await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
+            }
+        }
+
+        public static async Task NotifyReporters(IUserDeviceRepository userDeviceRepository,
+            INotificationRepository notificationRepository, IViolationReportRepository violationReportRepository,
+            IRecipeRepository recipeRepository, ICommentRepository commentRepository, Guid itemId, int itemType)
+        {
+            try
+            {
+                var notificationContent = new NotificationContent
+                {
+                    ItemId = itemId,
+                    Title = NotificationText.ReportProcessed,
+                    EnTitle = NotificationText.ReportProcessedEn,
+                    NotificationDate = DateTime.Now,
+                };
+
+                switch (itemType)
+                {
+                    case (int)ReportTypeEnum.Recipe:
+                        var recipe = await recipeRepository.GetNameOnlyRecipeReadonly(itemId);
+                        if (recipe != null)
+                        {
+                            notificationContent.ItemType = (int)NotificationContentItemTypeEnum.Recipe;
+                            notificationContent.ItemName = recipe.Name;
+                            notificationContent.NotificationType = (int)NotificationContentTypeEnum.ReportedRecipeTakenDown;
+                            notificationContent.Content = $"{NotificationText.Recipe} {recipe.Name} {NotificationText.TakenDown}. {NotificationText.ThankYou}.";
+                            notificationContent.EnContent = $"{NotificationText.RecipeEn} {recipe.Name} {NotificationText.TakenDownEn}. {NotificationText.ThankYouEn}.";
+                            break;
+                        }
+                        return;
+                    case (int)ReportTypeEnum.Comment:
+                        var comment = await commentRepository.GetNameOnlyCommentReadonly(itemId);
+                        if (comment != null)
+                        {
+                            notificationContent.ItemType = (int)NotificationContentItemTypeEnum.Comment;
+                            notificationContent.ItemName = comment.UserDisplayName;
+                            notificationContent.NotificationType = (int)NotificationContentTypeEnum.ReportedCommentTakenDown;
+                            notificationContent.Content = $"{NotificationText.CommentOf} {comment.UserDisplayName} {NotificationText.TakenDown}. {NotificationText.ThankYou}.";
+                            notificationContent.EnContent = $"{NotificationText.CommentOfEn} {comment.UserDisplayName} {NotificationText.TakenDownEn}. {NotificationText.ThankYouEn}.";
+                            break;
+                        }
+                        return;
+                    default:
+                        return;
+                }
+                // Save changes in database
+                await notificationRepository.CreateNotificationContent(notificationContent);
+
+                var take = 20;
+                var page = 0;
+                var batches = new List<List<string>>();
+                var initialBatch = violationReportRepository.GetReportersOfAnItemReadonly(itemId, page, take).ToList();
+                batches.Add(initialBatch);
+                while (batches.Count > 0)
+                {
+                    try
+                    {
+                        // Create notification targets
+                        var notifications = batches.ElementAt(0)
+                            .Select(x => new Notification
+                            {
+                                UserId = x,
+                                Status = (int)NotificationStatusEnum.Unread,
+                                ContentId = notificationContent.Id,
+                            }).ToList();
+                        // Save changes in database
+                        await notificationRepository.CreateNotifications(notifications);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"{e.Message}\n{e.InnerException}\n{e.StackTrace}");
+                    }
+
+                    // Get user devices from batch
+                    var tokens = await userDeviceRepository.GetDeviceTokensOfUsersReadonly(batches.ElementAt(0));
+                    try
+                    {
+                        if (tokens.Count > 0)
+                        {
+                            // Send multicast
+                            var multicastMessage = new FirebaseAdmin.Messaging.MulticastMessage
+                            {
+                                Tokens = tokens,
+                                Notification = new FirebaseAdmin.Messaging.Notification
+                                {
+                                    Title = notificationContent.Title,
+                                    Body = notificationContent.Content,
+                                },
+                                Data = new Dictionary<string, string>
+                                {
+                                    { "itemType", notificationContent.ItemType.ToString()! },
+                                    { "itemId", notificationContent.ItemId.ToString()! },
+                                    { "notificationType", notificationContent.NotificationType.ToString()! }
+                                }
+                            };
+
+                            var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
+                            await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens, userDeviceRepository);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"{ex.Message}\n{ex.InnerException}\n{ex.StackTrace}");
+                    }
+
+                    var nextBatch = violationReportRepository.GetReportersOfAnItemReadonly(itemId, (++page * take), take).ToList();
+                    batches.RemoveAt(0);
+                    if (nextBatch != null && nextBatch.Any())
+                    {
+                        batches.Add(nextBatch);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("EXCEPTION OCCURRED IN GENERAL");
+                Console.WriteLine($"{e.Message}\n{e.InnerException}\n{e.StackTrace}");
+            }
         }
     }
 }
