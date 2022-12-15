@@ -19,5 +19,6 @@ namespace Repository.Interfaces
         public IEnumerable<RecipeComment> GetCommentsForRecipe(Guid recipeId, int skip, int take);
         public Task<int> CountRepliesForComment(Guid commentId);
         public IEnumerable<RecipeComment> GetRepliesForComment(Guid commentId, int skip, int take);
+        public Task<NameOnlyComment?> GetNameOnlyCommentReadonly(Guid id);
     }
 }

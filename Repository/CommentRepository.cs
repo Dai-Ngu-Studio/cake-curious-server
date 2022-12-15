@@ -199,5 +199,15 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Comments.AsNoTracking().AnyAsync(x => x.Id == id);
         }
+
+        public async Task<NameOnlyComment?> GetNameOnlyCommentReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Comments
+                .AsNoTracking()
+                .Where(x => x.Id == id)
+                .ProjectToType<NameOnlyComment>()
+                .FirstOrDefaultAsync();
+        }
     }
 }

@@ -442,5 +442,15 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Recipes.AsNoTracking().AnyAsync(x => x.Id == id);
         }
+
+        public async Task<NameOnlyRecipe?> GetNameOnlyRecipeReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes
+                .AsNoTracking()
+                .Where(x => x.Id == id)
+                .ProjectToType<NameOnlyRecipe>()
+                .FirstOrDefaultAsync();
+        }
     }
 }
