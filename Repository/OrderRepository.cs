@@ -244,6 +244,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return db.Orders
                 .AsNoTracking()
+                .AsSplitQuery()
                 .OrderByDescending(x => x.OrderDate)
                 .Where(x => x.UserId == userId)
                 .Where(x => status.Any(y => y == (int)x.Status!))
