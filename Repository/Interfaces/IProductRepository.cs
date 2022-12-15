@@ -14,7 +14,7 @@ namespace Repository.Interfaces
         public IEnumerable<StoreProductDetail>? GetProducts(Guid? id, string? s, string? order_by, string? product_type, int pageIndex, int pageSize);
         public int CountDashboardProducts(Guid? id, string? s, string? product_type);
         public Task<Product?> GetProductReadonly(Guid id);
-        public Task<Product?> GetActiveProductReadonly(Guid id);
+        public Task<Product?> GetActiveProductOfStoreReadonly(Guid id, Guid storeId);
         public Task<ICollection<GroceryProduct>> Explore(int productType, int randSeed, int take, int key, Guid? storeId);
         public Task<DetailProduct?> GetProductDetails(Guid id);
         public Task<ICollection<GroceryProduct>> GetSuggestedProducts(List<Guid> productIds);

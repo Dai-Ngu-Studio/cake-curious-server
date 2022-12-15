@@ -191,13 +191,14 @@ namespace Repository
             return await db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<Product?> GetActiveProductReadonly(Guid id)
+        public async Task<Product?> GetActiveProductOfStoreReadonly(Guid id, Guid storeId)
         {
             var db = new CakeCuriousDbContext();
             return await db.Products
                 .AsNoTracking()
                 .AsSplitQuery()
                 .Where(x => x.Id == id)
+                .Where(x => x.StoreId == storeId)
                 .Where(x => x.Status == (int)ProductStatusEnum.Active)
                 .Where(x => x.Store!.Status == (int)StoreStatusEnum.Active)
                 .Where(x => x.Store!.User!.Status == (int)UserStatusEnum.Active)

@@ -184,13 +184,14 @@ namespace Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<SimpleCoupon?> GetActiveSimpleCouponOfStoreById(Guid id)
+        public async Task<SimpleCoupon?> GetActiveSimpleCouponOfStoreById(Guid id, Guid storeId)
         {
             var db = new CakeCuriousDbContext();
             return await db.Coupons
                 .AsNoTracking()
                 .AsSplitQuery()
                 .Where(x => x.Id == id)
+                .Where(x => x.StoreId == storeId)
                 .Where(x => x.ExpiryDate > DateTime.Now)
                 .Where(x => x.Status == (int)CouponStatusEnum.Active)
                 .Where(x => x.Store!.Status == (int)StoreStatusEnum.Active)

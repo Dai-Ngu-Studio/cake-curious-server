@@ -240,7 +240,7 @@ namespace CakeCurious_API.Controllers
                                 // Get product from repository
                                 /// Get active product only
                                 /// Store, store owner must also be active
-                                var product = await productRepository.GetActiveProductReadonly((Guid)checkoutProduct.Id!);
+                                var product = await productRepository.GetActiveProductOfStoreReadonly((Guid)checkoutProduct.Id!, (Guid)store.Id!);
                                 if (product != null)
                                 {
                                     if (checkoutProduct.Quantity! > product.Quantity)
@@ -258,6 +258,18 @@ namespace CakeCurious_API.Controllers
                                             Price = product.Price,
                                             Quantity = checkoutProduct.Quantity!,
                                         };
+
+                                        if (product.LastUpdated != null)
+                                        {
+                                            if (DateTime.Now <= product.LastUpdated!.Value.AddDays(7)
+                                                && DateTime.Now >= product.LastUpdated!.Value.AddDays(-7))
+                                            {
+                                                if (checkoutOrder.CouponId != null)
+                                                {
+                                                    throw new Exception();
+                                                }
+                                            }
+                                        }
 
                                         orderDetails.Add(orderDetail);
                                         total += (decimal)orderDetail.Price! * (decimal)orderDetail.Quantity;
@@ -285,7 +297,7 @@ namespace CakeCurious_API.Controllers
                                 // Get coupon from repository
                                 /// Get active coupon only
                                 /// Store, store owner must also be active
-                                var coupon = await couponRepository.GetActiveSimpleCouponOfStoreById((Guid)checkoutOrder.CouponId!);
+                                var coupon = await couponRepository.GetActiveSimpleCouponOfStoreById((Guid)checkoutOrder.CouponId!, (Guid)store.Id!);
                                 if (coupon != null)
                                 {
                                     // Check if coupon had not reached max uses
