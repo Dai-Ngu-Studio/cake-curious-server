@@ -138,7 +138,7 @@ namespace CakeCurious_API.Controllers
             catch (DbUpdateException)
             {
                 if (productRepository.GetById(prod.Id.Value) != null)
-                    return Conflict("This product already exist.");
+                    return Conflict("This product already exist or inapproriate input date.");
             }
             catch (Exception ex)
             {
