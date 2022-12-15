@@ -25,7 +25,7 @@ namespace Repository
             cs.CurrentWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= DateTime.Now).Count();
             decimal lastWeekReport = TwoLastWeekReport.Where(r => r.SubmittedDate >= startAtSunday.AddDays(-7) && r.SubmittedDate <= startAtSunday.AddDays(-1)).Count();
             double sinceLastWeekReport = cs.CurrentWeekReport > 0 || lastWeekReport > 0 ? (double)
-                ((cs.CurrentWeekReport - lastWeekReport) / (cs.CurrentWeekReport < lastWeekReport ? cs.CurrentWeekReport > 0 ? cs.CurrentWeekReport : 1 : lastWeekReport > 0 ? lastWeekReport : 1)) 
+                ((cs.CurrentWeekReport - lastWeekReport) / (cs.CurrentWeekReport < lastWeekReport ? cs.CurrentWeekReport > 0 ? cs.CurrentWeekReport : 1 : lastWeekReport > 0 ? lastWeekReport : 1))
                 : 0;
             cs.SinceLastWeekReport = Math.Round(sinceLastWeekReport, 2);
 
@@ -34,7 +34,7 @@ namespace Repository
             cs.CurrentMonthNewBaker = TwoLastMonthNewBaker.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.Month).Count();
             decimal LastMonthNewUser = TwoLastMonthNewBaker.Where(u => u!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month).Count();
             double sinceLastMonthNewUser = LastMonthNewUser > 0 || cs.CurrentMonthNewBaker > 0 ? (double)
-                ((cs.CurrentMonthNewBaker - LastMonthNewUser) / (cs.CurrentMonthNewBaker < LastMonthNewUser ? cs.CurrentMonthNewBaker > 0 ? cs.CurrentMonthNewBaker : 1 : LastMonthNewUser > 0 ? LastMonthNewUser : 1)) 
+                ((cs.CurrentMonthNewBaker - LastMonthNewUser) / (cs.CurrentMonthNewBaker < LastMonthNewUser ? cs.CurrentMonthNewBaker > 0 ? cs.CurrentMonthNewBaker : 1 : LastMonthNewUser > 0 ? LastMonthNewUser : 1))
                 : 0;
             cs.SinceLastMonthNewBaker = Math.Round(sinceLastMonthNewUser, 2);
 
@@ -43,7 +43,7 @@ namespace Repository
             cs.CurrentMonthNewStore = TwoLastMonthNewStore.Where(s => s!.CreatedDate!.Value.Month == DateTime.Now.Month).Count();
             decimal LastMonthNewStore = TwoLastMonthNewStore.Where(s => s!.CreatedDate!.Value.Month == DateTime.Now.AddMonths(-1).Month).Count();
             double sinceLastMonthNewStore = cs.CurrentMonthNewStore > 0 || LastMonthNewStore > 0 ? (double)
-                ((cs.CurrentMonthNewStore - LastMonthNewStore) / (cs.CurrentMonthNewStore < LastMonthNewStore ? cs.CurrentMonthNewStore > 0 ? cs.CurrentMonthNewStore : 1 : LastMonthNewStore > 0 ? LastMonthNewStore : 1)) 
+                ((cs.CurrentMonthNewStore - LastMonthNewStore) / (cs.CurrentMonthNewStore < LastMonthNewStore ? cs.CurrentMonthNewStore > 0 ? cs.CurrentMonthNewStore : 1 : LastMonthNewStore > 0 ? LastMonthNewStore : 1))
                 : 0;
             cs.SinceLastMonthNewStore = Math.Round(sinceLastMonthNewStore, 2);
             report.CardStats = cs;
@@ -174,20 +174,20 @@ namespace Repository
             //Current week reported recipes
             cs.CurrentWeekReportedRecipes = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
             int lastWeekReportedRecipes = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
-            cs.SinceLastWeekReportedRecipes = cs.CurrentWeekReportedRecipes > 0 || lastWeekReportedRecipes > 0 ?(double)
+            cs.SinceLastWeekReportedRecipes = cs.CurrentWeekReportedRecipes > 0 || lastWeekReportedRecipes > 0 ? (double)
                 ((cs.CurrentWeekReportedRecipes - lastWeekReportedRecipes) / (cs.CurrentWeekReportedRecipes < lastWeekReportedRecipes ? cs.CurrentWeekReportedRecipes > 0 ? cs.CurrentWeekReportedRecipes : 1 : lastWeekReportedRecipes > 0 ? lastWeekReportedRecipes : 1))
                 : 0;
             //Current week reported comments
             cs.CurrentWeekReportedComments = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
             int lastWeekReportedComments = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
             cs.SinceLastWeekReportedRecipes = cs.CurrentWeekReportedComments > 0 || lastWeekReportedComments > 0 ? (double)
-                ((cs.CurrentWeekReportedComments - lastWeekReportedComments) / (cs.CurrentWeekReportedComments < lastWeekReportedComments ? cs.CurrentWeekReportedComments > 0 ? cs.CurrentWeekReportedComments : 1 : lastWeekReportedComments > 0 ? lastWeekReportedComments : 1)) 
+                ((cs.CurrentWeekReportedComments - lastWeekReportedComments) / (cs.CurrentWeekReportedComments < lastWeekReportedComments ? cs.CurrentWeekReportedComments > 0 ? cs.CurrentWeekReportedComments : 1 : lastWeekReportedComments > 0 ? lastWeekReportedComments : 1))
                 : 0;
             //
             cs.CurrentWeekProcessedReports = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.Status == (int)ReportStatusEnum.Censored).CountAsync();
             int lastWeekProcessedReports = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.Status == (int)ReportStatusEnum.Censored).CountAsync();
             cs.SinceLastWeekReportedRecipes = cs.CurrentWeekProcessedReports > 0 || lastWeekProcessedReports > 0 ? (double)
-                ((cs.CurrentWeekProcessedReports - lastWeekProcessedReports) / (cs.CurrentWeekProcessedReports < lastWeekProcessedReports ? cs.CurrentWeekProcessedReports > 0 ? cs.CurrentWeekProcessedReports : 1 : lastWeekProcessedReports > 0 ? lastWeekProcessedReports : 1)) 
+                ((cs.CurrentWeekProcessedReports - lastWeekProcessedReports) / (cs.CurrentWeekProcessedReports < lastWeekProcessedReports ? cs.CurrentWeekProcessedReports > 0 ? cs.CurrentWeekProcessedReports : 1 : lastWeekProcessedReports > 0 ? lastWeekProcessedReports : 1))
                 : 0;
             report.CardStats = cs;
             //bar chart
@@ -364,31 +364,31 @@ namespace Repository
             cs.CurrentMonthProductSold = await db.OrderDetails.Include(ord => ord.Order).Where(ord => ord!.Order!.OrderDate!.Value.Month == DateTime.Now.Month && ord!.Order!.Status! == (int)OrderStatusEnum.Completed && ord!.Order!.StoreId == storeId).GroupBy(ord => ord.ProductId).CountAsync();
             decimal LastMonthProductSold = await db.OrderDetails.Include(ord => ord.Order).Where(ord => ord!.Order!.OrderDate!.Value.Month == DateTime.Now.AddMonths(-1).Month && ord!.Order!.Status! == (int)OrderStatusEnum.Completed).GroupBy(ord => ord.ProductId).CountAsync();
             double sinceLastMonthNewUser = LastMonthProductSold > 0 || cs.CurrentMonthProductSold > 0 ? (double)
-                ((cs.CurrentMonthProductSold - LastMonthProductSold) / (cs.CurrentMonthProductSold < LastMonthProductSold ? cs.CurrentMonthProductSold > 0 ? cs.CurrentMonthProductSold : 1 : LastMonthProductSold > 0 ? LastMonthProductSold : 1)) 
+                ((cs.CurrentMonthProductSold - LastMonthProductSold) / (cs.CurrentMonthProductSold < LastMonthProductSold ? cs.CurrentMonthProductSold > 0 ? cs.CurrentMonthProductSold : 1 : LastMonthProductSold > 0 ? LastMonthProductSold : 1))
                 : 0;
             cs.SinceLastMonthProductSold = Math.Round(sinceLastMonthNewUser, 2);
             //Sales by week
             DateTime startAtSunday = new DateTime(DateTime.UtcNow.AddHours(7).Year, DateTime.UtcNow.AddHours(7).Month, DateTime.UtcNow.AddHours(7).Day).AddDays(DayOfWeek.Sunday - DateTime.UtcNow.AddHours(7).DayOfWeek);
             foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startAtSunday && ord!.OrderDate! <= DateTime.Now && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-              
+
                 cs.CurrentWeekSales += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0;
             }
             decimal lastWeekSales = 0;
             foreach (var ord in db.Orders.Where(ord => ord!.OrderDate! >= startAtSunday.AddDays(-7) && ord!.OrderDate! <= startAtSunday.AddDays(-1) && ord!.StoreId == storeId && ord!.Status! == (int)OrderStatusEnum.Completed))
             {
-            
+
                 lastWeekSales += ord.DiscountedTotal != null ? ord!.DiscountedTotal!.Value : 0; ;
             }
-            double sinceLastWeekSales = cs.CurrentWeekSales > 0 || lastWeekSales > 0 ? 
-                (double)((cs.CurrentWeekSales - lastWeekSales) / (cs.CurrentWeekSales < lastWeekSales ? cs.CurrentWeekSales > 0 ? cs.CurrentWeekSales : 1 : lastWeekSales > 0 ? lastWeekSales : 1)) 
+            double sinceLastWeekSales = cs.CurrentWeekSales > 0 || lastWeekSales > 0 ?
+                (double)((cs.CurrentWeekSales - lastWeekSales) / (cs.CurrentWeekSales < lastWeekSales ? cs.CurrentWeekSales > 0 ? cs.CurrentWeekSales : 1 : lastWeekSales > 0 ? lastWeekSales : 1))
                 : 0;
             cs.SinceLastWeekSales = Math.Round(sinceLastWeekSales, 2);
             //Order Complete by month
             cs.CurrentMonthTotalCompletedOrder = await db.Orders.Where(ord => ord!.OrderDate!.Value.Month == DateTime.Now.Month && ord!.Status! == (int)OrderStatusEnum.Completed && ord!.StoreId == storeId).CountAsync();
             decimal LastMonthCompletedOrder = await db.Orders.Where(ord => ord!.OrderDate!.Value.Month == DateTime.Now.AddMonths(-1).Month && ord!.Status! == (int)OrderStatusEnum.Completed && ord!.StoreId == storeId).CountAsync();
             double sinceLastMonthCompleteOrder = LastMonthCompletedOrder > 0 || cs.CurrentMonthTotalCompletedOrder > 0 ? (double)
-                ((cs.CurrentMonthTotalCompletedOrder - LastMonthCompletedOrder) / (cs.CurrentMonthTotalCompletedOrder < LastMonthCompletedOrder ? cs.CurrentMonthTotalCompletedOrder > 0 ? cs.CurrentMonthTotalCompletedOrder : 1  : LastMonthCompletedOrder > 0 ? LastMonthCompletedOrder : 1)) 
+                ((cs.CurrentMonthTotalCompletedOrder - LastMonthCompletedOrder) / (cs.CurrentMonthTotalCompletedOrder < LastMonthCompletedOrder ? cs.CurrentMonthTotalCompletedOrder > 0 ? cs.CurrentMonthTotalCompletedOrder : 1 : LastMonthCompletedOrder > 0 ? LastMonthCompletedOrder : 1))
                 : 0;
             cs.SinceLastMonthTotalCompletedOrder = Math.Round(sinceLastMonthCompleteOrder, 2);
             report.CardStats = cs;
