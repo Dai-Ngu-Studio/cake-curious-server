@@ -6,6 +6,7 @@ using Repository.Constants.Orders;
 using Repository.Constants.Reports;
 using Repository.Interfaces;
 using Repository.Models.Notifications;
+using System.Text.Json;
 
 namespace CakeCurious_API.Utilities
 {
@@ -75,11 +76,12 @@ namespace CakeCurious_API.Utilities
                                 Body = notificationContent.Content,
                             },
                             Data = new Dictionary<string, string>
-                        {
-                            { "itemType", notificationContent.ItemType.ToString()! },
-                            { "itemId", notificationContent.ItemId.ToString()! },
-                            { "notificationType", notificationContent.NotificationType.ToString()! }
-                        }
+                            {
+                                { "itemType", notificationContent.ItemType.ToString()! },
+                                { "itemId", notificationContent.ItemId.ToString()! },
+                                { "notificationType", notificationContent.NotificationType.ToString()! },
+                                { "notificationDate", JsonSerializer.Serialize(notificationContent.NotificationDate) }
+                            }
                         };
                         var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
                         await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
@@ -108,11 +110,12 @@ namespace CakeCurious_API.Utilities
                         Body = notification.Content,
                     },
                     Data = new Dictionary<string, string>
-                {
-                    { "itemType", notification.ItemType.ToString()! },
-                    { "itemId", storeId.ToString() },
-                    { "notificationType", ((int)NotificationContentTypeEnum.Chat).ToString() }
-                }
+                    {
+                        { "itemType", notification.ItemType.ToString()! },
+                        { "itemId", storeId.ToString() },
+                        { "notificationType", ((int)NotificationContentTypeEnum.Chat).ToString() },
+                        { "notificationDate", JsonSerializer.Serialize(DateTime.Now) }
+                    }
                 };
                 var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
                 await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
@@ -209,7 +212,8 @@ namespace CakeCurious_API.Utilities
                                 {
                                     { "itemType", notificationContent.ItemType.ToString()! },
                                     { "itemId", notificationContent.ItemId.ToString()! },
-                                    { "notificationType", notificationContent.NotificationType.ToString()! }
+                                    { "notificationType", notificationContent.NotificationType.ToString()! },
+                                    { "notificationDate", JsonSerializer.Serialize(notificationContent.NotificationDate) }
                                 }
                             };
 
@@ -232,7 +236,6 @@ namespace CakeCurious_API.Utilities
             }
             catch (Exception e)
             {
-                Console.WriteLine("EXCEPTION OCCURRED IN GENERAL");
                 Console.WriteLine($"{e.Message}\n{e.InnerException}\n{e.StackTrace}");
             }
         }
