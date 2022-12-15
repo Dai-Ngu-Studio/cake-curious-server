@@ -38,6 +38,11 @@ namespace Repository.Configuration.Mappings
                     .Count())
                 .Map(dest => dest.IsFollowedByCurrentUser, src => src.Followers!
                     .Any(x => x.FollowerId == (string)MapContext.Current!.Parameters["userId"]));
+
+            TypeAdapterConfig<User, FollowAwareSimpleUser>
+                .NewConfig()
+                .Map(dest => dest.IsFollowedByCurrentUser, src => src.Followers!
+                    .Any(x => x.FollowerId == (string)MapContext.Current!.Parameters["userId"]));
         }
     }
 }
