@@ -311,7 +311,7 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return db.Recipes
                 .AsNoTracking()
-                .OrderByDescending(x => x.Likes!.Count)
+                .OrderByDescending(x => x.PublishedDate)
                 .Where(x => x.UserId == userId)
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
                 .Skip(skip)
