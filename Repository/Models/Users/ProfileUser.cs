@@ -12,5 +12,6 @@
         public int? Recipes { get; set; }
         public bool? IsFollowedByCurrentUser { get; set; }
         public string? ShareUrl { get; set; }
+        public int? Status { get; set; }
     }
 }

@@ -21,6 +21,7 @@ namespace Repository.Models.Recipes
         public bool? IsLikedByCurrentUser { get; set; }
         public bool? IsBookmarkedByCurrentUser { get; set; }
         public string? ShareUrl { get; set; }
+        public int? Status { get; set; }
         public IEnumerable<DetachedRecipeMaterial>? Ingredients { get; set; }
         public IEnumerable<DetachedRecipeMaterial>? Equipment { get; set; }
         public IEnumerable<SimpleRecipeStep>? RecipeSteps { get; set; }
