@@ -399,7 +399,7 @@ namespace CakeCurious_API.Controllers
                 {
                     Id = placeholderId,
                     DisplayName = email.Split("@").FirstOrDefault() ?? placeholderId,
-                    Username = placeholderId,
+                    Username = null,
                     Email = email,
                     HasRoles = hasRoles,
                     CreatedDate = DateTime.Now,
@@ -501,7 +501,7 @@ namespace CakeCurious_API.Controllers
                             {
                                 Id = uid,
                                 DisplayName = staff.DisplayName,
-                                Username = uid,
+                                Username = null,
                                 Email = staff.Email,
                                 PhotoUrl = userRecord.PhotoUrl,
                                 HasRoles = hasRoles,
@@ -539,7 +539,7 @@ namespace CakeCurious_API.Controllers
                                 ? userRecord!.DisplayName
                                 : "Anonymous"
                                 : "Anonymous",
-                                Username = uid,
+                                Username = null,
                                 Email = isUserRecordExisted ? userRecord!.Email : "Anonymous",
                                 PhotoUrl = isUserRecordExisted ? userRecord!.PhotoUrl : null,
                                 HasRoles = hasRoles,
