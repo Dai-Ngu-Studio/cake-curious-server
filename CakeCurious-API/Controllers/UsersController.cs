@@ -407,6 +407,8 @@ namespace CakeCurious_API.Controllers
                 };
 
                 await userRepository.Add(newUser);
+
+                _ = Task.Run(() => SmtpMailSender.SendStaffMail(email));
                 return Ok();
             }
             return Forbid();
