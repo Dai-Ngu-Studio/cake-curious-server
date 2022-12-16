@@ -13,7 +13,7 @@ namespace Repository
     {
         public IEnumerable<User> searchUserByDisplayName(string key, IEnumerable<User> users)
         {
-            return users.Where(x => x!.DisplayName!.ToLower().Contains(key.ToLower()) || x.Username!.ToLower().Contains(key.ToLower()));
+            return users.Where(x => x!.DisplayName!.ToLower().Contains(key.ToLower()) || (x.Username != null && x.Username!.ToLower().Contains(key.ToLower())));
         }
         public IEnumerable<User> filterByInactiveStatus(IEnumerable<User> users)
         {
