@@ -263,6 +263,7 @@ namespace Repository
             {
                 await cmd.Connection!.CloseAsync();
             }
+            await db.DisposeAsync();
             return result;
         }
 
