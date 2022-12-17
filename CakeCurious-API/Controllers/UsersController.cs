@@ -101,6 +101,7 @@ namespace CakeCurious_API.Controllers
                     Status = newUser.Status ?? user.Status,
                     Id = newUser.Id ?? user.Id,
                     CitizenshipNumber = newUser.CitizenshipNumber ?? user.CitizenshipNumber,
+                    CreatedDate = user.CreatedDate,
                 };
                 if (newUser.Roles != null)
                     foreach (int role in newUser!.Roles!)
