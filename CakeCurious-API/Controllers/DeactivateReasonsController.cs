@@ -34,13 +34,25 @@ namespace CakeCurious_API.Controllers
         }
 
         [HttpPost("by-email")]
-        public async Task<ActionResult> GetDeactivateReasonForEmail(EmailUser emailUser)
+        public async Task<ActionResult<DetailDeactivateReason>> GetDeactivateReasonForEmail(EmailUser emailUser)
         {
             var user = await userRepository.GetReadonlyUserByEmail(emailUser.Email!);
             if (user != null)
             {
                 var guid = ConvertUtility.ToGuid(user.Id!);
                 return Ok(await deactivateReasonRepository.GetReasonByItemIdReadonly(guid));
+            }
+            return NotFound();
+        }
+
+        [HttpGet("item/{id:guid}")]
+        [Authorize]
+        public async Task<ActionResult<DetailDeactivateReason>> GetDeactivateReasonByItemId(Guid id)
+        {
+            var reason = await deactivateReasonRepository.GetReasonByItemIdReadonly(id);
+            if (reason != null)
+            {
+                return Ok(reason);
             }
             return NotFound();
         }
