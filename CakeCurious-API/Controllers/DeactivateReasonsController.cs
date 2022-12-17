@@ -47,11 +47,23 @@ namespace CakeCurious_API.Controllers
 
         [HttpGet("item/{id:guid}")]
         [Authorize]
-        public async Task<ActionResult<DetailDeactivateReason>> GetDeactivateReasonByItemId(Guid id)
+        public async Task<ActionResult<DetailDeactivateReason>> GetDeactivateReasonByItemId(Guid id, [FromQuery] int? itemType)
         {
             var reason = await deactivateReasonRepository.GetReasonByItemIdReadonly(id);
             if (reason != null)
             {
+                if (itemType != null)
+                {
+                    switch (itemType)
+                    {
+                        case (int)ReasonItemTypeEnum.Recipe:
+                            reason.Recipe = await recipeRepository.GetExploreRecipeReadonly(id);
+                            break;
+                        case (int)ReasonItemTypeEnum.Comment:
+                            reason.Comment = await commentRepository.GetCommentById(id);
+                            break;
+                    }
+                }
                 return Ok(reason);
             }
             return NotFound();
