@@ -320,7 +320,7 @@ namespace Repository
                 .ProjectToType<HomeRecipe>();
         }
 
-        public async Task<ICollection<HomeRecipe>> GetSuggestedRecipes(List<Guid> recipeIds)
+        public async Task<ICollection<SuggestRecipe>> GetSuggestedRecipes(List<Guid> recipeIds)
         {
             var db = new CakeCuriousDbContext();
             return await db.Recipes
@@ -328,7 +328,7 @@ namespace Repository
                 .Where(x => recipeIds.Any(y => y == (Guid)x.Id!))
                 .Where(x => x.Status == (int)RecipeStatusEnum.Active)
                 .Where(x => x.User!.Status == (int)UserStatusEnum.Active)
-                .ProjectToType<HomeRecipe>()
+                .ProjectToType<SuggestRecipe>()
                 .ToListAsync();
         }
         public List<SimpleRecipeForReportList>? OrderByAscTotalPendingReport(List<SimpleRecipeForReportList>? isReportedComments)
@@ -451,6 +451,16 @@ namespace Repository
                 .AsNoTracking()
                 .Where(x => x.Id == id)
                 .ProjectToType<NameOnlyRecipe>()
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<ExploreRecipe?> GetExploreRecipeReadonly(Guid id)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Recipes
+                .AsNoTracking()
+                .Where(x => x.Id == id)
+                .ProjectToType<ExploreRecipe>()
                 .FirstOrDefaultAsync();
         }
     }

@@ -2,7 +2,6 @@
 using Mapster;
 using Repository.Constants.RecipeMaterials;
 using Repository.Constants.RecipeMedia;
-using Repository.Models.RecipeCategories;
 using Repository.Models.Recipes;
 using Repository.Models.RecipeStepMaterials;
 
@@ -14,6 +13,12 @@ namespace Repository.Configuration.Mappings
         {
             TypeAdapterConfig<Recipe, HomeRecipe>
                 .NewConfig()
+                .Map(dest => dest.Likes, src => src.Likes!.Count);
+
+            TypeAdapterConfig<Recipe, SuggestRecipe>
+                .NewConfig()
+                .Map(dest => dest.TotalIngredients, src => src.RecipeMaterials!
+                    .Where(x => x.MaterialType == (int)RecipeMaterialTypeEnum.Ingredient).Count())
                 .Map(dest => dest.Likes, src => src.Likes!.Count);
 
             TypeAdapterConfig<Recipe, DetailRecipe>

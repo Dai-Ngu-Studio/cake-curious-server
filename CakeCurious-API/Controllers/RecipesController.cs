@@ -617,7 +617,7 @@ namespace CakeCurious_API.Controllers
                 .Join(suggestedRecipes, es => es.Key, rc => (Guid)rc.Id!,
                     (es, rc) => { rc.Score = es.Value; return rc; });
 
-            var recipePage = new HomeRecipePage();
+            var recipePage = new SuggestRecipePage();
             recipePage.Recipes = recipes;
 
             return Ok(recipePage);
