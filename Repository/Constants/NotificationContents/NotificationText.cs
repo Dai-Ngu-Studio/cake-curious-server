@@ -15,6 +15,10 @@
         public const string TakenDown = "đã được gỡ bỏ";
         public const string ThankYou = "Cảm ơn sự hỗ trợ của bạn";
 
+        public const string ReportedWarning = "Thông báo vi phạm";
+        public const string Your = "bạn";
+        public const string ViewStandards = "do vi phạm thủ tiêu chuẩn cộng đồng";
+
         // English
         public const string OrderStatusTitleEn = "Order status updated";
         public const string OrderForStorePrefixEn = "Order for";
@@ -27,5 +31,9 @@
         public const string CommentOfEn = "A comment of";
         public const string TakenDownEn = "has been taken down";
         public const string ThankYouEn = "Thank you for your assistance";
+
+        public const string ReportedWarningEn = "Violation spotted";
+        public const string YourEn = "yours";
+        public const string ViewStandardsEn = "for violating our community standards";
     }
 }
