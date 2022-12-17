@@ -274,10 +274,10 @@ namespace CakeCurious_API.Controllers
             // Update user information
             user.FullName = request.FullName;
             user.Gender = request.Gender;
-            user.DateOfBirth = request.DateOfBirth;
+            user.DateOfBirth = request.DateOfBirth!.Value.ToUniversalTime();
             user.Address = request.Address;
             user.CitizenshipNumber = request.CitizenshipNumber;
-            user.CitizenshipDate = request.CitizenshipDate;
+            user.CitizenshipDate = request.CitizenshipDate!.Value.ToUniversalTime();
 
             // Create store
             var store = new Store
