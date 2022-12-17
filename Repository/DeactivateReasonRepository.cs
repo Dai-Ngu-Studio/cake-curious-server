@@ -15,6 +15,17 @@ namespace Repository
             await db.SaveChangesAsync();
         }
 
+        public async Task<Guid?> GetReasonIdByItemIdReadonly(Guid itemId)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.DeactivateReasons
+                .AsNoTracking()
+                .OrderByDescending(x => x.DeactivateDate)
+                .Where(x => x.ItemId == itemId)
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<DetailDeactivateReason?> GetReasonByItemIdReadonly(Guid itemId)
         {
             var db = new CakeCuriousDbContext();
