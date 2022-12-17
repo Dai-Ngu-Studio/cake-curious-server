@@ -246,92 +246,88 @@ namespace CakeCurious_API.Utilities
         {
             try
             {
-                var reasonId = await deactivateReasonRepository.GetReasonIdByItemIdReadonly(itemId);
-                if (reasonId != null)
+                var notificationContent = new NotificationContent
                 {
-                    var notificationContent = new NotificationContent
+                    ItemId = itemId,
+                    Title = NotificationText.ReportedWarning,
+                    EnTitle = NotificationText.ReportedWarningEn,
+                    NotificationDate = DateTime.Now,
+                };
+
+                string userId = string.Empty;
+
+                switch (itemType)
+                {
+                    case (int)ReportTypeEnum.Recipe:
+                        var recipe = await recipeRepository.GetNameOnlyRecipeReadonly(itemId);
+                        if (recipe != null)
+                        {
+                            userId = recipe.UserId ?? string.Empty;
+                            notificationContent.ItemType = (int)NotificationContentItemTypeEnum.DeactivateReason;
+                            notificationContent.ItemName = recipe.Name;
+                            notificationContent.NotificationType = (int)NotificationContentTypeEnum.OwnRecipeTakenDown;
+                            notificationContent.Content = $"{NotificationText.Recipe} {recipe.Name} {NotificationText.TakenDown} {NotificationText.ViewStandards}.";
+                            notificationContent.EnContent = $"{NotificationText.RecipeEn} {recipe.Name} {NotificationText.TakenDownEn} {NotificationText.ViewStandardsEn}.";
+                            break;
+                        }
+                        return;
+                    case (int)ReportTypeEnum.Comment:
+                        var comment = await commentRepository.GetNameOnlyCommentReadonly(itemId);
+                        if (comment != null)
+                        {
+                            userId = comment.UserId ?? string.Empty;
+                            notificationContent.ItemType = (int)NotificationContentItemTypeEnum.DeactivateReason;
+                            notificationContent.ItemName = comment.UserDisplayName;
+                            notificationContent.NotificationType = (int)NotificationContentTypeEnum.OwnCommentTakenDown;
+                            notificationContent.Content = $"{NotificationText.CommentOf} {NotificationText.Your} {NotificationText.TakenDown} {NotificationText.ViewStandards}.";
+                            notificationContent.EnContent = $"{NotificationText.CommentOfEn} {NotificationText.YourEn} {NotificationText.TakenDownEn} {NotificationText.ViewStandardsEn}.";
+                            break;
+                        }
+                        return;
+                    default:
+                        return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(userId))
+                {
+                    // Create notification target
+                    var notificationTarget = new Notification
                     {
-                        ItemId = reasonId,
-                        Title = NotificationText.ReportedWarning,
-                        EnTitle = NotificationText.ReportedWarningEn,
-                        NotificationDate = DateTime.Now,
+                        UserId = userId,
+                        Status = (int)NotificationStatusEnum.Unread,
+                        ContentId = notificationContent.Id,
                     };
 
-                    string userId = string.Empty;
+                    notificationContent.Notifications!.Add(notificationTarget);
 
-                    switch (itemType)
+                    // Save changes in database
+                    await notificationRepository.CreateNotificationContent(notificationContent);
+
+                    var userDevices = userDeviceRepository.GetDevicesOfUserReadonly(userId);
+                    var tokens = userDevices.Select(x => x.Token).ToList();
+
+                    if (tokens.Count > 0)
                     {
-                        case (int)ReportTypeEnum.Recipe:
-                            var recipe = await recipeRepository.GetNameOnlyRecipeReadonly(itemId);
-                            if (recipe != null)
-                            {
-                                userId = recipe.UserId ?? string.Empty;
-                                notificationContent.ItemType = (int)NotificationContentItemTypeEnum.DeactivateReason;
-                                notificationContent.ItemName = recipe.Name;
-                                notificationContent.NotificationType = (int)NotificationContentTypeEnum.OwnRecipeTakenDown;
-                                notificationContent.Content = $"{NotificationText.Recipe} {recipe.Name} {NotificationText.TakenDown} {NotificationText.ViewStandards}.";
-                                notificationContent.EnContent = $"{NotificationText.RecipeEn} {recipe.Name} {NotificationText.TakenDownEn} {NotificationText.ViewStandardsEn}.";
-                                break;
-                            }
-                            return;
-                        case (int)ReportTypeEnum.Comment:
-                            var comment = await commentRepository.GetNameOnlyCommentReadonly(itemId);
-                            if (comment != null)
-                            {
-                                userId = comment.UserId ?? string.Empty;
-                                notificationContent.ItemType = (int)NotificationContentItemTypeEnum.DeactivateReason;
-                                notificationContent.ItemName = comment.UserDisplayName;
-                                notificationContent.NotificationType = (int)NotificationContentTypeEnum.OwnCommentTakenDown;
-                                notificationContent.Content = $"{NotificationText.CommentOf} {NotificationText.Your} {NotificationText.TakenDown} {NotificationText.ViewStandards}.";
-                                notificationContent.EnContent = $"{NotificationText.CommentOfEn} {NotificationText.YourEn} {NotificationText.TakenDownEn} {NotificationText.ViewStandardsEn}.";
-                                break;
-                            }
-                            return;
-                        default:
-                            return;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(userId))
-                    {
-                        // Create notification target
-                        var notificationTarget = new Notification
+                        // Send multicast
+                        var multicastMessage = new FirebaseAdmin.Messaging.MulticastMessage
                         {
-                            UserId = userId,
-                            Status = (int)NotificationStatusEnum.Unread,
-                            ContentId = notificationContent.Id,
-                        };
-
-                        notificationContent.Notifications!.Add(notificationTarget);
-
-                        // Save changes in database
-                        await notificationRepository.CreateNotificationContent(notificationContent);
-
-                        var userDevices = userDeviceRepository.GetDevicesOfUserReadonly(userId);
-                        var tokens = userDevices.Select(x => x.Token).ToList();
-
-                        if (tokens.Count > 0)
-                        {
-                            // Send multicast
-                            var multicastMessage = new FirebaseAdmin.Messaging.MulticastMessage
+                            Tokens = tokens,
+                            Notification = new FirebaseAdmin.Messaging.Notification
                             {
-                                Tokens = tokens,
-                                Notification = new FirebaseAdmin.Messaging.Notification
-                                {
-                                    Title = notificationContent.Title,
-                                    Body = notificationContent.Content,
-                                },
-                                Data = new Dictionary<string, string>
+                                Title = notificationContent.Title,
+                                Body = notificationContent.Content,
+                            },
+                            Data = new Dictionary<string, string>
                                 {
                                     { "itemType", notificationContent.ItemType.ToString()! },
                                     { "itemId", notificationContent.ItemId.ToString()! },
                                     { "notificationType", notificationContent.NotificationType.ToString()! },
                                     { "notificationDate", JsonSerializer.Serialize(notificationContent.NotificationDate) }
                                 }
-                            };
+                        };
 
-                            var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
-                            await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
-                        }
+                        var response = await FirebaseCloudMessageSender.SendMulticastAsync(multicastMessage);
+                        await InvalidFcmTokenCollector.HandleMulticastBatchResponse(response, tokens!, userDeviceRepository);
                     }
                 }
             }
