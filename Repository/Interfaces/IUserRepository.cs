@@ -25,5 +25,6 @@ namespace Repository.Interfaces
         public Task<EmailSimpleUser?> GetReadonlyUserByEmail(string email);
         public Task<User?> GetUserByEmail(string email);
         public Task UpdateStaff(User user, string guid);
+        public Task<bool> IsCitizenshipNumberExisted(string cccd);
     }
 }

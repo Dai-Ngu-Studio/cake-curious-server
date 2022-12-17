@@ -376,5 +376,11 @@ namespace Repository
             var db = new CakeCuriousDbContext();
             return await db.Users.AsNoTracking().AnyAsync(x => x.Id == uid);
         }
+
+        public async Task<bool> IsCitizenshipNumberExisted(string cccd)
+        {
+            var db = new CakeCuriousDbContext();
+            return await db.Users.AsNoTracking().AnyAsync(x => x.CitizenshipNumber == cccd);
+        }
     }
 }

@@ -360,6 +360,15 @@ namespace CakeCurious_API.Controllers
             return Forbid();
         }
 
+        [HttpGet("cccd/{cccd}")]
+        [Authorize]
+        public async Task<ActionResult> CheckIfCitizenshipNumberExisted(string cccd)
+        {
+            var isExisted = await userRepository.IsCitizenshipNumberExisted(cccd);
+            if (isExisted) return Conflict();
+            return Ok();
+        }
+
         [HttpPost("staff")]
         [Authorize]
         public async Task<ActionResult<DetachedUser>> CreateStaff(CreateStaffUser createStaff)
