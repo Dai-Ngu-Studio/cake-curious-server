@@ -23,15 +23,18 @@ namespace CakeCurious_API.Controllers
         private readonly IUserDeviceRepository userDeviceRepository;
         private readonly IRecipeRepository recipeRepository;
         private readonly INotificationRepository notificationRepository;
+        private readonly IDeactivateReasonRepository deactivateReasonRepository;
 
         public CommentsController(ICommentRepository _commentRepository, IUserRepository _userRepository,
             IUserDeviceRepository _userDeviceRepository, INotificationRepository _notificationRepository,
+            IDeactivateReasonRepository _deactivateReasonRepository,
             IRecipeRepository _recipeRepository, IViolationReportRepository _reportRepository)
         {
             commentRepository = _commentRepository;
             userRepository = _userRepository;
             userDeviceRepository = _userDeviceRepository;
             notificationRepository = _notificationRepository;
+            deactivateReasonRepository = _deactivateReasonRepository;
             recipeRepository = _recipeRepository;
             reportRepository = _reportRepository;
         }
@@ -164,6 +167,9 @@ namespace CakeCurious_API.Controllers
                     await reportRepository.UpdateAllReportStatusOfAnItem(id.Value, uid!);
                     _ = Task.Run(() => NotificationUtility
                         .NotifyReporters(userDeviceRepository, notificationRepository, reportRepository,
+                            recipeRepository, commentRepository, id.Value, (int)ReportTypeEnum.Comment));
+                    _ = Task.Run(() => NotificationUtility
+                        .NotifyReported(userDeviceRepository, deactivateReasonRepository, notificationRepository,
                             recipeRepository, commentRepository, id.Value, (int)ReportTypeEnum.Comment));
                 }
             }

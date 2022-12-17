@@ -35,6 +35,7 @@ namespace CakeCurious_API.Controllers
         private readonly IRecipeCategoryRepository recipeCategoryRepository;
         private readonly IUserDeviceRepository userDeviceRepository;
         private readonly INotificationRepository notificationRepository;
+        private readonly IDeactivateReasonRepository deactivateReasonRepository;
         private readonly IElasticClient elasticClient;
         private readonly FirebaseDynamicLinksService firebaseDynamicLinksService;
         private readonly TranslationClient translationClient;
@@ -43,6 +44,7 @@ namespace CakeCurious_API.Controllers
             ILikeRepository _likeRepository, IBookmarkRepository _bookmarkRepository, IUserRepository _userRepository,
             IViolationReportRepository _reportRepository, IRecipeCategoryRepository _recipeCategoryRepository,
             IUserDeviceRepository _userDeviceRepository, INotificationRepository _notificationRepository,
+            IDeactivateReasonRepository _deactivateReasonRepository,
             IElasticClient _elasticClient, FirebaseDynamicLinksService _firebaseDynamicLinksService, TranslationClient _translationClient)
         {
             recipeRepository = _recipeRepository;
@@ -54,6 +56,7 @@ namespace CakeCurious_API.Controllers
             reportRepository = _reportRepository;
             userDeviceRepository = _userDeviceRepository;
             notificationRepository = _notificationRepository;
+            deactivateReasonRepository = _deactivateReasonRepository;
             elasticClient = _elasticClient;
             firebaseDynamicLinksService = _firebaseDynamicLinksService;
             translationClient = _translationClient;
@@ -84,6 +87,9 @@ namespace CakeCurious_API.Controllers
                     await reportRepository.UpdateAllReportStatusOfAnItem(id.Value, uid!);
                     _ = Task.Run(() => NotificationUtility
                         .NotifyReporters(userDeviceRepository, notificationRepository, reportRepository,
+                            recipeRepository, commentRepository, id.Value, (int)ReportTypeEnum.Recipe));
+                    _ = Task.Run(() => NotificationUtility
+                        .NotifyReported(userDeviceRepository, deactivateReasonRepository, notificationRepository, 
                             recipeRepository, commentRepository, id.Value, (int)ReportTypeEnum.Recipe));
                 }
             }

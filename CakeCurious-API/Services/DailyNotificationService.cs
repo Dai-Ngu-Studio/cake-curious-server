@@ -84,7 +84,7 @@ namespace CakeCurious_API.Services
                                 Notification = new FirebaseAdmin.Messaging.Notification
                                 {
                                     Title = "CakeCurious",
-                                    Body = ":trollge:"
+                                    Body = "Hãy bắt đầu ngày của bạn bằng cách xem những công thức làm bánh hấp dẫn trên CakeCurious."
                                 }
                             };
 
