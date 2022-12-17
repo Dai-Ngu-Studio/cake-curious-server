@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 using Repository.Models.Coupons;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using Mapster;
 using BusinessObject;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mime;
-using Repository.Constants.Coupons;
 
 namespace CakeCurious_API.Controllers
 {
@@ -43,6 +40,9 @@ namespace CakeCurious_API.Controllers
                 Status = coupon.Status,
                 StoreId = coupon.StoreId,
             };
+            DateTime today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            Console.WriteLine("Today:" + today);
+            Console.WriteLine("exprire: " + obj.ExpiryDate);
             try
             {
                 await _couponRepository.CreateCoupon(obj);
@@ -97,8 +97,7 @@ namespace CakeCurious_API.Controllers
             };
             try
             {
-
-                await _couponRepository.UpdateCoupon(updateCoupon);
+                await _couponRepository.UpdateCoupon(updateCoupon, beforeUpdateObj.Code);
             }
             catch (DbUpdateConcurrencyException)
             {
