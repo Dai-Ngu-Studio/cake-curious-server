@@ -40,7 +40,11 @@ namespace CakeCurious_API.Controllers
             if (user != null)
             {
                 var guid = ConvertUtility.ToGuid(user.Id!);
-                return Ok(await deactivateReasonRepository.GetReasonByItemIdReadonly(guid));
+                var reason = await deactivateReasonRepository.GetReasonByItemIdReadonly(guid);
+                if (reason != null)
+                {
+                    return Ok(reason);
+                }
             }
             return NotFound();
         }
