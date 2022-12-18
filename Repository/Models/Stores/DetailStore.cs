@@ -1,9 +1,12 @@
-﻿namespace Repository.Models.Stores
+﻿using Repository.Models.Users;
+
+namespace Repository.Models.Stores
 {
     public class DetailStore
     {
         public Guid? Id { get; set; }
         public string? UserId { get; set; }
+        public StatusOnlyUser? User { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
         public string? PhotoUrl { get; set; }
