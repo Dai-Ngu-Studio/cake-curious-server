@@ -166,29 +166,38 @@ namespace Repository
             DateTime startAtSunday = new DateTime(DateTime.UtcNow.AddHours(7).Year, DateTime.UtcNow.AddHours(7).Month, DateTime.UtcNow.AddHours(7).Day).AddDays(DayOfWeek.Sunday - DateTime.UtcNow.AddHours(7).DayOfWeek);
             DateTime lastWeekSunday = startAtSunday.AddDays(-7);
             //Today repots sended
-            System.DateTime today = new System.DateTime(System.DateTime.Now.Year, System.DateTime.Now.Month, System.DateTime.UtcNow.AddHours(+7).Day);
-            DateTime yesterday = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(-1).Day);
-            cs.TodayReports = await db.ViolationReports.Where(r => r.SubmittedDate == today).CountAsync();
-            int yesterdayReports = await db.ViolationReports.Where(r => r.SubmittedDate == yesterday).CountAsync();
-            cs.SinceYesterdayReports = cs.TodayReports > 0 || yesterdayReports > 0 ? (double)((cs.TodayReports - yesterdayReports) / (cs.TodayReports > yesterdayReports ? cs.TodayReports : yesterdayReports)) : 0;
-            //Current week reported recipes
-            cs.CurrentWeekReportedRecipes = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
-            int lastWeekReportedRecipes = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
-            cs.SinceLastWeekReportedRecipes = cs.CurrentWeekReportedRecipes > 0 || lastWeekReportedRecipes > 0 ? (double)
-                ((cs.CurrentWeekReportedRecipes - lastWeekReportedRecipes) / (cs.CurrentWeekReportedRecipes < lastWeekReportedRecipes ? cs.CurrentWeekReportedRecipes > 0 ? cs.CurrentWeekReportedRecipes : 1 : lastWeekReportedRecipes > 0 ? lastWeekReportedRecipes : 1))
+            System.DateTime today = new System.DateTime(System.DateTime.Now.Year, System.DateTime.Now.Month, System.DateTime.UtcNow.AddHours(7).Day);
+            foreach (var item in db.ViolationReports)
+                Console.WriteLine();
+            DateTime yesterday = new DateTime(DateTime.UtcNow.AddHours(7).Year, DateTime.UtcNow.AddHours(7).Month, DateTime.UtcNow.AddHours(7).AddDays(-1).Day);
+            int TodayReports = await db.ViolationReports.Where(r => r.SubmittedDate.Value.AddHours(7).Date == today.Date && r.SubmittedDate.Value.AddHours(7).Month == today.Month && r.SubmittedDate.Value.AddHours(7).Year == today.Year).CountAsync();
+            cs.TodayReports = TodayReports;
+            int yesterdayReports = await db.ViolationReports.Where(r => r.SubmittedDate.Value.AddHours(7).Date == yesterday.Date && r.SubmittedDate.Value.AddHours(7).Month == yesterday.Month && r.SubmittedDate.Value.AddHours(7).Year == yesterday.Year).CountAsync();
+            double SinceYesterdayReports = cs.TodayReports > 0 || yesterdayReports > 0 ? (double)
+                ((cs.TodayReports - yesterdayReports) / (cs.TodayReports < yesterdayReports ? cs.TodayReports > 0 ? cs.TodayReports : 1 : yesterdayReports > 0 ? yesterdayReports : 1))
                 : 0;
+            cs.SinceYesterdayReports = Math.Round(SinceYesterdayReports, 2);
+            //Current week reported recipes
+            cs.CurrentWeekReportedRecipes = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.ItemType == (int)ItemTypeEnum.Recipe).CountAsync();
+            int lastWeekReportedRecipes = await db.ViolationReports.Where(r => r.SubmittedDate >= lastWeekSunday && r.SubmittedDate < startAtSunday && r.ItemType == (int)ItemTypeEnum.Recipe).CountAsync();
+            double SinceLastWeekReportedRecipes = cs.CurrentWeekReportedRecipes > 0 || lastWeekReportedRecipes > 0 ? (double)
+               ((cs.CurrentWeekReportedRecipes - lastWeekReportedRecipes) / (cs.CurrentWeekReportedRecipes < lastWeekReportedRecipes ? cs.CurrentWeekReportedRecipes > 0 ? cs.CurrentWeekReportedRecipes : 1 : lastWeekReportedRecipes > 0 ? lastWeekReportedRecipes : 1))
+               : 0;
+            cs.SinceLastWeekReportedRecipes = Math.Round(SinceLastWeekReportedRecipes, 2);
             //Current week reported comments
-            cs.CurrentWeekReportedComments = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
-            int lastWeekReportedComments = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.ItemType == (int)ItemTypeEnum.Recipe && r.Status == (int)ReportStatusEnum.Pending).CountAsync();
-            cs.SinceLastWeekReportedRecipes = cs.CurrentWeekReportedComments > 0 || lastWeekReportedComments > 0 ? (double)
+            cs.CurrentWeekReportedComments = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.ItemType == (int)ItemTypeEnum.Comment).CountAsync();
+            int lastWeekReportedComments = await db.ViolationReports.Where(r => r.SubmittedDate >= lastWeekSunday && r.SubmittedDate < startAtSunday && r.ItemType == (int)ItemTypeEnum.Comment).CountAsync();
+            double SinceLastWeekReportedComments = cs.CurrentWeekReportedComments > 0 || lastWeekReportedComments > 0 ? (double)
                 ((cs.CurrentWeekReportedComments - lastWeekReportedComments) / (cs.CurrentWeekReportedComments < lastWeekReportedComments ? cs.CurrentWeekReportedComments > 0 ? cs.CurrentWeekReportedComments : 1 : lastWeekReportedComments > 0 ? lastWeekReportedComments : 1))
                 : 0;
-            //
-            cs.CurrentWeekProcessedReports = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && r.Status == (int)ReportStatusEnum.Censored).CountAsync();
-            int lastWeekProcessedReports = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= lastWeekSunday && r.Status == (int)ReportStatusEnum.Censored).CountAsync();
-            cs.SinceLastWeekReportedRecipes = cs.CurrentWeekProcessedReports > 0 || lastWeekProcessedReports > 0 ? (double)
+            cs.SinceLastWeekReportedComments = Math.Round(SinceLastWeekReportedComments, 2);
+            //Current Week processed reports
+            cs.CurrentWeekProcessedReports = await db.ViolationReports.Where(r => r.SubmittedDate >= startAtSunday && r.SubmittedDate <= today && (r.Status == (int)ReportStatusEnum.Censored || r.Status == (int)ReportStatusEnum.Rejected)).CountAsync();
+            int lastWeekProcessedReports = await db.ViolationReports.Where(r => r.SubmittedDate >= lastWeekSunday && r.SubmittedDate < startAtSunday && (r.Status == (int)ReportStatusEnum.Censored || r.Status == (int)ReportStatusEnum.Rejected)).CountAsync();
+            double SinceLastWeekProcessedReports = cs.CurrentWeekProcessedReports > 0 || lastWeekProcessedReports > 0 ? (double)
                 ((cs.CurrentWeekProcessedReports - lastWeekProcessedReports) / (cs.CurrentWeekProcessedReports < lastWeekProcessedReports ? cs.CurrentWeekProcessedReports > 0 ? cs.CurrentWeekProcessedReports : 1 : lastWeekProcessedReports > 0 ? lastWeekProcessedReports : 1))
                 : 0;
+            cs.SinceLastWeekProcessedReports = Math.Round(SinceLastWeekProcessedReports, 2);
             report.CardStats = cs;
             //bar chart
             //Add barchart 1.5s
