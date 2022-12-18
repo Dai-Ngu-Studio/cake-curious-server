@@ -268,6 +268,7 @@ namespace CakeCurious_API.Controllers
             {
                 var storePage = new ActiveCouponsStorePage();
                 storePage.Stores = await storeRepository.GetActiveCouponsStore(uid, (page - 1) * take, take);
+                storePage.Stores = storePage.Stores.Where(x => x.Coupons!.Any());
                 return Ok(storePage);
             }
             return Forbid();
