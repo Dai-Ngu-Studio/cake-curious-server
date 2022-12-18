@@ -227,7 +227,7 @@ namespace Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task UpdateCoupon(Coupon obj)
+        public async Task UpdateCoupon(Coupon obj, string? beforeUpdateCode)
         {
             DateTime today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             var db = new CakeCuriousDbContext();
@@ -248,8 +248,11 @@ namespace Repository
             }
             else throw new Exception("Discount value must greater than 0");
             if (obj.ExpiryDate <= today) throw new Exception("Expire date must greater than today");
-            if (db.Coupons.Any(c => c.Code == obj!.Code!.Trim() && c.StoreId == obj.StoreId && c.Status == (int)CouponStatusEnum.Active && c.ExpiryDate > DateTime.Now))
-                throw new Exception("This code is already exitst");
+            if (beforeUpdateCode != null && beforeUpdateCode != obj.Code)
+            {
+                if (db.Coupons.Any(c => c.Code == obj!.Code!.Trim() && c.StoreId == obj.StoreId && c.Status == (int)CouponStatusEnum.Active && c.ExpiryDate > DateTime.Now))
+                    throw new Exception("This code is already exitst");
+            }
             db.Entry<Coupon>(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
             await db.SaveChangesAsync();
         }
