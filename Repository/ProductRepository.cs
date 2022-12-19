@@ -151,7 +151,7 @@ namespace Repository
                     "where [p].[id] = {9}", 
                     product.Name!, product.Description!, product.PhotoUrl!, 
                     product.Quantity!, product.Price!, product.ProductType!, 
-                    product.Status!, product.ProductCategoryId!, DateTime.Now, product.Id!);
+                    product.Status!, product.ProductCategoryId!, product.LastUpdated!, product.Id!);
                 await db.SaveChangesAsync();
                 await transaction.CommitAsync(); // Commit transaction, remove lock
             }
