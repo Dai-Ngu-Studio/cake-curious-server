@@ -1,1 +1,1 @@
-Backend for CakeCurious, a platform to connect bakers and ingredient suppliers
+Backend for CakeCurious, a platform to share recipes connect bakers and ingredient suppliers
